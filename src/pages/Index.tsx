@@ -3,6 +3,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Search, Scissors, Utensils, Briefcase, Home, Star } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import { Calendar } from "@/components/ui/calendar";
 
 const serviceCategories = [
   {
@@ -34,27 +42,62 @@ const serviceCategories = [
 const FeaturedServices = () => (
   <div className="space-y-4">
     <h2 className="text-lg font-semibold text-neutral-800">Featured Services</h2>
-    <ScrollArea className="h-[200px] w-full rounded-md">
-      <div className="flex flex-col gap-2">
+    <Carousel className="w-full">
+      <CarouselContent>
         {[1, 2, 3, 4, 5].map((i) => (
-          <Card key={i} className="flex items-center p-4 bg-white/80 backdrop-blur-sm border-neutral-200">
-            <div className="h-12 w-12 rounded-full bg-neutral-100 flex items-center justify-center">
-              <Star className="w-6 h-6 text-accent" />
-            </div>
-            <CardContent className="flex-1 pl-4">
-              <h3 className="font-medium text-neutral-800">Service Provider {i}</h3>
-              <p className="text-sm text-neutral-600">⭐️ 4.9 (120 reviews)</p>
-            </CardContent>
-          </Card>
+          <CarouselItem key={i} className="md:basis-1/2 lg:basis-1/3">
+            <Card className="bg-white/80 backdrop-blur-sm border-neutral-200">
+              <CardContent className="flex items-center p-4">
+                <div className="h-12 w-12 rounded-full bg-neutral-100 flex items-center justify-center">
+                  <Star className="w-6 h-6 text-accent" />
+                </div>
+                <div className="ml-4">
+                  <h3 className="font-medium text-neutral-800">
+                    Service Provider {i}
+                  </h3>
+                  <p className="text-sm text-neutral-600">⭐️ 4.9 (120 reviews)</p>
+                </div>
+              </CardContent>
+            </Card>
+          </CarouselItem>
         ))}
-      </div>
-    </ScrollArea>
+      </CarouselContent>
+      <CarouselPrevious />
+      <CarouselNext />
+    </Carousel>
+  </div>
+);
+
+const UpcomingAppointments = () => (
+  <div className="space-y-4">
+    <h2 className="text-lg font-semibold text-neutral-800">
+      Upcoming Appointments
+    </h2>
+    <Calendar className="rounded-lg border bg-white/80 backdrop-blur-sm" />
+    <Carousel className="w-full">
+      <CarouselContent>
+        {[1, 2, 3].map((i) => (
+          <CarouselItem key={i} className="md:basis-1/2 lg:basis-1/3">
+            <Card className="bg-white/80 backdrop-blur-sm border-neutral-200">
+              <CardContent className="p-4">
+                <h3 className="font-medium text-neutral-800">
+                  Appointment {i}
+                </h3>
+                <p className="text-sm text-neutral-600">Tomorrow at 2:00 PM</p>
+              </CardContent>
+            </Card>
+          </CarouselItem>
+        ))}
+      </CarouselContent>
+      <CarouselPrevious />
+      <CarouselNext />
+    </Carousel>
   </div>
 );
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-secondary">
+    <div className="min-h-screen bg-secondary pb-20">
       <div className="container max-w-4xl mx-auto px-4 py-8 space-y-8">
         {/* Header */}
         <div className="space-y-4">
@@ -76,27 +119,40 @@ const Index = () => {
         </div>
 
         {/* Categories */}
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-          {serviceCategories.map((category) => (
-            <Card
-              key={category.id}
-              className="group hover:border-accent transition-colors duration-200 bg-white/80 backdrop-blur-sm cursor-pointer"
-            >
-              <CardContent className="p-4 text-center space-y-2">
-                <div className="mx-auto w-12 h-12 rounded-full bg-neutral-100 flex items-center justify-center group-hover:bg-accent/10 transition-colors duration-200">
-                  {React.cloneElement(category.icon, {
-                    className: "w-6 h-6 text-accent",
-                  })}
-                </div>
-                <h3 className="font-medium text-neutral-800">{category.name}</h3>
-                <p className="text-sm text-neutral-600">{category.description}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <Carousel className="w-full">
+          <CarouselContent>
+            {serviceCategories.map((category) => (
+              <CarouselItem
+                key={category.id}
+                className="basis-1/2 md:basis-1/3 lg:basis-1/4"
+              >
+                <Card className="group hover:border-accent transition-colors duration-200 bg-white/80 backdrop-blur-sm cursor-pointer">
+                  <CardContent className="p-4 text-center space-y-2">
+                    <div className="mx-auto w-12 h-12 rounded-full bg-neutral-100 flex items-center justify-center group-hover:bg-accent/10 transition-colors duration-200">
+                      {React.cloneElement(category.icon, {
+                        className: "w-6 h-6 text-accent",
+                      })}
+                    </div>
+                    <h3 className="font-medium text-neutral-800">
+                      {category.name}
+                    </h3>
+                    <p className="text-sm text-neutral-600">
+                      {category.description}
+                    </p>
+                  </CardContent>
+                </Card>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious />
+          <CarouselNext />
+        </Carousel>
 
         {/* Featured Services */}
         <FeaturedServices />
+
+        {/* Upcoming Appointments */}
+        <UpcomingAppointments />
       </div>
     </div>
   );
