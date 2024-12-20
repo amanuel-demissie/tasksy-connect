@@ -28,7 +28,7 @@ const recommendedServices = {
 };
 
 const ServiceSection = ({ category, services }) => (
-  <div id={category} className="space-y-4 py-4">
+  <div id={category} className="space-y-4 py-0">
     <h2 className="text-lg font-semibold text-neutral-800 capitalize">
       {category.replace("-", " ")} Services
     </h2>
