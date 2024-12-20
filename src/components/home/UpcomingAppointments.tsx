@@ -51,8 +51,8 @@ const UpcomingAppointments = () => (
               key={appointment.id} 
               className="flex-shrink-0 w-80 bg-white/80 backdrop-blur-sm border-neutral-200"
             >
-              <CardContent className="p-4 space-y-3">
-                <div className="space-y-3">
+              <CardContent className="p-4 space-y-0">
+                <div className="space-y-0">
                   <Badge 
                     variant="secondary" 
                     className="bg-neutral-100 text-neutral-600 rounded-full"
@@ -81,7 +81,7 @@ const UpcomingAppointments = () => (
                   </div>
 
                   <div className="flex justify-between items-center">
-                    <div className="space-y-1">
+                    <div className="space-y-0">
                       <div className="text-xl font-bold">
                         {appointment.date.split(" ")[1]}
                       </div>
