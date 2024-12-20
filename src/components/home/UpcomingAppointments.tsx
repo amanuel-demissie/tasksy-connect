@@ -51,8 +51,8 @@ const UpcomingAppointments = () => (
               key={appointment.id} 
               className="flex-shrink-0 w-80 bg-white/80 backdrop-blur-sm border-neutral-200"
             >
-              <CardContent className="p-6 space-y-4">
-                <div className="space-y-4">
+              <CardContent className="p-4 space-y-3">
+                <div className="space-y-3">
                   <Badge 
                     variant="secondary" 
                     className="bg-neutral-100 text-neutral-600 rounded-full"
@@ -61,10 +61,10 @@ const UpcomingAppointments = () => (
                   </Badge>
                   
                   <div className="space-y-1">
-                    <h3 className="text-2xl font-semibold text-neutral-900">
+                    <h3 className="text-xl font-semibold text-neutral-900">
                       {appointment.serviceName}
                     </h3>
-                    <p className="text-neutral-600">
+                    <p className="text-sm text-neutral-600">
                       with {appointment.providerName}
                     </p>
                   </div>
@@ -82,13 +82,13 @@ const UpcomingAppointments = () => (
 
                   <div className="flex justify-between items-center">
                     <div className="space-y-1">
-                      <div className="text-2xl font-bold">
+                      <div className="text-xl font-bold">
                         {appointment.date.split(" ")[1]}
                       </div>
-                      <div className="text-neutral-600">
+                      <div className="text-sm text-neutral-600">
                         {appointment.date.split(" ")[0]}
                       </div>
-                      <div className="text-neutral-600">
+                      <div className="text-sm text-neutral-600">
                         {appointment.time}
                       </div>
                     </div>
