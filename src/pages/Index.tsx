@@ -195,7 +195,7 @@ const Index = () => {
         <UpcomingAppointments />
 
         {/* Recommended Services Sections */}
-        <div className="space-y-8">
+        <div className="space-y-4">
           <h2 className="text-2xl font-semibold text-primary">Recommended Services</h2>
           {Object.entries(recommendedServices).map(([category, services]) => (
             <ServiceSection key={category} category={category} services={services} />
