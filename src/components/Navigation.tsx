@@ -7,8 +7,9 @@ const Navigation = () => {
     { icon: Home, label: "Home", path: "/" },
     { icon: Search, label: "Explore", path: "/explore" },
     { icon: Calendar, label: "Appointments", path: "/appointments" },
-    { icon: User, label: "Profile", path: "/profile" },
     { icon: MessageSquare, label: "Messages", path: "/messages" },
+    { icon: User, label: "Profile", path: "/profile" },
+    
   ];
 
   return (
