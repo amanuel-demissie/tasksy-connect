@@ -1,10 +1,10 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Scissors, Utensils, Briefcase, Home } from "lucide-react";
-import beautyImg from "@/assets/categories/beauty.jpg";
-import diningImg from "@/assets/categories/dining.jpg";
-import professionalImg from "@/assets/categories/professional.jpg";
-import homeImg from "@/assets/categories/home.jpg";
+import beautyImg from "@/assets/categories/beauty.png";
+import diningImg from "@/assets/categories/dining.png";
+import professionalImg from "@/assets/categories/professional.png";
+import homeImg from "@/assets/categories/home.png";
 
 const serviceCategories = [
   {
