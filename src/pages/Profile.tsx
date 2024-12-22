@@ -1,15 +1,30 @@
 import React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
-import { Mail, Phone, Calendar } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Mail, Phone, Calendar, LogOut } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 const Profile = () => {
+  const navigate = useNavigate();
   const userInfo = {
     name: "John Doe",
     email: "john@example.com",
     phone: "+1 234 567 8900",
     age: "28",
     memberSince: "2023",
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      navigate("/auth");
+      toast.success("Signed out successfully");
+    } catch (error) {
+      toast.error("Error signing out");
+    }
   };
 
   return (
@@ -50,6 +65,15 @@ const Profile = () => {
             </div>
           </CardContent>
         </Card>
+
+        <Button
+          variant="outline"
+          className="w-full"
+          onClick={handleSignOut}
+        >
+          <LogOut className="w-4 h-4 mr-2" />
+          Sign Out
+        </Button>
       </div>
     </div>
   );
