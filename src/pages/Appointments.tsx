@@ -2,6 +2,13 @@ import React from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { ChevronDown, ChevronUp } from "lucide-react";
+import { useState } from "react";
 
 // Mock data similar to home page
 const appointments = [
@@ -37,6 +44,70 @@ const appointments = [
   }
 ];
 
+const AppointmentCard = ({ appointment }: { appointment: typeof appointments[0] }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+      <Card className="bg-white/80 backdrop-blur-sm border-neutral-200">
+        <CollapsibleTrigger className="w-full">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <img 
+                  src={appointment.businessLogo} 
+                  alt={appointment.businessName}
+                  className="w-8 h-8 rounded-full"
+                />
+                <div className="text-left">
+                  <p className="font-medium text-neutral-900">{appointment.providerName}</p>
+                  <p className="text-sm text-neutral-600">{appointment.date}</p>
+                </div>
+              </div>
+              {isOpen ? (
+                <ChevronUp className="h-5 w-5 text-neutral-500" />
+              ) : (
+                <ChevronDown className="h-5 w-5 text-neutral-500" />
+              )}
+            </div>
+          </CardContent>
+        </CollapsibleTrigger>
+        
+        <CollapsibleContent>
+          <CardContent className="pt-0 pb-4 px-4">
+            <div className="space-y-4 border-t pt-4">
+              <Badge 
+                variant="secondary" 
+                className="bg-neutral-100 text-neutral-600 rounded-full"
+              >
+                {appointment.status}
+              </Badge>
+              
+              <div className="space-y-1">
+                <h3 className="text-xl font-semibold text-neutral-900">
+                  {appointment.serviceName}
+                </h3>
+              </div>
+
+              <div className="flex items-center space-x-3">
+                <span className="text-neutral-900 font-medium">
+                  {appointment.businessName}
+                </span>
+              </div>
+
+              <div className="space-y-1">
+                <div className="text-sm text-neutral-600">
+                  {appointment.time}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </CollapsibleContent>
+      </Card>
+    </Collapsible>
+  );
+};
+
 const Appointments = () => {
   const appointmentCategories = ["Beauty", "Dining", "Professional", "Home"];
 
@@ -57,50 +128,7 @@ const Appointments = () => {
             </h2>
             <div className="space-y-4">
               {appointments.map((appointment) => (
-                <Card key={appointment.id} className="bg-white/80 backdrop-blur-sm border-neutral-200">
-                  <CardContent className="p-4 space-y-2">
-                    <Badge 
-                      variant="secondary" 
-                      className="bg-neutral-100 text-neutral-600 rounded-full"
-                    >
-                      {appointment.status}
-                    </Badge>
-                    
-                    <div className="space-y-1">
-                      <h3 className="text-xl font-semibold text-neutral-900">
-                        {appointment.serviceName}
-                      </h3>
-                      <p className="text-sm text-neutral-600">
-                        with {appointment.providerName}
-                      </p>
-                    </div>
-
-                    <div className="flex items-center space-x-3">
-                      <img 
-                        src={appointment.businessLogo} 
-                        alt={appointment.businessName}
-                        className="w-8 h-8 rounded-full"
-                      />
-                      <span className="text-neutral-900 font-medium">
-                        {appointment.businessName}
-                      </span>
-                    </div>
-
-                    <div className="flex justify-between items-center">
-                      <div className="space-y-0">
-                        <div className="text-xl font-bold">
-                          {appointment.date.split(" ")[1]}
-                        </div>
-                        <div className="text-sm text-neutral-600">
-                          {appointment.date.split(" ")[0]}
-                        </div>
-                        <div className="text-sm text-neutral-600">
-                          {appointment.time}
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                <AppointmentCard key={appointment.id} appointment={appointment} />
               ))}
             </div>
           </div>
@@ -114,47 +142,19 @@ const Appointments = () => {
             <div className="overflow-x-auto">
               <div className="flex space-x-4 pb-4">
                 {[1, 2, 3].map((i) => (
-                  <Card 
-                    key={i} 
-                    className="flex-shrink-0 w-80 bg-white/80 backdrop-blur-sm border-neutral-200"
-                  >
-                    <CardContent className="p-4 space-y-2">
-                      <Badge 
-                        variant="secondary" 
-                        className="bg-neutral-100 text-neutral-600 rounded-full"
-                      >
-                        Upcoming
-                      </Badge>
-                      
-                      <div className="space-y-1">
-                        <h3 className="text-xl font-semibold text-neutral-900">
-                          {category} Service {i}
-                        </h3>
-                        <p className="text-sm text-neutral-600">
-                          with Provider Name
-                        </p>
-                      </div>
-
-                      <div className="flex items-center space-x-3">
-                        <img 
-                          src="/placeholder.svg" 
-                          alt="Business Logo"
-                          className="w-8 h-8 rounded-full"
-                        />
-                        <span className="text-neutral-900 font-medium">
-                          Business Name
-                        </span>
-                      </div>
-
-                      <div className="flex justify-between items-center">
-                        <div className="space-y-0">
-                          <div className="text-xl font-bold">15</div>
-                          <div className="text-sm text-neutral-600">November</div>
-                          <div className="text-sm text-neutral-600">2:00 PM</div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <AppointmentCard
+                    key={i}
+                    appointment={{
+                      id: i,
+                      status: "Upcoming",
+                      serviceName: `${category} Service ${i}`,
+                      providerName: "Provider Name",
+                      businessName: "Business Name",
+                      businessLogo: "/placeholder.svg",
+                      date: "November 15",
+                      time: "2:00 PM"
+                    }}
+                  />
                 ))}
               </div>
             </div>
