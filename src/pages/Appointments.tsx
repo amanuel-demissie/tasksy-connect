@@ -139,23 +139,25 @@ const Appointments = () => {
             <h2 className="text-lg font-semibold text-neutral-800">
               {category} Appointments
             </h2>
-            <div className="overflow-x-auto">
-              <div className="flex flex-col space-y-4 md:space-y-0 md:grid md:grid-cols-2 md:gap-4 pb-4">
-                {[1, 2, 3].map((i) => (
-                  <AppointmentCard
-                    key={i}
-                    appointment={{
-                      id: i,
-                      status: "Upcoming",
-                      serviceName: `${category} Service ${i}`,
-                      providerName: "Provider Name",
-                      businessName: "Business Name",
-                      businessLogo: "/placeholder.svg",
-                      date: "November 15",
-                      time: "2:00 PM"
-                    }}
-                  />
-                ))}
+            <div className="relative">
+              <div className="overflow-x-auto pb-4">
+                <div className="flex space-x-4 min-w-max">
+                  {[1, 2, 3].map((i) => (
+                    <AppointmentCard
+                      key={i}
+                      appointment={{
+                        id: i,
+                        status: "Upcoming",
+                        serviceName: `${category} Service ${i}`,
+                        providerName: "Provider Name",
+                        businessName: "Business Name",
+                        businessLogo: "/placeholder.svg",
+                        date: "November 15",
+                        time: "2:00 PM"
+                      }}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
           </div>
