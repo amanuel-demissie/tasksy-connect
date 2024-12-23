@@ -48,7 +48,7 @@ const AppointmentCard = ({ appointment }: { appointment: typeof appointments[0] 
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+    <Collapsible open={isOpen} onOpenChange={setIsOpen} className="w-full min-w-[300px] md:min-w-[400px]">
       <Card className="bg-white/80 backdrop-blur-sm border-neutral-200">
         <CollapsibleTrigger className="w-full">
           <CardContent className="p-4">
@@ -140,7 +140,7 @@ const Appointments = () => {
               {category} Appointments
             </h2>
             <div className="overflow-x-auto">
-              <div className="flex space-x-4 pb-4">
+              <div className="flex flex-col space-y-4 md:space-y-0 md:grid md:grid-cols-2 md:gap-4 pb-4">
                 {[1, 2, 3].map((i) => (
                   <AppointmentCard
                     key={i}
