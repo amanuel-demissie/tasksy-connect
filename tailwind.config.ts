@@ -20,19 +20,19 @@ export default {
     extend: {
       colors: {
         // Core colors
-        primary: "#141413",
-        secondary: "#FAFAF8",
+        primary: "#FAFAF8",
+        secondary: "#141413",
         accent: "#8989DE",
         neutral: {
-          100: "#FFFFFF",
-          200: "#F0EFEA",
-          300: "#E6E4DD",
-          400: "#C4C3BB",
+          100: "#222222",
+          200: "#3A3935",
+          300: "#605F5B",
+          400: "#828179",
           500: "#A3A299",
-          600: "#828179",
-          700: "#605F5B",
-          800: "#3A3935",
-          900: "#222222",
+          600: "#C4C3BB",
+          700: "#E6E4DD",
+          800: "#F0EFEA",
+          900: "#FFFFFF",
         },
         // Accent colors
         sand: "#EBDBBC",

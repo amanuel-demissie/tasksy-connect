@@ -9,11 +9,10 @@ const Navigation = () => {
     { icon: Calendar, label: "Appointments", path: "/appointments" },
     { icon: MessageSquare, label: "Messages", path: "/messages" },
     { icon: User, label: "Profile", path: "/profile" },
-    
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-lg border-t border-neutral-200 px-4 py-2">
+    <nav className="fixed bottom-0 left-0 right-0 bg-neutral-100/80 backdrop-blur-lg border-t border-neutral-200 px-4 py-2">
       <div className="flex justify-around items-center max-w-md mx-auto">
         {tabs.map(({ icon: Icon, label, path }) => (
           <NavLink

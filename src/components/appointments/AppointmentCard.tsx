@@ -29,7 +29,7 @@ export const AppointmentCard = ({ appointment }: AppointmentCardProps) => {
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className="w-full min-w-[300px] md:min-w-[400px]">
-      <Card className="bg-white/80 backdrop-blur-sm border-neutral-200">
+      <Card className="bg-neutral-100/80 backdrop-blur-sm border-neutral-200">
         <CollapsibleTrigger className="w-full">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -55,14 +55,14 @@ export const AppointmentCard = ({ appointment }: AppointmentCardProps) => {
         
         <CollapsibleContent>
           <CardContent className="pt-0 pb-4 px-4">
-            <div className="space-y-4 border-t pt-4">
+            <div className="space-y-4 border-t border-neutral-200 pt-4">
               <Badge 
                 variant="secondary" 
                 className={cn(
                   "rounded-full",
                   appointment.status === "Upcoming"
-                    ? "bg-blue-100 text-blue-700"
-                    : "bg-neutral-100 text-neutral-600"
+                    ? "bg-accent/20 text-accent"
+                    : "bg-neutral-200/20 text-neutral-600"
                 )}
               >
                 {appointment.status}

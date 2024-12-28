@@ -45,6 +45,9 @@ const App = () => {
       setSession(session);
     });
 
+    // Add dark class to html element
+    document.documentElement.classList.add('dark');
+
     return () => subscription.unsubscribe();
   }, []);
 
