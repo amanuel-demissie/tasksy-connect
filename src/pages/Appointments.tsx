@@ -72,20 +72,19 @@ const Appointments = () => {
             modifiers={{
               booked: appointmentDates,
             }}
-            modifiersStyles={{
-              booked: {
-                after: {
-                  content: '""',
-                  position: "absolute",
-                  bottom: "0.25rem",
-                  left: "50%",
-                  transform: "translateX(-50%)",
-                  width: "0.25rem",
-                  height: "0.25rem",
-                  borderRadius: "50%",
-                  backgroundColor: "#8989DE",
-                }
-              }
+            classNames={{
+              day_selected: "bg-accent text-primary-foreground hover:bg-accent hover:text-primary-foreground focus:bg-accent focus:text-primary-foreground",
+              day_today: "text-accent relative before:absolute before:bottom-1 before:left-1/2 before:-translate-x-1/2 before:h-1 before:w-1 before:rounded-full before:bg-accent",
+              day: "h-9 w-9 p-0 font-normal text-white aria-selected:opacity-100 hover:bg-neutral-800",
+              day_disabled: "text-neutral-600",
+              day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
+              day_hidden: "invisible",
+              cell: "relative h-9 w-9 text-center text-sm p-0 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
+              head_cell: "text-neutral-400 rounded-md w-9 font-normal text-[0.8rem] uppercase",
+              nav_button: "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 text-white",
+              caption: "text-white",
+              root: "bg-neutral-900",
+              months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
             }}
           />
           <div className="space-y-4">
