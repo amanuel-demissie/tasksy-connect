@@ -24,7 +24,7 @@ const AuthPage = () => {
     <div className="min-h-screen bg-secondary flex items-center justify-center px-4">
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
-          <h2 className="text-3xl font-bold text-primary">Welcome to Tasksy</h2>
+          <h2 className="text-3xl font-bold text-primary">Welcome to Connect</h2>
           <p className="mt-2 text-neutral-600">Sign in or create an account</p>
         </div>
         <div className="bg-white/80 backdrop-blur-sm p-8 rounded-lg shadow-sm border border-neutral-200">
