@@ -1,4 +1,12 @@
-import { Card } from "@/components/ui/card";
+import React, { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Appointment {
@@ -14,56 +22,73 @@ interface Appointment {
 
 interface AppointmentCardProps {
   appointment: Appointment;
-  isOpen: boolean;
-  onOpenChange: (isOpen: boolean) => void;
 }
 
-export const AppointmentCard = ({ appointment, isOpen, onOpenChange }: AppointmentCardProps) => {
+export const AppointmentCard = ({ appointment }: AppointmentCardProps) => {
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
-    <Card className="min-w-[300px] md:min-w-[400px]">
-      <div className="w-full" onClick={() => onOpenChange(!isOpen)}>
-        <div className="p-4 flex items-center space-x-4">
-          <img
-            src={appointment.businessLogo}
-            alt={appointment.businessName}
-            className="w-12 h-12 rounded-full object-cover"
-          />
-          <div className="flex-1 text-left">
-            <h3 className="font-medium">{appointment.providerName}</h3>
-            <p className="text-sm text-neutral-500">{appointment.date}</p>
-          </div>
-        </div>
-      </div>
-      {isOpen && (
-        <div className="px-4 pb-4 space-y-2 border-t">
-          <div className="pt-2">
-            <p className="text-sm text-neutral-600">
-              <span className="font-medium">Service:</span>{" "}
-              {appointment.serviceName}
-            </p>
-            <p className="text-sm text-neutral-600">
-              <span className="font-medium">Business:</span>{" "}
-              {appointment.businessName}
-            </p>
-            <p className="text-sm text-neutral-600">
-              <span className="font-medium">Time:</span> {appointment.time}
-            </p>
-            <p className="text-sm text-neutral-600">
-              <span className="font-medium">Status:</span>{" "}
-              <span
+    <Collapsible open={isOpen} onOpenChange={setIsOpen} className="w-full min-w-[300px] md:min-w-[400px]">
+      <Card className="bg-white/80 backdrop-blur-sm border-neutral-200">
+        <CollapsibleTrigger className="w-full">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <img 
+                  src={appointment.businessLogo} 
+                  alt={appointment.businessName}
+                  className="w-8 h-8 rounded-full"
+                />
+                <div className="text-left">
+                  <p className="font-medium text-neutral-900">{appointment.providerName}</p>
+                  <p className="text-sm text-neutral-600">{appointment.date}</p>
+                </div>
+              </div>
+              {isOpen ? (
+                <ChevronUp className="h-5 w-5 text-neutral-500" />
+              ) : (
+                <ChevronDown className="h-5 w-5 text-neutral-500" />
+              )}
+            </div>
+          </CardContent>
+        </CollapsibleTrigger>
+        
+        <CollapsibleContent>
+          <CardContent className="pt-0 pb-4 px-4">
+            <div className="space-y-4 border-t pt-4">
+              <Badge 
+                variant="secondary" 
                 className={cn(
-                  "inline-block px-2 py-0.5 rounded text-xs",
+                  "rounded-full",
                   appointment.status === "Upcoming"
                     ? "bg-blue-100 text-blue-700"
-                    : "bg-gray-100 text-gray-700"
+                    : "bg-neutral-100 text-neutral-600"
                 )}
               >
                 {appointment.status}
-              </span>
-            </p>
-          </div>
-        </div>
-      )}
-    </Card>
+              </Badge>
+              
+              <div className="space-y-1">
+                <h3 className="text-xl font-semibold text-neutral-900">
+                  {appointment.serviceName}
+                </h3>
+              </div>
+
+              <div className="flex items-center space-x-3">
+                <span className="text-neutral-900 font-medium">
+                  {appointment.businessName}
+                </span>
+              </div>
+
+              <div className="space-y-1">
+                <div className="text-sm text-neutral-600">
+                  {appointment.time}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </CollapsibleContent>
+      </Card>
+    </Collapsible>
   );
 };
