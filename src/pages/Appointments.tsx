@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useRef, useEffect } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { AppointmentCard } from "@/components/appointments/AppointmentCard";
+import { format } from "date-fns";
 
 const appointments = [
   {
@@ -36,7 +37,26 @@ const appointments = [
 ];
 
 const Appointments = () => {
+  const appointmentRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const appointmentCategories = ["Beauty", "Dining", "Professional", "Home"];
+
+  // Create a map of dates that have appointments
+  const appointmentDates = appointments.reduce((acc: Date[], appointment) => {
+    const date = new Date(appointment.date + ", 2024");
+    acc.push(date);
+    return acc;
+  }, []);
+
+  const handleDateSelect = (date: Date | undefined) => {
+    if (!date) return;
+    
+    const formattedDate = format(date, "MMMM d");
+    const ref = appointmentRefs.current[formattedDate];
+    
+    if (ref) {
+      ref.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-secondary pb-20">
@@ -45,9 +65,28 @@ const Appointments = () => {
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <Calendar
-            className="w-full rounded-lg border bg-white/80 backdrop-blur-sm p-4"
-            mode="multiple"
-            selected={[new Date()]}
+            className="w-full rounded-lg border bg-neutral-900 text-white backdrop-blur-sm p-4"
+            mode="single"
+            selected={undefined}
+            onSelect={handleDateSelect}
+            modifiers={{
+              booked: appointmentDates,
+            }}
+            modifiersStyles={{
+              booked: {
+                after: {
+                  content: '""',
+                  position: "absolute",
+                  bottom: "0.25rem",
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  width: "0.25rem",
+                  height: "0.25rem",
+                  borderRadius: "50%",
+                  backgroundColor: "#8989DE",
+                }
+              }
+            }}
           />
           <div className="space-y-4">
             <h2 className="text-lg font-semibold text-neutral-800">
@@ -55,7 +94,12 @@ const Appointments = () => {
             </h2>
             <div className="space-y-4">
               {appointments.map((appointment) => (
-                <AppointmentCard key={appointment.id} appointment={appointment} />
+                <div
+                  key={appointment.id}
+                  ref={(el) => appointmentRefs.current[appointment.date] = el}
+                >
+                  <AppointmentCard appointment={appointment} />
+                </div>
               ))}
             </div>
           </div>
