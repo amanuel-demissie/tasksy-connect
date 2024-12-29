@@ -43,13 +43,36 @@ const UpcomingAppointments = () => (
       Upcoming Appointments
     </h2>
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <Calendar className="w-full rounded-lg border bg-white/80 backdrop-blur-sm" />
+      <Calendar 
+        className="w-full rounded-2xl border-0 bg-[#1A1F2C] text-white p-6" 
+        classNames={{
+          months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
+          month: "space-y-4",
+          caption: "flex justify-center pt-1 relative items-center",
+          caption_label: "text-2xl font-light tracking-wide",
+          nav: "space-x-1 flex items-center",
+          nav_button: "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 text-white",
+          table: "w-full border-collapse space-y-1",
+          head_row: "flex",
+          head_cell: "text-neutral-400 rounded-md w-9 font-normal text-[0.8rem] uppercase",
+          row: "flex w-full mt-2",
+          cell: "relative h-9 w-9 text-center text-sm p-0 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
+          day: "h-9 w-9 p-0 font-normal text-white aria-selected:opacity-100 hover:bg-neutral-800/50 rounded-full transition-colors",
+          day_range_end: "day-range-end",
+          day_selected: "bg-accent text-white hover:bg-accent hover:text-white focus:bg-accent focus:text-white",
+          day_today: "text-accent relative after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:h-1 after:w-1 after:rounded-full after:bg-accent",
+          day_outside: "text-neutral-600 opacity-50",
+          day_disabled: "text-neutral-600 opacity-50",
+          day_range_middle: "aria-selected:bg-accent aria-selected:text-white",
+          day_hidden: "invisible",
+        }}
+      />
       <div className="overflow-x-auto">
         <div className="flex space-x-4 pb-4">
           {appointments.map((appointment) => (
             <Card 
               key={appointment.id} 
-              className="flex-shrink-0 w-80 bg-white/80 backdrop-blur-sm border-neutral-200"
+              className="flex-shrink-0 w-80 bg-neutral-100/10 backdrop-blur-sm border-neutral-700"
             >
               <CardContent className="p-4 space-y-0">
                 <div className="space-y-0">
