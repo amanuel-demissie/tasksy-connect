@@ -31,7 +31,7 @@ const Messages = () => {
           {conversations.map((conversation) => (
             <Card
               key={conversation.id}
-              className="mb-2 bg-white/80 backdrop-blur-sm hover:bg-white/90 transition-colors cursor-pointer"
+              className="mb-2 bg-[#1A1F2C] backdrop-blur-sm hover:bg-white/90 transition-colors cursor-pointer"
             >
               <CardContent className="p-4 flex items-center space-x-4">
                 <Avatar>

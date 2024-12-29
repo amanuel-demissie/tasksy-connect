@@ -14,14 +14,14 @@ interface ServiceCardProps {
 }
 
 const ServiceCard = ({ service }: ServiceCardProps) => (
-  <Card className="flex-shrink-0 w-72 bg-white/80 backdrop-blur-sm border-neutral-200">
+  <Card className="flex-shrink-0 w-72 bg-[#1A1F2C] backdrop-blur-sm border-gray-100 ">
     <div className="relative">
       <img 
         src={service.image} 
         alt={service.name}
         className="w-full h-40 object-cover rounded-t-lg"
       />
-      <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1">
+      <div className="absolute top-4 right-4 bg-[#1A1F2C] border-2 border-gray-100 backdrop-blur-sm rounded-full px-3 py-1">
         <span className="text-lg font-bold">{service.rating}</span>
         <span className="text-sm text-neutral-600"> ({service.reviews})</span>
       </div>

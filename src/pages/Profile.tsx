@@ -40,7 +40,7 @@ const Profile = () => {
           </h1>
         </div>
 
-        <Card className="bg-white/80 backdrop-blur-sm">
+        <Card className="bg-[#1A1F2C] backdrop-blur-sm">
           <CardContent className="p-6 space-y-4">
             <div className="flex items-center space-x-4">
               <Mail className="w-5 h-5 text-neutral-500" />

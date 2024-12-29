@@ -22,7 +22,7 @@ const Explore = () => {
             <Button
               key={filter}
               variant="outline"
-              className="bg-white/80 backdrop-blur-sm whitespace-nowrap"
+              className="bg-[#1A1F2C] backdrop-blur-sm whitespace-nowrap"
             >
               {filter}
             </Button>

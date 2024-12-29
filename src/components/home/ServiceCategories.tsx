@@ -47,7 +47,7 @@ const ServiceCategories = ({ onCategoryClick }: ServiceCategoriesProps) => (
       {serviceCategories.map((category) => (
         <Card 
           key={category.id}
-          className="flex-shrink-0 w-64 group hover:border-accent transition-colors duration-200 bg-white/80 backdrop-blur-sm cursor-pointer relative"
+          className="flex-shrink-0 w-64 group hover:border-accent transition-colors duration-200 bg-[#1A1F2C] backdrop-blur-sm cursor-pointer relative"
           onClick={() => onCategoryClick(category.id)}
         >
           <CardContent className="p-0">

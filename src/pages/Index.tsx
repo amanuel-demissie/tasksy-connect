@@ -17,11 +17,11 @@ const Index = () => {
       <div className="container max-w-4xl mx-auto px-4 py-8 space-y-4">
         {/* Header */}
         <div className="space-y-4">
-          <h1 className="text-3xl font-semibold text-primary">
-            Find & Book Services
+          <h1 className="text-2xl font-semibold text-primary">
+            Create, Find & Book Services
           </h1>
           <p className="text-neutral-600">
-            Discover and book local services with ease
+            Connect with customers and services with ease
           </p>
         </div>
 

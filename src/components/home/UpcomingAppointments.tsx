@@ -72,7 +72,7 @@ const UpcomingAppointments = () => (
           {appointments.map((appointment) => (
             <Card 
               key={appointment.id} 
-              className="flex-shrink-0 w-80 bg-neutral-100/10 backdrop-blur-sm border-neutral-700"
+              className="flex-shrink-0 w-80 bg-[#1A1F2C] backdrop-blur-sm border-neutral-700"
             >
               <CardContent className="p-4 space-y-0">
                 <div className="space-y-0">
