@@ -10,7 +10,7 @@ interface UpcomingAppointmentsProps {
 export const UpcomingAppointments = ({ appointments, appointmentRefs }: UpcomingAppointmentsProps) => {
   return (
     <div className="space-y-4">
-      <h2 className="text-lg font-semibold text-primary">
+      <h2 className="text-lg font-semibold text-white">
         Upcoming Appointments
       </h2>
       <div className="space-y-4">

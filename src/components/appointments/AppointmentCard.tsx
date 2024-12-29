@@ -29,7 +29,7 @@ export const AppointmentCard = ({ appointment }: AppointmentCardProps) => {
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className="w-full min-w-[300px] md:min-w-[400px]">
-      <Card className="bg-neutral-100/80 backdrop-blur-sm border-neutral-200">
+      <Card className="bg-[#1A1F2C]/80 backdrop-blur-sm border-[#403E43]">
         <CollapsibleTrigger className="w-full">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -40,14 +40,14 @@ export const AppointmentCard = ({ appointment }: AppointmentCardProps) => {
                   className="w-8 h-8 rounded-full"
                 />
                 <div className="text-left">
-                  <p className="font-medium text-neutral-900">{appointment.providerName}</p>
-                  <p className="text-sm text-neutral-600">{appointment.date}</p>
+                  <p className="font-medium text-white">{appointment.providerName}</p>
+                  <p className="text-sm text-[#C8C8C9]">{appointment.date}</p>
                 </div>
               </div>
               {isOpen ? (
-                <ChevronUp className="h-5 w-5 text-neutral-500" />
+                <ChevronUp className="h-5 w-5 text-[#C8C8C9]" />
               ) : (
-                <ChevronDown className="h-5 w-5 text-neutral-500" />
+                <ChevronDown className="h-5 w-5 text-[#C8C8C9]" />
               )}
             </div>
           </CardContent>
@@ -55,33 +55,33 @@ export const AppointmentCard = ({ appointment }: AppointmentCardProps) => {
         
         <CollapsibleContent>
           <CardContent className="pt-0 pb-4 px-4">
-            <div className="space-y-4 border-t border-neutral-200 pt-4">
+            <div className="space-y-4 border-t border-[#403E43] pt-4">
               <Badge 
                 variant="secondary" 
                 className={cn(
                   "rounded-full",
                   appointment.status === "Upcoming"
                     ? "bg-accent/20 text-accent"
-                    : "bg-neutral-200/20 text-neutral-600"
+                    : "bg-[#403E43]/20 text-[#C8C8C9]"
                 )}
               >
                 {appointment.status}
               </Badge>
               
               <div className="space-y-1">
-                <h3 className="text-xl font-semibold text-neutral-900">
+                <h3 className="text-xl font-semibold text-white">
                   {appointment.serviceName}
                 </h3>
               </div>
 
               <div className="flex items-center space-x-3">
-                <span className="text-neutral-900 font-medium">
+                <span className="text-white font-medium">
                   {appointment.businessName}
                 </span>
               </div>
 
               <div className="space-y-1">
-                <div className="text-sm text-neutral-600">
+                <div className="text-sm text-[#C8C8C9]">
                   {appointment.time}
                 </div>
               </div>
