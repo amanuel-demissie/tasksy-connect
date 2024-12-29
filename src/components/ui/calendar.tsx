@@ -1,13 +1,13 @@
 import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { DayPicker } from "react-day-picker";
+import { DayPicker, ClassNames } from "react-day-picker";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker> & {
-  classNames?: {
+  classNames?: Partial<ClassNames> & {
     day?: string | (({ date }: { date: Date }) => string);
-  } & Omit<DayPicker.ClassNames, 'day'>;
+  };
 };
 
 function Calendar({
