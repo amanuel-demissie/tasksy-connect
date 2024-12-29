@@ -4,7 +4,11 @@ import { DayPicker } from "react-day-picker";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 
-export type CalendarProps = React.ComponentProps<typeof DayPicker>;
+export type CalendarProps = React.ComponentProps<typeof DayPicker> & {
+  classNames?: {
+    day?: string | (({ date }: { date: Date }) => string);
+  } & Omit<DayPicker.ClassNames, 'day'>;
+};
 
 function Calendar({
   className,
@@ -32,7 +36,7 @@ function Calendar({
         head_row: "flex",
         head_cell: "text-neutral-400 rounded-md w-9 font-normal text-[0.8rem] uppercase",
         row: "flex w-full mt-2",
-        cell: "relative h-9 w-9 text-center text-sm p-0 [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
+        cell: "relative h-9 w-9 text-center text-sm p-0 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
         day: cn(
           buttonVariants({ variant: "ghost" }),
           "h-9 w-9 p-0 font-normal text-neutral-900 aria-selected:opacity-100 hover:bg-neutral-100"
