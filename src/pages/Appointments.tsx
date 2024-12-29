@@ -58,6 +58,15 @@ const Appointments = () => {
     }
   };
 
+  // Helper function to check if a date has appointments
+  const hasAppointments = (date: Date) => {
+    return appointmentDates.some(appointmentDate => 
+      appointmentDate.getDate() === date.getDate() &&
+      appointmentDate.getMonth() === date.getMonth() &&
+      appointmentDate.getFullYear() === date.getFullYear()
+    );
+  };
+
   return (
     <div className="min-h-screen bg-secondary pb-20">
       <div className="container max-w-4xl mx-auto px-4 py-8 space-y-8">
@@ -72,6 +81,11 @@ const Appointments = () => {
             modifiers={{
               booked: appointmentDates,
             }}
+            modifiersStyles={{
+              booked: {
+                fontWeight: "bold"
+              }
+            }}
             classNames={{
               months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
               month: "space-y-4",
@@ -84,7 +98,10 @@ const Appointments = () => {
               head_cell: "text-neutral-400 rounded-md w-9 font-normal text-[0.8rem] uppercase",
               row: "flex w-full mt-2",
               cell: "relative h-9 w-9 text-center text-sm p-0 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
-              day: "h-9 w-9 p-0 font-normal text-white aria-selected:opacity-100 hover:bg-neutral-800/50 rounded-full transition-colors",
+              day: ({ date }) => `
+                h-9 w-9 p-0 font-normal text-white aria-selected:opacity-100 hover:bg-neutral-800/50 rounded-full transition-colors
+                ${hasAppointments(date) ? 'after:absolute after:bottom-0.5 after:left-1/2 after:-translate-x-1/2 after:h-1 after:w-1 after:rounded-full after:bg-accent' : ''}
+              `,
               day_range_end: "day-range-end",
               day_selected: "bg-accent text-white hover:bg-accent hover:text-white focus:bg-accent focus:text-white",
               day_today: "text-accent relative after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:h-1 after:w-1 after:rounded-full after:bg-accent",
