@@ -16,7 +16,7 @@ const AuthPage = () => {
         if (event === 'SIGNED_IN' && session) {
           navigate("/");
         }
-        if (event === 'USER_DELETED' || event === 'SIGNED_OUT') {
+        if (event === 'SIGNED_OUT') {
           navigate("/auth");
         }
       }
@@ -56,13 +56,6 @@ const AuthPage = () => {
               },
             }}
             providers={[]}
-            onError={(error) => {
-              toast({
-                variant: "destructive",
-                title: "Authentication Error",
-                description: error.message,
-              });
-            }}
           />
         </div>
       </div>
