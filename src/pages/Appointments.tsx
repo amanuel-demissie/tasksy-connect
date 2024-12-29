@@ -41,7 +41,6 @@ const Appointments = () => {
   const appointmentRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const appointmentCategories = ["Beauty", "Dining", "Professional", "Home"];
 
-  // Create a map of dates that have appointments
   const appointmentDates = appointments.reduce((acc: Date[], appointment) => {
     const date = new Date(appointment.date + ", 2024");
     acc.push(date);
@@ -59,7 +58,6 @@ const Appointments = () => {
     }
   };
 
-  // Helper function to check if a date has appointments
   const hasAppointments = (date: Date) => {
     return appointmentDates.some(appointmentDate => 
       appointmentDate.getDate() === date.getDate() &&
@@ -99,9 +97,9 @@ const Appointments = () => {
               head_cell: "text-neutral-400 rounded-md w-9 font-normal text-[0.8rem] uppercase",
               row: "flex w-full mt-2",
               cell: "relative h-9 w-9 text-center text-sm p-0 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
-              day: ({ date }: { date: Date }) => cn(
+              day: (props: { date: Date }) => cn(
                 "h-9 w-9 p-0 font-normal text-white aria-selected:opacity-100 hover:bg-neutral-800/50 rounded-full transition-colors",
-                hasAppointments(date) ? 'after:absolute after:bottom-0.5 after:left-1/2 after:-translate-x-1/2 after:h-1 after:w-1 after:rounded-full after:bg-accent' : ''
+                hasAppointments(props.date) ? 'after:absolute after:bottom-0.5 after:left-1/2 after:-translate-x-1/2 after:h-1 after:w-1 after:rounded-full after:bg-accent' : ''
               ),
               day_range_end: "day-range-end",
               day_selected: "bg-accent text-white hover:bg-accent hover:text-white focus:bg-accent focus:text-white",
