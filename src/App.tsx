@@ -13,6 +13,7 @@ import Messages from "./pages/Messages";
 import Auth from "./pages/Auth";
 import { supabase } from "./integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
+import { useToast } from "@/components/ui/use-toast";
 
 const queryClient = new QueryClient();
 
@@ -31,25 +32,59 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 const App = () => {
   const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-    });
+    const initializeAuth = async () => {
+      try {
+        const { data, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error("Error getting session:", error.message);
+          toast({
+            variant: "destructive",
+            title: "Authentication Error",
+            description: "There was a problem with your session. Please sign in again.",
+          });
+          // Clear any existing session data
+          await supabase.auth.signOut();
+        } else {
+          setSession(data.session);
+        }
+      } catch (err) {
+        console.error("Unexpected error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initializeAuth();
 
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
+      setLoading(false);
     });
 
     // Add dark class to html element
     document.documentElement.classList.add('dark');
 
-    return () => subscription.unsubscribe();
-  }, []);
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [toast]);
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-secondary flex items-center justify-center">
+        <div className="text-white">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -60,7 +95,9 @@ const App = () => {
           <BrowserRouter>
             <div className="min-h-screen bg-secondary">
               <Routes>
-                <Route path="/auth" element={<Auth />} />
+                <Route path="/auth" element={
+                  session ? <Navigate to="/" replace /> : <Auth />
+                } />
                 <Route
                   path="/"
                   element={
