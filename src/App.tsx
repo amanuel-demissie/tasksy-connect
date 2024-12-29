@@ -31,18 +31,21 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 const App = () => {
   const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
+      setLoading(false);
     });
 
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
+      setLoading(false);
     });
 
     // Add dark class to html element
@@ -50,6 +53,15 @@ const App = () => {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-secondary flex items-center justify-center">
+        <div className="text-white">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -60,7 +72,9 @@ const App = () => {
           <BrowserRouter>
             <div className="min-h-screen bg-secondary">
               <Routes>
-                <Route path="/auth" element={<Auth />} />
+                <Route path="/auth" element={
+                  session ? <Navigate to="/" replace /> : <Auth />
+                } />
                 <Route
                   path="/"
                   element={
