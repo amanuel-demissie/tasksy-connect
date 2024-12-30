@@ -39,7 +39,7 @@ const App = () => {
     // Get initial session
     const initializeAuth = async () => {
       try {
-        const { data, error } = await supabase.auth.getSession();
+        const { data: { session: currentSession }, error } = await supabase.auth.getSession();
         if (error) {
           console.error("Error getting session:", error.message);
           toast({
@@ -47,13 +47,15 @@ const App = () => {
             title: "Authentication Error",
             description: "There was a problem with your session. Please sign in again.",
           });
-          // Clear any existing session data
+          // Clear session state and sign out
+          setSession(null);
           await supabase.auth.signOut();
         } else {
-          setSession(data.session);
+          setSession(currentSession);
         }
       } catch (err) {
         console.error("Unexpected error:", err);
+        setSession(null);
       } finally {
         setLoading(false);
       }
@@ -64,8 +66,12 @@ const App = () => {
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      setSession(session);
+    } = supabase.auth.onAuthStateChange(async (_event, newSession) => {
+      console.log("Auth state changed:", _event);
+      if (_event === 'TOKEN_REFRESHED') {
+        console.log('Token refreshed successfully');
+      }
+      setSession(newSession);
       setLoading(false);
     });
 
