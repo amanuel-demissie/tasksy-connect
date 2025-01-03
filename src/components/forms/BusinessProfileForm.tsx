@@ -13,6 +13,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
+import { Database } from "@/integrations/supabase/types";
+
+type ServiceCategory = Database["public"]["Enums"]["service_category"];
 
 interface BusinessService {
   name: string;
@@ -23,7 +26,7 @@ interface BusinessService {
 interface BusinessProfileFormData {
   name: string;
   description: string;
-  category: "beauty" | "dining" | "professional" | "home";
+  category: ServiceCategory;
   address: string;
   services: BusinessService[];
   image?: File;
@@ -34,7 +37,7 @@ export default function BusinessProfileForm({ onSuccess }: { onSuccess: () => vo
   const { toast } = useToast();
   const [services, setServices] = useState<BusinessService[]>([]);
   const [newService, setNewService] = useState<BusinessService>({ name: "", description: "", price: 0 });
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [selectedCategory, setSelectedCategory] = useState<ServiceCategory>("beauty");
   const [imageFile, setImageFile] = useState<File | null>(null);
 
   const addService = () => {
@@ -74,7 +77,6 @@ export default function BusinessProfileForm({ onSuccess }: { onSuccess: () => vo
 
       if (profileError) throw profileError;
 
-      // Insert services
       if (services.length > 0) {
         const { error: servicesError } = await supabase
           .from("business_services")
@@ -136,7 +138,7 @@ export default function BusinessProfileForm({ onSuccess }: { onSuccess: () => vo
 
       <div className="space-y-2">
         <Label htmlFor="category">Category</Label>
-        <Select onValueChange={setSelectedCategory}>
+        <Select value={selectedCategory} onValueChange={(value: ServiceCategory) => setSelectedCategory(value)}>
           <SelectTrigger>
             <SelectValue placeholder="Select category" />
           </SelectTrigger>

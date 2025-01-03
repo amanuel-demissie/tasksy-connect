@@ -13,12 +13,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
+import { Database } from "@/integrations/supabase/types";
+
+type ServiceCategory = Database["public"]["Enums"]["service_category"];
 
 interface FreelancerProfileFormData {
   fullName: string;
   title: string;
   bio: string;
-  category: "beauty" | "dining" | "professional" | "home";
+  category: ServiceCategory;
   hourlyRate: number;
   skills: string[];
   image?: File;
@@ -29,7 +32,7 @@ export default function FreelancerProfileForm({ onSuccess }: { onSuccess: () => 
   const { toast } = useToast();
   const [skills, setSkills] = useState<string[]>([]);
   const [newSkill, setNewSkill] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [selectedCategory, setSelectedCategory] = useState<ServiceCategory>("beauty");
   const [imageFile, setImageFile] = useState<File | null>(null);
 
   const addSkill = () => {
@@ -70,9 +73,7 @@ export default function FreelancerProfileForm({ onSuccess }: { onSuccess: () => 
 
       if (profileError) throw profileError;
 
-      // Insert skills
       if (skills.length > 0) {
-        // First, insert all skills and get their IDs
         const { data: skillsData, error: skillsError } = await supabase
           .from("skills")
           .upsert(
@@ -83,7 +84,6 @@ export default function FreelancerProfileForm({ onSuccess }: { onSuccess: () => 
 
         if (skillsError) throw skillsError;
 
-        // Then link skills to the freelancer profile
         const { error: linkError } = await supabase
           .from("freelancer_skills")
           .insert(
@@ -151,7 +151,7 @@ export default function FreelancerProfileForm({ onSuccess }: { onSuccess: () => 
 
       <div className="space-y-2">
         <Label htmlFor="category">Category</Label>
-        <Select onValueChange={setSelectedCategory}>
+        <Select value={selectedCategory} onValueChange={(value: ServiceCategory) => setSelectedCategory(value)}>
           <SelectTrigger>
             <SelectValue placeholder="Select category" />
           </SelectTrigger>
