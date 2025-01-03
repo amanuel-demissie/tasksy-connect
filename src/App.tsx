@@ -13,7 +13,7 @@ import Messages from "./pages/Messages";
 import Auth from "./pages/Auth";
 import { supabase } from "./integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 const queryClient = new QueryClient();
 
