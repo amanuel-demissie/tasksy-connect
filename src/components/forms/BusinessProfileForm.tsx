@@ -88,18 +88,32 @@ export default function BusinessProfileForm({ onSuccess }: { onSuccess: () => vo
 
   const onSubmit = async (data: BusinessProfileFormData) => {
     try {
+      console.log("Starting business profile creation...");
+      
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
+      console.log("Authenticated user:", user.id);
 
       let imageUrl = null;
       if (imageFile) {
+        console.log("Uploading image...");
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from("avatars")
           .upload(`business-profiles/${Date.now()}-${imageFile.name}`, imageFile);
 
         if (uploadError) throw uploadError;
         imageUrl = uploadData.path;
+        console.log("Image uploaded successfully:", imageUrl);
       }
+
+      console.log("Creating business profile with data:", {
+        owner_id: user.id,
+        name: data.name,
+        description: data.description,
+        category: selectedCategory,
+        address: data.address,
+        image_url: imageUrl,
+      });
 
       const { data: profile, error: profileError } = await supabase
         .from("business_profiles")
@@ -114,9 +128,15 @@ export default function BusinessProfileForm({ onSuccess }: { onSuccess: () => vo
         .select()
         .single();
 
-      if (profileError) throw profileError;
+      if (profileError) {
+        console.error("Error creating business profile:", profileError);
+        throw profileError;
+      }
+      
+      console.log("Business profile created successfully:", profile);
 
       if (services.length > 0) {
+        console.log("Creating services:", services);
         const { error: servicesError } = await supabase
           .from("business_services")
           .insert(
@@ -128,7 +148,11 @@ export default function BusinessProfileForm({ onSuccess }: { onSuccess: () => vo
             }))
           );
 
-        if (servicesError) throw servicesError;
+        if (servicesError) {
+          console.error("Error creating services:", servicesError);
+          throw servicesError;
+        }
+        console.log("Services created successfully");
       }
 
       toast({
@@ -137,12 +161,12 @@ export default function BusinessProfileForm({ onSuccess }: { onSuccess: () => vo
       });
       onSuccess();
     } catch (error) {
+      console.error("Final error:", error);
       toast({
         variant: "destructive",
         title: "Error",
         description: "Failed to create business profile",
       });
-      console.error(error);
     }
   };
 
