@@ -1,22 +1,16 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { useToast } from "@/hooks/use-toast";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { ServiceCategory } from "@/types/profile";
-import ImageUpload from "@/components/shared/ImageUpload";
-import SkillsList from "@/components/freelancer/SkillsList";
+import ImageUploadSection from "@/components/freelancer/ImageUploadSection";
+import FreelancerDetailsSection from "@/components/freelancer/FreelancerDetailsSection";
+import SkillsSection from "@/components/freelancer/SkillsSection";
 
+/**
+ * Interface for freelancer profile form data
+ */
 interface FreelancerProfileFormData {
   fullName: string;
   title: string;
@@ -27,21 +21,43 @@ interface FreelancerProfileFormData {
   image?: File;
 }
 
+/**
+ * Form component for creating a freelancer profile
+ * 
+ * This component handles:
+ * 1. Profile image upload and camera capture
+ * 2. Basic freelancer information collection
+ * 3. Skills management
+ * 4. Form submission and data persistence
+ * 
+ * @component
+ * @param {Object} props - Component properties
+ * @param {Function} props.onSuccess - Callback function called after successful profile creation
+ * @returns {JSX.Element} Rendered freelancer profile form
+ */
 export default function FreelancerProfileForm({ onSuccess }: { onSuccess: () => void }) {
+  // Form state management using react-hook-form
   const { register, handleSubmit, formState: { errors } } = useForm<FreelancerProfileFormData>();
   const { toast } = useToast();
+
+  // State for managing skills
   const [skills, setSkills] = useState<string[]>([]);
   const [newSkill, setNewSkill] = useState("");
+
+  // State for managing category selection
   const [selectedCategory, setSelectedCategory] = useState<ServiceCategory>("beauty");
+
+  // State and refs for image upload and camera functionality
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [showCamera, setShowCamera] = useState(false);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
 
-  const addSkill = () => {
-    if (newSkill && !skills.includes(newSkill)) {
-      setSkills([...skills, newSkill]);
-      setNewSkill("");
-    }
-  };
-
+  /**
+   * Handles form submission
+   * Creates freelancer profile and associated skills in Supabase
+   * 
+   * @param {FreelancerProfileFormData} data - Form data
+   */
   const onSubmit = async (data: FreelancerProfileFormData) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -102,88 +118,52 @@ export default function FreelancerProfileForm({ onSuccess }: { onSuccess: () => 
       });
       onSuccess();
     } catch (error) {
+      console.error("Error creating freelancer profile:", error);
       toast({
         variant: "destructive",
         title: "Error",
         description: "Failed to create freelancer profile",
       });
-      console.error(error);
+    }
+  };
+
+  /**
+   * Adds a new skill to the skills list
+   * Validates that the skill is not empty and not already in the list
+   */
+  const addSkill = () => {
+    if (newSkill && !skills.includes(newSkill)) {
+      setSkills([...skills, newSkill]);
+      setNewSkill("");
     }
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <div className="space-y-2">
-        <Label htmlFor="image">Profile Image</Label>
-        <ImageUpload
-          imageFile={imageFile}
-          setImageFile={setImageFile}
-        />
-      </div>
+      <ImageUploadSection
+        imageFile={imageFile}
+        setImageFile={setImageFile}
+        showCamera={showCamera}
+        setShowCamera={setShowCamera}
+        videoRef={videoRef}
+      />
 
-      <div className="space-y-2">
-        <Label htmlFor="fullName">Full Name</Label>
-        <Input
-          id="fullName"
-          {...register("fullName", { required: true })}
-          className={errors.fullName ? "border-red-500" : ""}
-        />
-      </div>
+      <FreelancerDetailsSection
+        register={register}
+        errors={errors}
+        selectedCategory={selectedCategory}
+        setSelectedCategory={setSelectedCategory}
+      />
 
-      <div className="space-y-2">
-        <Label htmlFor="title">Professional Title</Label>
-        <Input
-          id="title"
-          {...register("title", { required: true })}
-          className={errors.title ? "border-red-500" : ""}
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="bio">Bio</Label>
-        <Textarea
-          id="bio"
-          {...register("bio")}
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="category">Category</Label>
-        <Select value={selectedCategory} onValueChange={(value: ServiceCategory) => setSelectedCategory(value)}>
-          <SelectTrigger>
-            <SelectValue placeholder="Select category" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="beauty">Beauty</SelectItem>
-            <SelectItem value="dining">Dining</SelectItem>
-            <SelectItem value="professional">Professional</SelectItem>
-            <SelectItem value="home">Home</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="hourlyRate">Hourly Rate ($)</Label>
-        <Input
-          id="hourlyRate"
-          type="number"
-          {...register("hourlyRate", { required: true, min: 0 })}
-          className={errors.hourlyRate ? "border-red-500" : ""}
-        />
-      </div>
-
-      <div className="space-y-4">
-        <Label>Skills</Label>
-        <SkillsList
-          skills={skills}
-          newSkill={newSkill}
-          setNewSkill={setNewSkill}
-          addSkill={addSkill}
-        />
-      </div>
+      <SkillsSection
+        skills={skills}
+        newSkill={newSkill}
+        setNewSkill={setNewSkill}
+        addSkill={addSkill}
+      />
 
       <Button 
-        type="submit" 
+        type="submit"
         className="w-full bg-accent text-white hover:bg-accent/90"
       >
         Create Freelancer Profile
