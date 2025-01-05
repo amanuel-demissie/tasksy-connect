@@ -162,12 +162,24 @@ export default function BusinessProfileForm({ onSuccess }: { onSuccess: () => vo
                 className="w-full rounded-lg"
               />
               <div className="flex gap-2">
-                <Button type="button" onClick={capturePhoto}>Capture Photo</Button>
-                <Button type="button" variant="outline" onClick={() => {
-                  setShowCamera(false);
-                  const stream = videoRef.current?.srcObject as MediaStream;
-                  stream?.getTracks().forEach(track => track.stop());
-                }}>Cancel</Button>
+                <Button 
+                  type="button" 
+                  onClick={capturePhoto}
+                  className="bg-accent text-white hover:bg-accent/90"
+                >
+                  Capture Photo
+                </Button>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => {
+                    setShowCamera(false);
+                    const stream = videoRef.current?.srcObject as MediaStream;
+                    stream?.getTracks().forEach(track => track.stop());
+                  }}
+                >
+                  Cancel
+                </Button>
               </div>
             </div>
           ) : (
@@ -271,11 +283,22 @@ export default function BusinessProfileForm({ onSuccess }: { onSuccess: () => vo
             value={newService.price}
             onChange={(e) => setNewService({ ...newService, price: Number(e.target.value) })}
           />
-          <Button type="button" onClick={addService}>Add Service</Button>
+          <Button 
+            type="button" 
+            onClick={addService}
+            className="bg-accent text-white hover:bg-accent/90"
+          >
+            Add Service
+          </Button>
         </div>
       </div>
 
-      <Button type="submit">Create Business Profile</Button>
+      <Button 
+        type="submit"
+        className="w-full bg-accent text-white hover:bg-accent/90"
+      >
+        Create Business Profile
+      </Button>
     </form>
   );
 }

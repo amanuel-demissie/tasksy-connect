@@ -190,7 +190,13 @@ export default function FreelancerProfileForm({ onSuccess }: { onSuccess: () => 
             value={newSkill}
             onChange={(e) => setNewSkill(e.target.value)}
           />
-          <Button type="button" onClick={addSkill}>Add</Button>
+          <Button 
+            type="button" 
+            onClick={addSkill}
+            className="bg-accent text-white hover:bg-accent/90"
+          >
+            Add
+          </Button>
         </div>
       </div>
 
