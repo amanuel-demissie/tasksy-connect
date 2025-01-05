@@ -21,8 +21,13 @@ export default function ServicesList({
   addService
 }: ServicesListProps) {
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Remove any non-numeric characters except decimal point
-    const value = e.target.value.replace(/[^\d.]/g, '');
+    const value = e.target.value;
+    
+    // Only allow numbers and one decimal point
+    if (!/^\d*\.?\d{0,2}$/.test(value)) {
+      return;
+    }
+
     setNewService({ ...newService, price: parseFloat(value) || 0 });
   };
 
@@ -32,7 +37,7 @@ export default function ServicesList({
         <div key={index} className="p-4 border rounded">
           <p><strong>Name:</strong> {service.name}</p>
           <p><strong>Description:</strong> {service.description}</p>
-          <p><strong>Price:</strong> ${service.price}</p>
+          <p><strong>Price:</strong> ${service.price.toFixed(2)}</p>
         </div>
       ))}
 
@@ -48,7 +53,7 @@ export default function ServicesList({
           onChange={(e) => setNewService({ ...newService, description: e.target.value })}
         />
         <Input
-          placeholder="Enter price (e.g. $50.00)"
+          placeholder="Enter price (e.g. $30.48)"
           value={newService.price || ''}
           onChange={handlePriceChange}
         />
