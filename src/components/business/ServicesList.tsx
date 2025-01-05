@@ -23,12 +23,10 @@ export default function ServicesList({
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     
-    // Only allow numbers and one decimal point
-    if (!/^\d*\.?\d{0,2}$/.test(value)) {
-      return;
+    // Allow empty input or valid decimal number with up to 2 decimal places
+    if (value === '' || /^\d*\.?\d{0,2}$/.test(value)) {
+      setNewService({ ...newService, price: value === '' ? 0 : parseFloat(value) });
     }
-
-    setNewService({ ...newService, price: parseFloat(value) || 0 });
   };
 
   return (
