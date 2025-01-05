@@ -194,7 +194,12 @@ export default function FreelancerProfileForm({ onSuccess }: { onSuccess: () => 
         </div>
       </div>
 
-      <Button type="submit">Create Freelancer Profile</Button>
+      <Button 
+        type="submit" 
+        className="w-full bg-accent text-white hover:bg-accent/90"
+      >
+        Create Freelancer Profile
+      </Button>
     </form>
   );
 }
