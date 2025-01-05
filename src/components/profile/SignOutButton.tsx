@@ -1,3 +1,16 @@
+/**
+ * SignOutButton Component
+ * 
+ * A button component that handles user sign-out functionality.
+ * Uses Supabase auth signOut method and provides feedback via toast notifications.
+ * Redirects to the auth page after successful sign-out.
+ * 
+ * @component
+ * @example
+ * ```tsx
+ * <SignOutButton />
+ * ```
+ */
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,6 +20,11 @@ import { toast } from "sonner";
 export const SignOutButton = () => {
   const navigate = useNavigate();
 
+  /**
+   * Handles the sign-out process
+   * Attempts to sign out the user and navigates to the auth page on success
+   * Displays appropriate toast notifications for success/failure
+   */
   const handleSignOut = async () => {
     try {
       await supabase.auth.signOut();

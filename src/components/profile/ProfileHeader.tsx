@@ -1,3 +1,18 @@
+/**
+ * ProfileHeader Component
+ * 
+ * Displays the user's avatar and profile title at the top of the profile page.
+ * Uses the Avatar component from shadcn/ui for consistent styling.
+ * 
+ * @component
+ * @param {Object} props - Component props
+ * @param {Session | null} props.session - The user's session object from Supabase Auth
+ * 
+ * @example
+ * ```tsx
+ * <ProfileHeader session={session} />
+ * ```
+ */
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Session } from "@supabase/supabase-js";
 

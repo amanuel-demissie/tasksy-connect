@@ -1,3 +1,16 @@
+/**
+ * Profile Page Component
+ * 
+ * Main profile page that displays user information and associated profiles.
+ * Fetches and displays user details, business profiles, and freelancer profiles.
+ * Provides functionality to manage user information and view associated profiles.
+ * 
+ * @component
+ * @example
+ * ```tsx
+ * <Profile />
+ * ```
+ */
 import React, { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -22,6 +35,10 @@ const Profile = () => {
   const [freelancerProfiles, setFreelancerProfiles] = useState([]);
   
   useEffect(() => {
+    /**
+     * Fetches all profile-related data from Supabase
+     * Includes user profile, business profiles, and freelancer profiles
+     */
     const fetchData = async () => {
       if (!session?.user) return;
       
@@ -63,6 +80,7 @@ const Profile = () => {
     fetchData();
   }, [session]);
 
+  // Show loading state while profile data is being fetched
   if (!profile) {
     return (
       <div className="min-h-screen bg-secondary flex items-center justify-center">

@@ -1,3 +1,19 @@
+/**
+ * UserFreelancerProfiles Component
+ * 
+ * Displays a list of freelancer profiles associated with the current user.
+ * Each profile is displayed in a card format with key information and is clickable
+ * to navigate to the detailed view.
+ * 
+ * @component
+ * @param {Object} props - Component props
+ * @param {FreelancerProfile[]} props.profiles - Array of freelancer profiles to display
+ * 
+ * @example
+ * ```tsx
+ * <UserFreelancerProfiles profiles={freelancerProfiles} />
+ * ```
+ */
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { User, DollarSign } from 'lucide-react';
@@ -19,6 +35,7 @@ interface UserFreelancerProfilesProps {
 export const UserFreelancerProfiles = ({ profiles }: UserFreelancerProfilesProps) => {
   const navigate = useNavigate();
 
+  // Don't render anything if there are no profiles
   if (profiles.length === 0) {
     return null;
   }
