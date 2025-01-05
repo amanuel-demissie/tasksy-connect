@@ -3,7 +3,6 @@ import { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
-// Create auth context
 const AuthContext = createContext<{ session: Session | null }>({ session: null });
 export const useAuth = () => useContext(AuthContext);
 
@@ -12,8 +11,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
+  const createProfileIfNeeded = async (userId: string) => {
+    try {
+      const { data: existingProfile } = await supabase
+        .from('profiles')
+        .select()
+        .eq('id', userId)
+        .single();
+
+      if (!existingProfile) {
+        const { error: insertError } = await supabase
+          .from('profiles')
+          .insert({ id: userId });
+
+        if (insertError) throw insertError;
+      }
+    } catch (error) {
+      console.error('Error ensuring profile exists:', error);
+    }
+  };
+
   useEffect(() => {
-    // Get initial session
     const initializeAuth = async () => {
       try {
         const { data: { session: currentSession }, error } = await supabase.auth.getSession();
@@ -24,10 +42,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             title: "Authentication Error",
             description: "There was a problem with your session. Please sign in again.",
           });
-          // Clear session state and sign out
           setSession(null);
           await supabase.auth.signOut();
         } else {
+          if (currentSession?.user) {
+            await createProfileIfNeeded(currentSession.user.id);
+          }
           setSession(currentSession);
         }
       } catch (err) {
@@ -40,13 +60,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     initializeAuth();
 
-    // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (_event, newSession) => {
       console.log("Auth state changed:", _event);
       if (_event === 'TOKEN_REFRESHED') {
         console.log('Token refreshed successfully');
+      }
+      if (_event === 'SIGNED_IN' && newSession?.user) {
+        await createProfileIfNeeded(newSession.user.id);
       }
       setSession(newSession);
       setLoading(false);
