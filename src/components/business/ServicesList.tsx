@@ -25,7 +25,10 @@ export default function ServicesList({
     
     // Allow empty input or valid decimal number with up to 2 decimal places
     if (value === '' || /^\d*\.?\d{0,2}$/.test(value)) {
-      setNewService({ ...newService, price: value === '' ? 0 : parseFloat(value) });
+      const numericValue = value === '' ? 0 : Number(value);
+      if (!isNaN(numericValue)) {
+        setNewService({ ...newService, price: numericValue });
+      }
     }
   };
 
@@ -51,9 +54,12 @@ export default function ServicesList({
           onChange={(e) => setNewService({ ...newService, description: e.target.value })}
         />
         <Input
+          type="text"
+          inputMode="decimal"
           placeholder="Enter price (e.g. $30.48)"
           value={newService.price || ''}
           onChange={handlePriceChange}
+          pattern="^\d*\.?\d{0,2}$"
         />
         <Button 
           type="button" 
