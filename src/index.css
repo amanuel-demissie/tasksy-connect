@@ -25,12 +25,15 @@
     --ring: 240 4.9% 83.9%;
     --radius: 1rem;
   }
-}
- 
-@layer base {
+
   * {
     @apply border-border;
   }
+  
+  html, body {
+    @apply overflow-x-hidden;
+  }
+  
   body {
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
