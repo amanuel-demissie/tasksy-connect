@@ -1,25 +1,48 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
+/**
+ * Interface representing a business service with its details
+ */
 interface BusinessService {
   name: string;
   description: string;
   price: number;
 }
 
+/**
+ * Props for the ServicesList component
+ */
 interface ServicesListProps {
+  /** Array of existing services */
   services: BusinessService[];
+  /** New service being created */
   newService: BusinessService;
+  /** Function to update the new service state */
   setNewService: (service: BusinessService) => void;
+  /** Function to add the new service to the list */
   addService: () => void;
 }
 
+/**
+ * Component for managing a list of business services
+ * 
+ * Features:
+ * 1. Displays existing services
+ * 2. Provides form inputs for adding new services
+ * 3. Handles price input validation
+ * 4. Manages service creation
+ */
 export default function ServicesList({
   services,
   newService,
   setNewService,
   addService
 }: ServicesListProps) {
+  /**
+   * Handles price input changes with validation
+   * Ensures only valid decimal numbers with up to 2 decimal places are accepted
+   */
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     
@@ -34,6 +57,7 @@ export default function ServicesList({
 
   return (
     <div className="space-y-4">
+      {/* Display existing services */}
       {services.map((service, index) => (
         <div key={index} className="p-4 border rounded">
           <p><strong>Name:</strong> {service.name}</p>
@@ -42,6 +66,7 @@ export default function ServicesList({
         </div>
       ))}
 
+      {/* Form for adding new services */}
       <div className="space-y-2">
         <Input
           placeholder="Service name"

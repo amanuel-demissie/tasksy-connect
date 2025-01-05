@@ -7,8 +7,21 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
+/**
+ * Profile page component
+ * 
+ * Features:
+ * 1. Displays user profile information
+ * 2. Shows avatar and basic user details
+ * 3. Provides sign out functionality
+ * 4. Responsive layout with card-based design
+ */
 const Profile = () => {
   const navigate = useNavigate();
+  
+  /**
+   * Mock user data - TODO: Replace with actual user data from backend
+   */
   const userInfo = {
     name: "John Doe",
     email: "john@example.com",
@@ -17,6 +30,12 @@ const Profile = () => {
     memberSince: "2023",
   };
 
+  /**
+   * Handles user sign out
+   * 1. Signs out from Supabase
+   * 2. Redirects to auth page
+   * 3. Shows success/error toast
+   */
   const handleSignOut = async () => {
     try {
       await supabase.auth.signOut();
@@ -30,6 +49,7 @@ const Profile = () => {
   return (
     <div className="min-h-screen bg-secondary pb-20">
       <div className="container max-w-4xl mx-auto px-4 py-8 space-y-8">
+        {/* Profile header with avatar */}
         <div className="flex flex-col items-center space-y-4">
           <Avatar className="w-24 h-24">
             <AvatarImage src="https://github.com/shadcn.png" />
@@ -40,8 +60,10 @@ const Profile = () => {
           </h1>
         </div>
 
+        {/* Profile information card */}
         <Card className="bg-[#1A1F2C] backdrop-blur-sm">
           <CardContent className="p-6 space-y-4">
+            {/* Email information */}
             <div className="flex items-center space-x-4">
               <Mail className="w-5 h-5 text-neutral-500" />
               <div>
@@ -49,6 +71,7 @@ const Profile = () => {
                 <p className="text-neutral-800">{userInfo.email}</p>
               </div>
             </div>
+            {/* Phone information */}
             <div className="flex items-center space-x-4">
               <Phone className="w-5 h-5 text-neutral-500" />
               <div>
@@ -56,6 +79,7 @@ const Profile = () => {
                 <p className="text-neutral-800">{userInfo.phone}</p>
               </div>
             </div>
+            {/* Membership information */}
             <div className="flex items-center space-x-4">
               <Calendar className="w-5 h-5 text-neutral-500" />
               <div>
@@ -66,6 +90,7 @@ const Profile = () => {
           </CardContent>
         </Card>
 
+        {/* Sign out button */}
         <Button
           variant="outline"
           className="w-full"
