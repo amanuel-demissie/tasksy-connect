@@ -102,31 +102,43 @@ const Profile = () => {
         </div>
 
         {/* Profile information card */}
-        <Card className="bg-neutral-100">
+        <Card className="bg-neutral-900">
           <CardContent className="p-6 space-y-6">
             {/* Username section */}
             <div className="flex items-center space-x-4">
-              <User className="w-5 h-5 text-neutral-500" />
+              <User className="w-5 h-5 text-neutral-400" />
               <div className="flex-grow">
-                <p className="text-sm font-medium text-neutral-500">Username</p>
+                <p className="text-sm font-medium text-neutral-400">Username</p>
                 {isEditing ? (
                   <div className="flex gap-2 mt-1">
                     <Input
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
-                      className="bg-white text-neutral-900"
+                      className="bg-neutral-800 text-neutral-100"
                       placeholder="Enter username"
                     />
-                    <Button onClick={handleUpdateUsername} variant="default">Save</Button>
-                    <Button onClick={() => setIsEditing(false)} variant="outline">Cancel</Button>
+                    <Button 
+                      onClick={handleUpdateUsername} 
+                      className="bg-accent text-white hover:bg-accent/90"
+                    >
+                      Save
+                    </Button>
+                    <Button 
+                      onClick={() => setIsEditing(false)}
+                      variant="outline"
+                      className="text-neutral-100"
+                    >
+                      Cancel
+                    </Button>
                   </div>
                 ) : (
                   <div className="flex justify-between items-center">
-                    <p className="text-neutral-900">{profile.username || 'No username set'}</p>
+                    <p className="text-neutral-100">{profile.username || 'No username set'}</p>
                     <Button 
                       onClick={() => setIsEditing(true)} 
                       variant="ghost" 
                       size="sm"
+                      className="text-neutral-100 hover:text-neutral-200"
                     >
                       Edit
                     </Button>
@@ -137,19 +149,19 @@ const Profile = () => {
 
             {/* Email information */}
             <div className="flex items-center space-x-4">
-              <Mail className="w-5 h-5 text-neutral-500" />
+              <Mail className="w-5 h-5 text-neutral-400" />
               <div>
-                <p className="text-sm font-medium text-neutral-500">Email</p>
-                <p className="text-neutral-900">{profile.email}</p>
+                <p className="text-sm font-medium text-neutral-400">Email</p>
+                <p className="text-neutral-100">{profile.email}</p>
               </div>
             </div>
             
             {/* Member since information */}
             <div className="flex items-center space-x-4">
-              <Calendar className="w-5 h-5 text-neutral-500" />
+              <Calendar className="w-5 h-5 text-neutral-400" />
               <div>
-                <p className="text-sm font-medium text-neutral-500">Member Since</p>
-                <p className="text-neutral-900">
+                <p className="text-sm font-medium text-neutral-400">Member Since</p>
+                <p className="text-neutral-100">
                   {new Date(profile.created_at).toLocaleDateString()}
                 </p>
               </div>
@@ -159,8 +171,8 @@ const Profile = () => {
 
         {/* Sign out button */}
         <Button
-          variant="outline"
-          className="w-full bg-white text-neutral-900 hover:bg-neutral-100"
+          variant="default"
+          className="w-full bg-accent text-white hover:bg-accent/90"
           onClick={handleSignOut}
         >
           <LogOut className="w-4 h-4 mr-2" />
