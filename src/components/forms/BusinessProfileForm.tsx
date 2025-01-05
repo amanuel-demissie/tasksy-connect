@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Camera } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -39,6 +40,46 @@ export default function BusinessProfileForm({ onSuccess }: { onSuccess: () => vo
   const [newService, setNewService] = useState<BusinessService>({ name: "", description: "", price: 0 });
   const [selectedCategory, setSelectedCategory] = useState<ServiceCategory>("beauty");
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [showCamera, setShowCamera] = useState(false);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  const startCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+      setShowCamera(true);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Camera Error",
+        description: "Unable to access camera. Please check permissions.",
+      });
+    }
+  };
+
+  const capturePhoto = () => {
+    if (videoRef.current) {
+      const canvas = document.createElement('canvas');
+      canvas.width = videoRef.current.videoWidth;
+      canvas.height = videoRef.current.videoHeight;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(videoRef.current, 0, 0);
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const file = new File([blob], `camera-capture-${Date.now()}.jpg`, { type: 'image/jpeg' });
+            setImageFile(file);
+            setShowCamera(false);
+            // Stop all video streams
+            const stream = videoRef.current?.srcObject as MediaStream;
+            stream?.getTracks().forEach(track => track.stop());
+          }
+        }, 'image/jpeg');
+      }
+    }
+  };
 
   const addService = () => {
     if (newService.name && newService.price > 0) {
@@ -110,13 +151,56 @@ export default function BusinessProfileForm({ onSuccess }: { onSuccess: () => vo
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <div className="space-y-2">
-        <Label htmlFor="image">Profile Image</Label>
-        <Input
-          id="image"
-          type="file"
-          accept="image/*"
-          onChange={(e) => setImageFile(e.target.files?.[0] || null)}
-        />
+        <Label>Profile Image</Label>
+        <div className="space-y-2">
+          {showCamera ? (
+            <div className="space-y-2">
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                className="w-full rounded-lg"
+              />
+              <div className="flex gap-2">
+                <Button type="button" onClick={capturePhoto}>Capture Photo</Button>
+                <Button type="button" variant="outline" onClick={() => {
+                  setShowCamera(false);
+                  const stream = videoRef.current?.srcObject as MediaStream;
+                  stream?.getTracks().forEach(track => track.stop());
+                }}>Cancel</Button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <div className="flex gap-2">
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+                  className="flex-1"
+                />
+                <Button 
+                  type="button"
+                  variant="outline"
+                  onClick={startCamera}
+                  className="flex items-center gap-2"
+                >
+                  <Camera className="h-4 w-4" />
+                  Camera
+                </Button>
+              </div>
+              {imageFile && (
+                <div className="mt-2">
+                  <img
+                    src={URL.createObjectURL(imageFile)}
+                    alt="Preview"
+                    className="max-w-xs rounded-lg"
+                  />
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="space-y-2">
