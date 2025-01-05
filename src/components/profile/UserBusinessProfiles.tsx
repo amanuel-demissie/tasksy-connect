@@ -40,6 +40,19 @@ export const UserBusinessProfiles = ({ profiles }: UserBusinessProfilesProps) =>
     return null;
   }
 
+  const getImageUrl = (url: string | null) => {
+    if (!url) return '/placeholder.svg';
+    // Handle relative URLs
+    if (url.startsWith('/')) return url;
+    // Handle full URLs
+    try {
+      new URL(url);
+      return url;
+    } catch {
+      return '/placeholder.svg';
+    }
+  };
+
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-semibold text-primary">Your Business Profiles</h2>
@@ -53,9 +66,13 @@ export const UserBusinessProfiles = ({ profiles }: UserBusinessProfilesProps) =>
             {/* Background Image with Overlay */}
             <div className="absolute inset-0">
               <img 
-                src={profile.image_url || '/placeholder.svg'} 
+                src={getImageUrl(profile.image_url)} 
                 alt={profile.name}
                 className="w-full h-full object-cover"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = '/placeholder.svg';
+                }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-black/30" />
             </div>
