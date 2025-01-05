@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Mail, Calendar, LogOut } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Mail, Calendar, LogOut, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -11,12 +12,15 @@ import { useAuth } from "@/components/auth/AuthProvider";
 interface Profile {
   email: string;
   created_at: string;
+  username: string | null;
 }
 
 const Profile = () => {
   const navigate = useNavigate();
   const { session } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [username, setUsername] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
   
   useEffect(() => {
     const fetchProfile = async () => {
@@ -24,7 +28,7 @@ const Profile = () => {
       
       const { data, error } = await supabase
         .from('profiles')
-        .select('email, created_at')
+        .select('email, created_at, username')
         .eq('id', session.user.id)
         .single();
       
@@ -35,10 +39,33 @@ const Profile = () => {
       }
       
       setProfile(data);
+      setUsername(data.username || "");
     };
 
     fetchProfile();
   }, [session]);
+
+  const handleUpdateUsername = async () => {
+    if (!session?.user) return;
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({ username })
+      .eq('id', session.user.id);
+
+    if (error) {
+      toast.error("Failed to update username");
+      return;
+    }
+
+    setIsEditing(false);
+    toast.success("Username updated successfully");
+    
+    // Update local profile state
+    if (profile) {
+      setProfile({ ...profile, username });
+    }
+  };
 
   const handleSignOut = async () => {
     try {
@@ -75,23 +102,54 @@ const Profile = () => {
         </div>
 
         {/* Profile information card */}
-        <Card className="bg-background/80 backdrop-blur-sm">
-          <CardContent className="p-6 space-y-4">
+        <Card className="bg-neutral-100">
+          <CardContent className="p-6 space-y-6">
+            {/* Username section */}
+            <div className="flex items-center space-x-4">
+              <User className="w-5 h-5 text-neutral-500" />
+              <div className="flex-grow">
+                <p className="text-sm font-medium text-neutral-500">Username</p>
+                {isEditing ? (
+                  <div className="flex gap-2 mt-1">
+                    <Input
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      className="bg-white text-neutral-900"
+                      placeholder="Enter username"
+                    />
+                    <Button onClick={handleUpdateUsername} variant="default">Save</Button>
+                    <Button onClick={() => setIsEditing(false)} variant="outline">Cancel</Button>
+                  </div>
+                ) : (
+                  <div className="flex justify-between items-center">
+                    <p className="text-neutral-900">{profile.username || 'No username set'}</p>
+                    <Button 
+                      onClick={() => setIsEditing(true)} 
+                      variant="ghost" 
+                      size="sm"
+                    >
+                      Edit
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
+
             {/* Email information */}
             <div className="flex items-center space-x-4">
-              <Mail className="w-5 h-5 text-muted-foreground" />
+              <Mail className="w-5 h-5 text-neutral-500" />
               <div>
-                <p className="text-sm text-muted-foreground">Email</p>
-                <p className="text-foreground">{profile.email}</p>
+                <p className="text-sm font-medium text-neutral-500">Email</p>
+                <p className="text-neutral-900">{profile.email}</p>
               </div>
             </div>
             
             {/* Member since information */}
             <div className="flex items-center space-x-4">
-              <Calendar className="w-5 h-5 text-muted-foreground" />
+              <Calendar className="w-5 h-5 text-neutral-500" />
               <div>
-                <p className="text-sm text-muted-foreground">Member Since</p>
-                <p className="text-foreground">
+                <p className="text-sm font-medium text-neutral-500">Member Since</p>
+                <p className="text-neutral-900">
                   {new Date(profile.created_at).toLocaleDateString()}
                 </p>
               </div>
@@ -102,7 +160,7 @@ const Profile = () => {
         {/* Sign out button */}
         <Button
           variant="outline"
-          className="w-full"
+          className="w-full bg-white text-neutral-900 hover:bg-neutral-100"
           onClick={handleSignOut}
         >
           <LogOut className="w-4 h-4 mr-2" />
