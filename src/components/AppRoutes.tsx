@@ -16,15 +16,20 @@ export const AppRoutes = () => {
     <BrowserRouter>
       <div className="min-h-screen bg-secondary">
         <Routes>
+          {/* Auth route */}
           <Route
             path="/auth"
             element={session ? <Navigate to="/" replace /> : <Auth />}
           />
+          
+          {/* Protected routes */}
           <Route
             path="/"
             element={
               <ProtectedRoute>
-                <Index />
+                <div className="pb-16">
+                  <Index />
+                </div>
               </ProtectedRoute>
             }
           />
@@ -32,7 +37,9 @@ export const AppRoutes = () => {
             path="/explore"
             element={
               <ProtectedRoute>
-                <Explore />
+                <div className="pb-16">
+                  <Explore />
+                </div>
               </ProtectedRoute>
             }
           />
@@ -40,7 +47,9 @@ export const AppRoutes = () => {
             path="/appointments"
             element={
               <ProtectedRoute>
-                <Appointments />
+                <div className="pb-16">
+                  <Appointments />
+                </div>
               </ProtectedRoute>
             }
           />
@@ -48,7 +57,9 @@ export const AppRoutes = () => {
             path="/profile"
             element={
               <ProtectedRoute>
-                <Profile />
+                <div className="pb-16">
+                  <Profile />
+                </div>
               </ProtectedRoute>
             }
           />
@@ -56,10 +67,15 @@ export const AppRoutes = () => {
             path="/messages"
             element={
               <ProtectedRoute>
-                <Messages />
+                <div className="pb-16">
+                  <Messages />
+                </div>
               </ProtectedRoute>
             }
           />
+
+          {/* Catch all route - redirect to home */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
         {session && <Navigation />}
       </div>
