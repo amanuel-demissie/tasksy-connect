@@ -1,47 +1,46 @@
 import { useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { useToast } from "@/hooks/use-toast";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { ServiceCategory } from "@/types/profile";
-import ImageUpload from "@/components/shared/ImageUpload";
-import ServicesList from "@/components/business/ServicesList";
+import { ServiceCategory, BusinessService, BusinessProfileFormData } from "@/types/profile";
+import ImageUploadSection from "@/components/business/ImageUploadSection";
+import BusinessDetailsSection from "@/components/business/BusinessDetailsSection";
+import ServicesSection from "@/components/business/ServicesSection";
 
-interface BusinessService {
-  name: string;
-  description: string;
-  price: number;
-}
-
-interface BusinessProfileFormData {
-  name: string;
-  description: string;
-  category: ServiceCategory;
-  address: string;
-  services: BusinessService[];
-  image?: File;
-}
-
+/**
+ * Form component for creating a business profile
+ * 
+ * This component:
+ * 1. Handles image upload and camera capture
+ * 2. Collects business details (name, description, category, address)
+ * 3. Manages services offered by the business
+ * 4. Submits data to Supabase and handles success/error states
+ * 
+ * @component
+ * @param {Object} props - Component props
+ * @param {Function} props.onSuccess - Callback function called after successful profile creation
+ */
 export default function BusinessProfileForm({ onSuccess }: { onSuccess: () => void }) {
+  // Form state management using react-hook-form
   const { register, handleSubmit, formState: { errors } } = useForm<BusinessProfileFormData>();
   const { toast } = useToast();
+
+  // State for managing services
   const [services, setServices] = useState<BusinessService[]>([]);
   const [newService, setNewService] = useState<BusinessService>({ name: "", description: "", price: 0 });
+
+  // State for managing category selection
   const [selectedCategory, setSelectedCategory] = useState<ServiceCategory>("beauty");
+
+  // State and refs for image upload and camera functionality
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [showCamera, setShowCamera] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
+  /**
+   * Initializes the device camera for photo capture
+   */
   const startCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
@@ -58,6 +57,9 @@ export default function BusinessProfileForm({ onSuccess }: { onSuccess: () => vo
     }
   };
 
+  /**
+   * Captures a photo from the camera stream
+   */
   const capturePhoto = () => {
     if (videoRef.current) {
       const canvas = document.createElement('canvas');
@@ -79,6 +81,9 @@ export default function BusinessProfileForm({ onSuccess }: { onSuccess: () => vo
     }
   };
 
+  /**
+   * Adds a new service to the services list
+   */
   const addService = () => {
     if (newService.name && newService.price > 0) {
       setServices([...services, newService]);
@@ -86,6 +91,10 @@ export default function BusinessProfileForm({ onSuccess }: { onSuccess: () => vo
     }
   };
 
+  /**
+   * Handles form submission
+   * Creates business profile and associated services in Supabase
+   */
   const onSubmit = async (data: BusinessProfileFormData) => {
     try {
       console.log("Starting business profile creation...");
@@ -172,68 +181,28 @@ export default function BusinessProfileForm({ onSuccess }: { onSuccess: () => vo
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <div className="space-y-2">
-        <Label>Profile Image</Label>
-        <ImageUpload
-          imageFile={imageFile}
-          setImageFile={setImageFile}
-          showCamera={showCamera}
-          setShowCamera={setShowCamera}
-          onCapturePhoto={capturePhoto}
-          videoRef={videoRef}
-        />
-      </div>
+      <ImageUploadSection
+        imageFile={imageFile}
+        setImageFile={setImageFile}
+        showCamera={showCamera}
+        setShowCamera={setShowCamera}
+        onCapturePhoto={capturePhoto}
+        videoRef={videoRef}
+      />
 
-      <div className="space-y-2">
-        <Label htmlFor="name">Business Name</Label>
-        <Input
-          id="name"
-          {...register("name", { required: true })}
-          className={errors.name ? "border-red-500" : ""}
-        />
-      </div>
+      <BusinessDetailsSection
+        register={register}
+        errors={errors}
+        selectedCategory={selectedCategory}
+        setSelectedCategory={setSelectedCategory}
+      />
 
-      <div className="space-y-2">
-        <Label htmlFor="description">Description</Label>
-        <Textarea
-          id="description"
-          {...register("description")}
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="category">Category</Label>
-        <Select value={selectedCategory} onValueChange={(value: ServiceCategory) => setSelectedCategory(value)}>
-          <SelectTrigger>
-            <SelectValue placeholder="Select category" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="beauty">Beauty</SelectItem>
-            <SelectItem value="dining">Dining</SelectItem>
-            <SelectItem value="professional">Professional</SelectItem>
-            <SelectItem value="home">Home</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="address">Address</Label>
-        <Input
-          id="address"
-          {...register("address", { required: true })}
-          className={errors.address ? "border-red-500" : ""}
-        />
-      </div>
-
-      <div className="space-y-4">
-        <Label>Services</Label>
-        <ServicesList
-          services={services}
-          newService={newService}
-          setNewService={setNewService}
-          addService={addService}
-        />
-      </div>
+      <ServicesSection
+        services={services}
+        newService={newService}
+        setNewService={setNewService}
+        addService={addService}
+      />
 
       <Button 
         type="submit"

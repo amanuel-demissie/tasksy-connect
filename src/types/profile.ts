@@ -10,3 +10,20 @@ export interface ImageUploadProps {
   onCapturePhoto?: () => void;
   videoRef?: React.RefObject<HTMLVideoElement>;
 }
+
+export interface ImageUploadSectionProps extends ImageUploadProps {}
+
+export interface BusinessService {
+  name: string;
+  description: string;
+  price: number;
+}
+
+export interface BusinessProfileFormData {
+  name: string;
+  description: string;
+  category: ServiceCategory;
+  address: string;
+  services: BusinessService[];
+  image?: File;
+}
