@@ -1,6 +1,22 @@
+/**
+ * UserBusinessProfiles Component
+ * 
+ * Displays a list of business profiles associated with the current user.
+ * Each profile is displayed in a card format with a background image and key information.
+ * Cards are clickable to navigate to the detailed business view.
+ * 
+ * @component
+ * @param {Object} props - Component props
+ * @param {BusinessProfile[]} props.profiles - Array of business profiles to display
+ * 
+ * @example
+ * ```tsx
+ * <UserBusinessProfiles profiles={businessProfiles} />
+ * ```
+ */
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, MapPin } from 'lucide-react';
+import { Card } from "@/components/ui/card";
+import { Building2, MapPin, Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface BusinessProfile {
@@ -10,6 +26,7 @@ interface BusinessProfile {
   category: string;
   address: string | null;
   image_url: string | null;
+  ratings?: number | null;
 }
 
 interface UserBusinessProfilesProps {
@@ -26,35 +43,59 @@ export const UserBusinessProfiles = ({ profiles }: UserBusinessProfilesProps) =>
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-semibold text-primary">Your Business Profiles</h2>
-      <div className="grid gap-4">
+      <div className="grid gap-6 md:grid-cols-2">
         {profiles.map((profile) => (
           <Card 
             key={profile.id}
-            className="cursor-pointer hover:bg-accent/5 transition-colors"
+            className="relative overflow-hidden cursor-pointer group h-[300px]"
             onClick={() => navigate(`/business/${profile.id}`)}
           >
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Building2 className="w-5 h-5" />
-                {profile.name}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {profile.description && (
-                <p className="text-sm text-muted-foreground">{profile.description}</p>
-              )}
-              {profile.address && (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <MapPin className="w-4 h-4" />
-                  {profile.address}
-                </div>
-              )}
-              <div className="text-sm">
-                <span className="inline-block px-2 py-1 rounded-full bg-primary/10 text-primary">
-                  {profile.category}
+            {/* Background Image with Overlay */}
+            <div className="absolute inset-0">
+              <img 
+                src={profile.image_url || '/placeholder.svg'} 
+                alt={profile.name}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-black/30" />
+            </div>
+
+            {/* Content */}
+            <div className="relative h-full p-6 flex flex-col justify-between text-white">
+              {/* Top Section - Ratings */}
+              <div className="flex justify-end items-center gap-2">
+                <span className="text-2xl font-bold">
+                  {profile.ratings?.toFixed(1) || "5.0"}
                 </span>
+                <Star className="w-6 h-6 fill-yellow-400 text-yellow-400" />
               </div>
-            </CardContent>
+
+              {/* Bottom Section - Business Info */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-sm opacity-90">
+                  <Building2 className="w-4 h-4" />
+                  <span className="capitalize">{profile.category}</span>
+                </div>
+                
+                <h3 className="text-2xl font-bold">{profile.name}</h3>
+                
+                {profile.address && (
+                  <div className="flex items-center gap-2 text-sm opacity-90">
+                    <MapPin className="w-4 h-4" />
+                    {profile.address}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Hover Effect */}
+            <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="absolute bottom-4 right-4">
+                <button className="bg-accent text-white px-6 py-2 rounded-full font-semibold hover:bg-accent/90 transition-colors">
+                  View Details
+                </button>
+              </div>
+            </div>
           </Card>
         ))}
       </div>
