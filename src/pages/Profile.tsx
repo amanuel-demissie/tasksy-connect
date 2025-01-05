@@ -1,41 +1,45 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Mail, Phone, Calendar, LogOut } from "lucide-react";
+import { Mail, Calendar, LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { useAuth } from "@/components/auth/AuthProvider";
 
-/**
- * Profile page component
- * 
- * Features:
- * 1. Displays user profile information
- * 2. Shows avatar and basic user details
- * 3. Provides sign out functionality
- * 4. Responsive layout with card-based design
- */
+interface Profile {
+  email: string;
+  created_at: string;
+}
+
 const Profile = () => {
   const navigate = useNavigate();
+  const { session } = useAuth();
+  const [profile, setProfile] = useState<Profile | null>(null);
   
-  /**
-   * Mock user data - TODO: Replace with actual user data from backend
-   */
-  const userInfo = {
-    name: "John Doe",
-    email: "john@example.com",
-    phone: "+1 234 567 8900",
-    age: "28",
-    memberSince: "2023",
-  };
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!session?.user) return;
+      
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('email, created_at')
+        .eq('id', session.user.id)
+        .single();
+      
+      if (error) {
+        console.error("Error fetching profile:", error);
+        toast.error("Failed to load profile");
+        return;
+      }
+      
+      setProfile(data);
+    };
 
-  /**
-   * Handles user sign out
-   * 1. Signs out from Supabase
-   * 2. Redirects to auth page
-   * 3. Shows success/error toast
-   */
+    fetchProfile();
+  }, [session]);
+
   const handleSignOut = async () => {
     try {
       await supabase.auth.signOut();
@@ -46,45 +50,50 @@ const Profile = () => {
     }
   };
 
+  if (!profile) {
+    return (
+      <div className="min-h-screen bg-secondary flex items-center justify-center">
+        <div className="text-primary">Loading profile...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-secondary pb-20">
       <div className="container max-w-4xl mx-auto px-4 py-8 space-y-8">
         {/* Profile header with avatar */}
         <div className="flex flex-col items-center space-y-4">
           <Avatar className="w-24 h-24">
-            <AvatarImage src="https://github.com/shadcn.png" />
-            <AvatarFallback>JD</AvatarFallback>
+            <AvatarImage src={session?.user?.user_metadata?.avatar_url} />
+            <AvatarFallback>
+              {session?.user?.email?.[0]?.toUpperCase() || 'U'}
+            </AvatarFallback>
           </Avatar>
           <h1 className="text-2xl font-semibold text-primary">
-            {userInfo.name}
+            Profile
           </h1>
         </div>
 
         {/* Profile information card */}
-        <Card className="bg-[#1A1F2C] backdrop-blur-sm">
+        <Card className="bg-background/80 backdrop-blur-sm">
           <CardContent className="p-6 space-y-4">
             {/* Email information */}
             <div className="flex items-center space-x-4">
-              <Mail className="w-5 h-5 text-neutral-500" />
+              <Mail className="w-5 h-5 text-muted-foreground" />
               <div>
-                <p className="text-sm text-neutral-500">Email</p>
-                <p className="text-neutral-800">{userInfo.email}</p>
+                <p className="text-sm text-muted-foreground">Email</p>
+                <p className="text-foreground">{profile.email}</p>
               </div>
             </div>
-            {/* Phone information */}
+            
+            {/* Member since information */}
             <div className="flex items-center space-x-4">
-              <Phone className="w-5 h-5 text-neutral-500" />
+              <Calendar className="w-5 h-5 text-muted-foreground" />
               <div>
-                <p className="text-sm text-neutral-500">Phone</p>
-                <p className="text-neutral-800">{userInfo.phone}</p>
-              </div>
-            </div>
-            {/* Membership information */}
-            <div className="flex items-center space-x-4">
-              <Calendar className="w-5 h-5 text-neutral-500" />
-              <div>
-                <p className="text-sm text-neutral-500">Member Since</p>
-                <p className="text-neutral-800">{userInfo.memberSince}</p>
+                <p className="text-sm text-muted-foreground">Member Since</p>
+                <p className="text-foreground">
+                  {new Date(profile.created_at).toLocaleDateString()}
+                </p>
               </div>
             </div>
           </CardContent>
