@@ -14,7 +14,7 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <div className="min-h-screen bg-background">
-            <main className="pb-24">
+            <main className="pb-16">
               <AppRoutes />
             </main>
             <Navigation />
