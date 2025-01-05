@@ -8,6 +8,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { UserBusinessProfiles } from "@/components/profile/UserBusinessProfiles";
+import { UserFreelancerProfiles } from "@/components/profile/UserFreelancerProfiles";
 
 interface Profile {
   email: string | null;
@@ -24,29 +26,52 @@ const Profile = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [isEditingPhone, setIsEditingPhone] = useState(false);
+  const [businessProfiles, setBusinessProfiles] = useState([]);
+  const [freelancerProfiles, setFreelancerProfiles] = useState([]);
   
   useEffect(() => {
-    const fetchProfile = async () => {
+    const fetchData = async () => {
       if (!session?.user) return;
       
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('email, created_at, username, phone_number')
-        .eq('id', session.user.id)
-        .single();
-      
-      if (error) {
-        console.error("Error fetching profile:", error);
-        toast.error("Failed to load profile");
-        return;
+      try {
+        // Fetch user profile
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('email, created_at, username, phone_number')
+          .eq('id', session.user.id)
+          .single();
+        
+        if (profileError) throw profileError;
+        
+        setProfile(profileData);
+        setUsername(profileData.username || "");
+        setPhoneNumber(profileData.phone_number || "");
+
+        // Fetch business profiles
+        const { data: businessData, error: businessError } = await supabase
+          .from('business_profiles')
+          .select('*')
+          .eq('owner_id', session.user.id);
+        
+        if (businessError) throw businessError;
+        setBusinessProfiles(businessData);
+
+        // Fetch freelancer profiles
+        const { data: freelancerData, error: freelancerError } = await supabase
+          .from('freelancer_profiles')
+          .select('*')
+          .eq('owner_id', session.user.id);
+        
+        if (freelancerError) throw freelancerError;
+        setFreelancerProfiles(freelancerData);
+
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        toast.error("Failed to load profile data");
       }
-      
-      setProfile(data);
-      setUsername(data.username || "");
-      setPhoneNumber(data.phone_number || "");
     };
 
-    fetchProfile();
+    fetchData();
   }, [session]);
 
   const handleUpdateUsername = async () => {
@@ -226,6 +251,11 @@ const Profile = () => {
             </div>
           </CardContent>
         </Card>
+
+        <div className="space-y-8">
+          <UserBusinessProfiles profiles={businessProfiles} />
+          <UserFreelancerProfiles profiles={freelancerProfiles} />
+        </div>
 
         <Button
           variant="default"

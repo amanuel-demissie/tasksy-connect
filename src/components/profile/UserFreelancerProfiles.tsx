@@ -1,0 +1,64 @@
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { User, DollarSign } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+
+interface FreelancerProfile {
+  id: string;
+  full_name: string;
+  title: string;
+  bio: string | null;
+  category: string;
+  hourly_rate: number | null;
+}
+
+interface UserFreelancerProfilesProps {
+  profiles: FreelancerProfile[];
+}
+
+export const UserFreelancerProfiles = ({ profiles }: UserFreelancerProfilesProps) => {
+  const navigate = useNavigate();
+
+  if (profiles.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="space-y-4">
+      <h2 className="text-xl font-semibold text-primary">Your Freelancer Profiles</h2>
+      <div className="grid gap-4">
+        {profiles.map((profile) => (
+          <Card 
+            key={profile.id}
+            className="cursor-pointer hover:bg-accent/5 transition-colors"
+            onClick={() => navigate(`/freelancer/${profile.id}`)}
+          >
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <User className="w-5 h-5" />
+                {profile.full_name}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <p className="font-medium">{profile.title}</p>
+              {profile.bio && (
+                <p className="text-sm text-muted-foreground">{profile.bio}</p>
+              )}
+              <div className="flex justify-between items-center">
+                <span className="inline-block px-2 py-1 rounded-full bg-primary/10 text-primary text-sm">
+                  {profile.category}
+                </span>
+                {profile.hourly_rate && (
+                  <div className="flex items-center gap-1 text-sm">
+                    <DollarSign className="w-4 h-4" />
+                    {profile.hourly_rate}/hr
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+};
