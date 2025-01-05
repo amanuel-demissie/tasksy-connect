@@ -37,7 +37,10 @@ export const UserBusinessProfiles = ({ profiles }: UserBusinessProfilesProps) =>
   }
 
   const getImageUrl = (url: string | null) => {
-    if (!url) return '/placeholder.svg';
+    // Default placeholder image from Unsplash
+    const defaultImage = 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d';
+    
+    if (!url) return defaultImage;
     
     // Handle relative URLs
     if (url.startsWith('/')) return url;
@@ -48,19 +51,18 @@ export const UserBusinessProfiles = ({ profiles }: UserBusinessProfilesProps) =>
         const { data } = supabase.storage
           .from('avatars')
           .getPublicUrl(url);
-        return data.publicUrl;
+        return data.publicUrl || defaultImage;
       } catch {
-        return '/placeholder.svg';
+        return defaultImage;
       }
     }
     
     // Handle full URLs
     try {
       const urlObj = new URL(url);
-      // Remove any trailing colons that might cause issues
-      return urlObj.toString().replace(/:+$/, '');
+      return urlObj.toString().split(':').join(''); // Remove all colons from URL
     } catch {
-      return '/placeholder.svg';
+      return defaultImage;
     }
   };
 
@@ -82,7 +84,7 @@ export const UserBusinessProfiles = ({ profiles }: UserBusinessProfilesProps) =>
                 className="w-full h-full object-cover"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
-                  target.src = '/placeholder.svg';
+                  target.src = 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d';
                 }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-black/30" />
