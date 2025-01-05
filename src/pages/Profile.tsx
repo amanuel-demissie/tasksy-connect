@@ -3,16 +3,17 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Mail, Calendar, LogOut, User } from "lucide-react";
+import { Mail, Calendar, LogOut, User, Phone } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "@/components/auth/AuthProvider";
 
 interface Profile {
-  email: string;
+  email: string | null;
   created_at: string;
   username: string | null;
+  phone_number: string | null;
 }
 
 const Profile = () => {
@@ -20,7 +21,9 @@ const Profile = () => {
   const { session } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [username, setUsername] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [isEditing, setIsEditing] = useState(false);
+  const [isEditingPhone, setIsEditingPhone] = useState(false);
   
   useEffect(() => {
     const fetchProfile = async () => {
@@ -28,7 +31,7 @@ const Profile = () => {
       
       const { data, error } = await supabase
         .from('profiles')
-        .select('email, created_at, username')
+        .select('email, created_at, username, phone_number')
         .eq('id', session.user.id)
         .single();
       
@@ -40,6 +43,7 @@ const Profile = () => {
       
       setProfile(data);
       setUsername(data.username || "");
+      setPhoneNumber(data.phone_number || "");
     };
 
     fetchProfile();
@@ -61,9 +65,29 @@ const Profile = () => {
     setIsEditing(false);
     toast.success("Username updated successfully");
     
-    // Update local profile state
     if (profile) {
       setProfile({ ...profile, username });
+    }
+  };
+
+  const handleUpdatePhoneNumber = async () => {
+    if (!session?.user) return;
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({ phone_number: phoneNumber })
+      .eq('id', session.user.id);
+
+    if (error) {
+      toast.error("Failed to update phone number");
+      return;
+    }
+
+    setIsEditingPhone(false);
+    toast.success("Phone number updated successfully");
+    
+    if (profile) {
+      setProfile({ ...profile, phone_number: phoneNumber });
     }
   };
 
@@ -88,7 +112,6 @@ const Profile = () => {
   return (
     <div className="min-h-screen bg-secondary pb-20">
       <div className="container max-w-4xl mx-auto px-4 py-8 space-y-8">
-        {/* Profile header with avatar */}
         <div className="flex flex-col items-center space-y-4">
           <Avatar className="w-24 h-24">
             <AvatarImage src={session?.user?.user_metadata?.avatar_url} />
@@ -101,44 +124,40 @@ const Profile = () => {
           </h1>
         </div>
 
-        {/* Profile information card */}
-        <Card className="bg-neutral-900">
+        <Card className="bg-card">
           <CardContent className="p-6 space-y-6">
-            {/* Username section */}
             <div className="flex items-center space-x-4">
-              <User className="w-5 h-5 text-neutral-400" />
+              <User className="w-5 h-5 text-muted-foreground" />
               <div className="flex-grow">
-                <p className="text-sm font-medium text-neutral-400">Username</p>
+                <p className="text-sm font-medium text-muted-foreground">Username</p>
                 {isEditing ? (
                   <div className="flex gap-2 mt-1">
                     <Input
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
-                      className="bg-neutral-800 text-neutral-100"
+                      className="bg-background text-foreground"
                       placeholder="Enter username"
                     />
                     <Button 
-                      onClick={handleUpdateUsername} 
-                      className="bg-accent text-white hover:bg-accent/90"
+                      onClick={handleUpdateUsername}
+                      className="bg-accent hover:bg-accent/90"
                     >
                       Save
                     </Button>
                     <Button 
                       onClick={() => setIsEditing(false)}
                       variant="outline"
-                      className="text-neutral-100"
                     >
                       Cancel
                     </Button>
                   </div>
                 ) : (
                   <div className="flex justify-between items-center">
-                    <p className="text-neutral-100">{profile.username || 'No username set'}</p>
+                    <p className="text-foreground">{profile.username || 'No username set'}</p>
                     <Button 
                       onClick={() => setIsEditing(true)} 
                       variant="ghost" 
                       size="sm"
-                      className="text-neutral-100 hover:text-neutral-200"
                     >
                       Edit
                     </Button>
@@ -147,21 +166,60 @@ const Profile = () => {
               </div>
             </div>
 
-            {/* Email information */}
             <div className="flex items-center space-x-4">
-              <Mail className="w-5 h-5 text-neutral-400" />
+              <Mail className="w-5 h-5 text-muted-foreground" />
               <div>
-                <p className="text-sm font-medium text-neutral-400">Email</p>
-                <p className="text-neutral-100">{profile.email}</p>
+                <p className="text-sm font-medium text-muted-foreground">Email</p>
+                <p className="text-foreground">{profile.email || 'No email set'}</p>
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-4">
+              <Phone className="w-5 h-5 text-muted-foreground" />
+              <div className="flex-grow">
+                <p className="text-sm font-medium text-muted-foreground">Phone Number</p>
+                {isEditingPhone ? (
+                  <div className="flex gap-2 mt-1">
+                    <Input
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value)}
+                      className="bg-background text-foreground"
+                      placeholder="Enter phone number"
+                      type="tel"
+                    />
+                    <Button 
+                      onClick={handleUpdatePhoneNumber}
+                      className="bg-accent hover:bg-accent/90"
+                    >
+                      Save
+                    </Button>
+                    <Button 
+                      onClick={() => setIsEditingPhone(false)}
+                      variant="outline"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex justify-between items-center">
+                    <p className="text-foreground">{profile.phone_number || 'No phone number set'}</p>
+                    <Button 
+                      onClick={() => setIsEditingPhone(true)} 
+                      variant="ghost" 
+                      size="sm"
+                    >
+                      Edit
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
             
-            {/* Member since information */}
             <div className="flex items-center space-x-4">
-              <Calendar className="w-5 h-5 text-neutral-400" />
+              <Calendar className="w-5 h-5 text-muted-foreground" />
               <div>
-                <p className="text-sm font-medium text-neutral-400">Member Since</p>
-                <p className="text-neutral-100">
+                <p className="text-sm font-medium text-muted-foreground">Member Since</p>
+                <p className="text-foreground">
                   {new Date(profile.created_at).toLocaleDateString()}
                 </p>
               </div>
@@ -169,10 +227,9 @@ const Profile = () => {
           </CardContent>
         </Card>
 
-        {/* Sign out button */}
         <Button
           variant="default"
-          className="w-full bg-accent text-white hover:bg-accent/90"
+          className="w-full bg-accent hover:bg-accent/90"
           onClick={handleSignOut}
         >
           <LogOut className="w-4 h-4 mr-2" />
