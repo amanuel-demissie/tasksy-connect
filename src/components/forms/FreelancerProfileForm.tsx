@@ -13,9 +13,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { Database } from "@/integrations/supabase/types";
-
-type ServiceCategory = Database["public"]["Enums"]["service_category"];
+import { ServiceCategory } from "@/types/profile";
+import ImageUpload from "@/components/shared/ImageUpload";
+import SkillsList from "@/components/freelancer/SkillsList";
 
 interface FreelancerProfileFormData {
   fullName: string;
@@ -115,11 +115,9 @@ export default function FreelancerProfileForm({ onSuccess }: { onSuccess: () => 
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <div className="space-y-2">
         <Label htmlFor="image">Profile Image</Label>
-        <Input
-          id="image"
-          type="file"
-          accept="image/*"
-          onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+        <ImageUpload
+          imageFile={imageFile}
+          setImageFile={setImageFile}
         />
       </div>
 
@@ -176,28 +174,12 @@ export default function FreelancerProfileForm({ onSuccess }: { onSuccess: () => 
 
       <div className="space-y-4">
         <Label>Skills</Label>
-        <div className="flex flex-wrap gap-2">
-          {skills.map((skill, index) => (
-            <div key={index} className="bg-secondary px-3 py-1 rounded-full">
-              {skill}
-            </div>
-          ))}
-        </div>
-
-        <div className="flex gap-2">
-          <Input
-            placeholder="Add a skill"
-            value={newSkill}
-            onChange={(e) => setNewSkill(e.target.value)}
-          />
-          <Button 
-            type="button" 
-            onClick={addSkill}
-            className="bg-accent text-white hover:bg-accent/90"
-          >
-            Add
-          </Button>
-        </div>
+        <SkillsList
+          skills={skills}
+          newSkill={newSkill}
+          setNewSkill={setNewSkill}
+          addSkill={addSkill}
+        />
       </div>
 
       <Button 
