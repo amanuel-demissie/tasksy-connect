@@ -15,9 +15,15 @@ import {
 import CreateProfileDialog from "@/components/forms/CreateProfileDialog";
 
 const Index = () => {
+  // State to control the profile creation dialog visibility
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  // State to track which type of profile is being created (business/freelancer)
   const [profileType, setProfileType] = useState<"business" | "freelancer" | null>(null);
 
+  /**
+   * Scrolls the page to a specific category section
+   * @param categoryId - The ID of the category section to scroll to
+   */
   const scrollToSection = (categoryId: string) => {
     const element = document.getElementById(categoryId);
     if (element) {
@@ -25,6 +31,14 @@ const Index = () => {
     }
   };
 
+  /**
+   * Initiates the profile creation process
+   * @param type - The type of profile to create ("business" or "freelancer")
+   * This function:
+   * 1. Sets the profile type in state
+   * 2. Opens the creation dialog
+   * The actual profile creation happens in the respective form components
+   */
   const handleCreateProfile = (type: "business" | "freelancer") => {
     setProfileType(type);
     setIsDialogOpen(true);
@@ -43,6 +57,7 @@ const Index = () => {
             </p>
           </div>
 
+          {/* Profile creation dropdown trigger */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="icon">
@@ -66,6 +81,7 @@ const Index = () => {
         <UpcomingAppointments />
         <RecommendedServices />
 
+        {/* Profile creation dialog */}
         <CreateProfileDialog
           isOpen={isDialogOpen}
           onClose={() => {
