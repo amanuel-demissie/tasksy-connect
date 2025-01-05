@@ -20,6 +20,12 @@ export default function ServicesList({
   setNewService,
   addService
 }: ServicesListProps) {
+  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Remove any non-numeric characters except decimal point
+    const value = e.target.value.replace(/[^\d.]/g, '');
+    setNewService({ ...newService, price: parseFloat(value) || 0 });
+  };
+
   return (
     <div className="space-y-4">
       {services.map((service, index) => (
@@ -42,10 +48,9 @@ export default function ServicesList({
           onChange={(e) => setNewService({ ...newService, description: e.target.value })}
         />
         <Input
-          type="number"
-          placeholder="Price"
-          value={newService.price}
-          onChange={(e) => setNewService({ ...newService, price: Number(e.target.value) })}
+          placeholder="Enter price (e.g. $50.00)"
+          value={newService.price || ''}
+          onChange={handlePriceChange}
         />
         <Button 
           type="button" 
