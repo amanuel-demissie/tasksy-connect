@@ -8,16 +8,12 @@
  * @component
  * @param {Object} props - Component props
  * @param {BusinessProfile[]} props.profiles - Array of business profiles to display
- * 
- * @example
- * ```tsx
- * <UserBusinessProfiles profiles={businessProfiles} />
- * ```
  */
 import React from 'react';
 import { Card } from "@/components/ui/card";
 import { Building2, MapPin, Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from "@/integrations/supabase/client";
 
 interface BusinessProfile {
   id: string;
@@ -42,12 +38,27 @@ export const UserBusinessProfiles = ({ profiles }: UserBusinessProfilesProps) =>
 
   const getImageUrl = (url: string | null) => {
     if (!url) return '/placeholder.svg';
+    
     // Handle relative URLs
     if (url.startsWith('/')) return url;
+    
+    // Handle Supabase storage URLs
+    if (url.startsWith('avatars/')) {
+      try {
+        const { data } = supabase.storage
+          .from('avatars')
+          .getPublicUrl(url);
+        return data.publicUrl;
+      } catch {
+        return '/placeholder.svg';
+      }
+    }
+    
     // Handle full URLs
     try {
-      new URL(url);
-      return url;
+      const urlObj = new URL(url);
+      // Remove any trailing colons that might cause issues
+      return urlObj.toString().replace(/:+$/, '');
     } catch {
       return '/placeholder.svg';
     }
