@@ -11,26 +11,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  const createProfileIfNeeded = async (userId: string) => {
-    try {
-      const { data: existingProfile } = await supabase
-        .from('profiles')
-        .select()
-        .eq('id', userId)
-        .single();
-
-      if (!existingProfile) {
-        const { error: insertError } = await supabase
-          .from('profiles')
-          .insert({ id: userId });
-
-        if (insertError) throw insertError;
-      }
-    } catch (error) {
-      console.error('Error ensuring profile exists:', error);
-    }
-  };
-
   useEffect(() => {
     const initializeAuth = async () => {
       try {
@@ -45,9 +25,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setSession(null);
           await supabase.auth.signOut();
         } else {
-          if (currentSession?.user) {
-            await createProfileIfNeeded(currentSession.user.id);
-          }
           setSession(currentSession);
         }
       } catch (err) {
@@ -66,9 +43,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       console.log("Auth state changed:", _event);
       if (_event === 'TOKEN_REFRESHED') {
         console.log('Token refreshed successfully');
-      }
-      if (_event === 'SIGNED_IN' && newSession?.user) {
-        await createProfileIfNeeded(newSession.user.id);
       }
       setSession(newSession);
       setLoading(false);
