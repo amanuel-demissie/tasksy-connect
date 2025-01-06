@@ -106,12 +106,13 @@ export default function BusinessProfileForm({ onSuccess }: { onSuccess: () => vo
       let imageUrl = null;
       if (imageFile) {
         console.log("Uploading image...");
+        const fileName = `business-profiles/${Date.now()}-${imageFile.name}`;
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from("avatars")
-          .upload(`business-profiles/${Date.now()}-${imageFile.name}`, imageFile);
+          .upload(fileName, imageFile);
 
         if (uploadError) throw uploadError;
-        imageUrl = uploadData.path;
+        imageUrl = fileName; // Store only the path relative to the bucket
         console.log("Image uploaded successfully:", imageUrl);
       }
 

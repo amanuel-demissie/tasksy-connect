@@ -10,22 +10,25 @@ export const getImageUrl = (url: string | null) => {
     return url;
   }
   
-  // Handle Supabase storage URLs - now checking for both full and relative paths
-  if (url.includes('avatars/') || url.startsWith('avatars/')) {
+  // Handle Supabase storage URLs
+  if (url.includes('avatars/')) {
     try {
-      // Extract the path if it's a full URL
+      // Get the full path after 'avatars/'
       const path = url.includes('avatars/') 
         ? url.substring(url.indexOf('avatars/')) 
         : url;
-        
+      
+      console.log('Attempting to get public URL for path:', path);
+      
       const { data } = supabase.storage
         .from('avatars')
         .getPublicUrl(path);
-        
+      
       if (data?.publicUrl) {
         console.log('Successfully generated public URL:', data.publicUrl);
         return data.publicUrl;
       }
+      
       console.error('Failed to get public URL for:', path);
       return DEFAULT_IMAGE;
     } catch (error) {
