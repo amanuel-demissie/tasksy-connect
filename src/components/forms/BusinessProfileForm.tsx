@@ -106,14 +106,29 @@ export default function BusinessProfileForm({ onSuccess }: { onSuccess: () => vo
       let imageUrl = null;
       if (imageFile) {
         console.log("Uploading image...");
-        const fileName = `business-profiles/${Date.now()}-${imageFile.name}`;
+        // Create a unique file path including business name for better organization
+        const sanitizedName = data.name.toLowerCase().replace(/[^a-z0-9]/g, '-');
+        const fileName = `business-profiles/${sanitizedName}-${Date.now()}.${imageFile.name.split('.').pop()}`;
+        
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from("avatars")
-          .upload(fileName, imageFile);
+          .upload(fileName, imageFile, {
+            cacheControl: '3600',
+            upsert: false
+          });
 
-        if (uploadError) throw uploadError;
-        imageUrl = fileName; // Store only the path relative to the bucket
-        console.log("Image uploaded successfully:", imageUrl);
+        if (uploadError) {
+          console.error("Upload error:", uploadError);
+          throw uploadError;
+        }
+
+        // Get the public URL for the uploaded image
+        const { data: urlData } = supabase.storage
+          .from("avatars")
+          .getPublicUrl(fileName);
+
+        imageUrl = urlData.publicUrl;
+        console.log("Image uploaded successfully, public URL:", imageUrl);
       }
 
       console.log("Creating business profile with data:", {

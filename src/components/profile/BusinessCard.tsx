@@ -1,7 +1,6 @@
 import React from 'react';
 import { Card } from "@/components/ui/card";
 import { Building2, MapPin, Star } from 'lucide-react';
-import { getImageUrl } from "@/utils/imageUtils";
 
 interface BusinessProfile {
   id: string;
@@ -27,10 +26,11 @@ export const BusinessCard = ({ profile, onClick }: BusinessCardProps) => {
       {/* Background Image with Overlay */}
       <div className="absolute inset-0">
         <img 
-          src={getImageUrl(profile.image_url)} 
+          src={profile.image_url || 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d'} 
           alt={profile.name}
           className="w-full h-full object-cover"
           onError={(e) => {
+            console.error('Image load error:', e);
             const target = e.target as HTMLImageElement;
             target.src = 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d';
           }}
