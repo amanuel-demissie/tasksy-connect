@@ -14,9 +14,10 @@ interface BusinessProfile {
 
 interface UserBusinessProfilesProps {
   profiles: BusinessProfile[];
+  onProfileDeleted?: () => void;
 }
 
-export const UserBusinessProfiles = ({ profiles }: UserBusinessProfilesProps) => {
+export const UserBusinessProfiles = ({ profiles, onProfileDeleted }: UserBusinessProfilesProps) => {
   const navigate = useNavigate();
 
   if (profiles.length === 0) {
@@ -32,6 +33,7 @@ export const UserBusinessProfiles = ({ profiles }: UserBusinessProfilesProps) =>
             key={profile.id}
             profile={profile}
             onClick={() => navigate(`/business/${profile.id}`)}
+            onDelete={onProfileDeleted}
           />
         ))}
       </div>

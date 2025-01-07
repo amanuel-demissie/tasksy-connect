@@ -1,6 +1,20 @@
 import React from 'react';
 import { Card } from "@/components/ui/card";
-import { Building2, MapPin, Star } from 'lucide-react';
+import { Building2, MapPin, Star, Trash2 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface BusinessProfile {
   id: string;
@@ -15,13 +29,40 @@ interface BusinessProfile {
 interface BusinessCardProps {
   profile: BusinessProfile;
   onClick: () => void;
+  onDelete?: () => void;
 }
 
-export const BusinessCard = ({ profile, onClick }: BusinessCardProps) => {
+export const BusinessCard = ({ profile, onClick, onDelete }: BusinessCardProps) => {
+  const { toast } = useToast();
+
+  const handleDelete = async () => {
+    try {
+      const { error } = await supabase
+        .from('business_profiles')
+        .delete()
+        .eq('id', profile.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Business profile deleted successfully",
+      });
+
+      if (onDelete) onDelete();
+    } catch (error) {
+      console.error('Error deleting business profile:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to delete business profile",
+      });
+    }
+  };
+
   return (
     <Card 
       className="relative overflow-hidden cursor-pointer group h-[300px]"
-      onClick={onClick}
     >
       {/* Background Image with Overlay */}
       <div className="absolute inset-0">
@@ -41,15 +82,54 @@ export const BusinessCard = ({ profile, onClick }: BusinessCardProps) => {
       {/* Content */}
       <div className="relative h-full p-6 flex flex-col justify-between text-white">
         {/* Top Section - Ratings */}
-        <div className="flex justify-end items-center gap-2">
-          <span className="text-2xl font-bold">
-            {profile.ratings?.toFixed(1) || "5.0"}
-          </span>
-          <Star className="w-6 h-6 fill-yellow-400 text-yellow-400" />
+        <div className="flex justify-between items-center">
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-white hover:bg-red-500/20"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Trash2 className="w-5 h-5" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete your business profile
+                  and all associated services.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  className="bg-red-500 hover:bg-red-600"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDelete();
+                  }}
+                >
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+          
+          <div className="flex items-center gap-2">
+            <span className="text-2xl font-bold">
+              {profile.ratings?.toFixed(1) || "5.0"}
+            </span>
+            <Star className="w-6 h-6 fill-yellow-400 text-yellow-400" />
+          </div>
         </div>
 
         {/* Bottom Section - Business Info */}
-        <div className="space-y-2">
+        <div 
+          className="space-y-2"
+          onClick={onClick}
+        >
           <div className="flex items-center gap-2 text-sm opacity-90">
             <Building2 className="w-4 h-4" />
             <span className="capitalize">{profile.category}</span>
@@ -67,7 +147,10 @@ export const BusinessCard = ({ profile, onClick }: BusinessCardProps) => {
       </div>
 
       {/* Hover Effect */}
-      <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div 
+        className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity"
+        onClick={onClick}
+      >
         <div className="absolute bottom-4 right-4">
           <button className="bg-accent text-white px-6 py-2 rounded-full font-semibold hover:bg-accent/90 transition-colors">
             View Details
