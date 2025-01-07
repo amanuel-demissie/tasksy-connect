@@ -1,8 +1,15 @@
 import React from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import { Home, Search, Calendar, User, MessageSquare } from "lucide-react";
 
 const Navigation = () => {
+  const location = useLocation();
+  
+  // Hide navigation on auth page
+  if (location.pathname === '/auth') {
+    return null;
+  }
+
   const tabs = [
     { icon: Home, label: "Home", path: "/" },
     { icon: Search, label: "Explore", path: "/explore" },
