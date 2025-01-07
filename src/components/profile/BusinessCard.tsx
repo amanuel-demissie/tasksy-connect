@@ -47,7 +47,7 @@ export const BusinessCard = ({ profile, onClick, onDelete }: BusinessCardProps) 
 
       toast({
         title: "Success",
-        description: "Business profile deleted successfully",
+        description: `${profile.name} has been deleted successfully`,
       });
 
       if (onDelete) onDelete();
