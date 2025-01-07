@@ -101,7 +101,6 @@ export const BusinessCard = ({ profile, onClick, onDelete }: BusinessCardProps) 
             </AlertDialogTrigger>
             <AlertDialogContent 
               onClick={(e) => e.stopPropagation()}
-              onPointerDownOutside={(e) => e.preventDefault()}
             >
               <AlertDialogHeader>
                 <AlertDialogTitle>Are you sure?</AlertDialogTitle>
