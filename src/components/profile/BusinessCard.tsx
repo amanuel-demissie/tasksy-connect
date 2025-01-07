@@ -35,7 +35,8 @@ interface BusinessCardProps {
 export const BusinessCard = ({ profile, onClick, onDelete }: BusinessCardProps) => {
   const { toast } = useToast();
 
-  const handleDelete = async () => {
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.stopPropagation(); // Stop event propagation
     try {
       const { error } = await supabase
         .from('business_profiles')
@@ -63,6 +64,7 @@ export const BusinessCard = ({ profile, onClick, onDelete }: BusinessCardProps) 
   return (
     <Card 
       className="relative overflow-hidden cursor-pointer group h-[300px]"
+      onClick={onClick}
     >
       {/* Background Image with Overlay */}
       <div className="absolute inset-0">
@@ -89,12 +91,12 @@ export const BusinessCard = ({ profile, onClick, onDelete }: BusinessCardProps) 
                 variant="ghost"
                 size="icon"
                 className="text-white hover:bg-red-500/20"
-                onClick={(e) => e.stopPropagation()}
+                onClick={(e) => e.stopPropagation()} // Stop event propagation on button click
               >
                 <Trash2 className="w-5 h-5" />
               </Button>
             </AlertDialogTrigger>
-            <AlertDialogContent>
+            <AlertDialogContent onClick={(e) => e.stopPropagation()}> {/* Stop event propagation on dialog content */}
               <AlertDialogHeader>
                 <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                 <AlertDialogDescription>
@@ -103,13 +105,10 @@ export const BusinessCard = ({ profile, onClick, onDelete }: BusinessCardProps) 
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogCancel onClick={(e) => e.stopPropagation()}>Cancel</AlertDialogCancel>
                 <AlertDialogAction
                   className="bg-red-500 hover:bg-red-600"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDelete();
-                  }}
+                  onClick={handleDelete}
                 >
                   Delete
                 </AlertDialogAction>
@@ -126,10 +125,7 @@ export const BusinessCard = ({ profile, onClick, onDelete }: BusinessCardProps) 
         </div>
 
         {/* Bottom Section - Business Info */}
-        <div 
-          className="space-y-2"
-          onClick={onClick}
-        >
+        <div className="space-y-2">
           <div className="flex items-center gap-2 text-sm opacity-90">
             <Building2 className="w-4 h-4" />
             <span className="capitalize">{profile.category}</span>
@@ -149,7 +145,6 @@ export const BusinessCard = ({ profile, onClick, onDelete }: BusinessCardProps) 
       {/* Hover Effect */}
       <div 
         className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity"
-        onClick={onClick}
       >
         <div className="absolute bottom-4 right-4">
           <button className="bg-accent text-white px-6 py-2 rounded-full font-semibold hover:bg-accent/90 transition-colors">
