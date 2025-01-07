@@ -37,13 +37,21 @@ export const BusinessCard = ({ profile, onClick, onDelete }: BusinessCardProps) 
 
   const handleDelete = async (e: React.MouseEvent) => {
     e.stopPropagation(); // Stop event propagation
+    
+    console.log('Attempting to delete business profile:', profile.id);
+    
     try {
       const { error } = await supabase
         .from('business_profiles')
         .delete()
         .eq('id', profile.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase delete error:', error);
+        throw error;
+      }
+
+      console.log('Business profile deleted successfully');
 
       toast({
         title: "Success",
@@ -56,7 +64,7 @@ export const BusinessCard = ({ profile, onClick, onDelete }: BusinessCardProps) 
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to delete business profile",
+        description: "Failed to delete business profile. Please try again.",
       });
     }
   };
