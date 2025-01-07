@@ -27,64 +27,70 @@ export const useAuth = () => useContext(AuthContext);
  * @param children - Child components that will have access to auth context
  */
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  // Track the current authentication session
   const [session, setSession] = useState<Session | null>(null);
-  // Loading state for initial auth check
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
-    /**
-     * Initialize authentication state and set up session
-     * Handles error cases and updates session state
-     */
+    // Initialize auth state and set up session
     const initializeAuth = async () => {
       try {
+        // Get the current session
         const { data: { session: currentSession }, error } = await supabase.auth.getSession();
+        
         if (error) {
           console.error("Error getting session:", error.message);
+          // Clear session and show error toast
+          setSession(null);
           toast({
             variant: "destructive",
             title: "Authentication Error",
             description: "There was a problem with your session. Please sign in again.",
           });
-          setSession(null);
+          
+          // Attempt to sign out to clean up any invalid session data
           await supabase.auth.signOut();
         } else {
           setSession(currentSession);
         }
       } catch (err) {
-        console.error("Unexpected error:", err);
+        console.error("Unexpected error during auth initialization:", err);
         setSession(null);
       } finally {
         setLoading(false);
       }
     };
 
+    // Call initialization
     initializeAuth();
 
-    /**
-     * Set up real-time subscription to auth state changes
-     * Updates session state when auth events occur (sign in, sign out, token refresh)
-     */
+    // Set up real-time subscription to auth state changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, newSession) => {
-      console.log("Auth state changed:", _event);
-      if (_event === 'TOKEN_REFRESHED') {
+    } = supabase.auth.onAuthStateChange(async (event, newSession) => {
+      console.log("Auth state changed:", event);
+      
+      if (event === 'SIGNED_OUT') {
+        console.log('User signed out, clearing session');
+        setSession(null);
+      } else if (event === 'SIGNED_IN') {
+        console.log('User signed in, updating session');
+        setSession(newSession);
+      } else if (event === 'TOKEN_REFRESHED') {
         console.log('Token refreshed successfully');
+        setSession(newSession);
       }
-      setSession(newSession);
+      
       setLoading(false);
     });
 
-    // Cleanup subscription on component unmount
+    // Cleanup subscription on unmount
     return () => {
       subscription.unsubscribe();
     };
   }, [toast]);
 
-  // Show loading state while initializing auth
+  // Show loading state while initializing
   if (loading) {
     return (
       <div className="min-h-screen bg-secondary flex items-center justify-center">
