@@ -90,16 +90,17 @@ export const BusinessCard = ({ profile, onClick, onDelete }: BusinessCardProps) 
               <Button
                 variant="ghost"
                 size="lg"
-                className="text-white hover:bg-red-500/20 p-6 z-50"
+                className="relative text-white hover:bg-red-500/20 p-6 z-[100]"
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
                 }}
               >
-                <Trash2 className="w-6 h-6" />
+                <Trash2 className="w-8 h-8" />
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent 
+              className="z-[200]"
               onClick={(e) => e.stopPropagation()}
             >
               <AlertDialogHeader>
