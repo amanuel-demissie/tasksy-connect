@@ -3,27 +3,28 @@ import { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
-/**
- * Context for managing authentication state throughout the application
- * Provides the current session object to child components
- */
-const AuthContext = createContext<{ session: Session | null }>({ session: null });
+interface AuthContextType {
+  session: Session | null;
+}
+
+const AuthContext = createContext<AuthContextType>({
+  session: null,
+});
 
 /**
- * Custom hook to access the authentication context
- * @returns The current authentication session
+ * Custom hook to access auth context
+ * @returns AuthContextType
  */
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
+};
 
 /**
- * Authentication Provider component that manages user sessions
- * 
- * This component:
- * 1. Initializes and maintains the authentication state
- * 2. Handles session retrieval and management
- * 3. Provides real-time auth state updates through Supabase subscription
- * 4. Shows loading state while initializing
- * 
+ * AuthProvider component that manages authentication state
  * @param children - Child components that will have access to auth context
  */
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -94,7 +95,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   if (loading) {
     return (
       <div className="min-h-screen bg-secondary flex items-center justify-center">
-        <div className="text-white">Loading...</div>
+        <div className="text-primary">Loading...</div>
       </div>
     );
   }
