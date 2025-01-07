@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 interface AuthContextType {
   session: Session | null;
@@ -11,10 +12,6 @@ const AuthContext = createContext<AuthContextType>({
   session: null,
 });
 
-/**
- * Custom hook to access auth context
- * @returns AuthContextType
- */
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -23,36 +20,28 @@ export const useAuth = () => {
   return context;
 };
 
-/**
- * AuthProvider component that manages authentication state
- * @param children - Child components that will have access to auth context
- */
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    // Initialize auth state and set up session
     const initializeAuth = async () => {
       try {
-        // Get the current session
         const { data: { session: currentSession }, error } = await supabase.auth.getSession();
         
         if (error) {
           console.error("Error getting session:", error.message);
-          // Clear session and show error toast
-          setSession(null);
-          toast({
-            variant: "destructive",
-            title: "Authentication Error",
-            description: "There was a problem with your session. Please sign in again.",
-          });
-          
-          // Attempt to sign out to clean up any invalid session data
-          await supabase.auth.signOut();
-        } else {
+          await handleAuthError(error);
+          return;
+        }
+
+        if (currentSession?.refresh_token) {
           setSession(currentSession);
+        } else {
+          console.log("No refresh token found, clearing session");
+          setSession(null);
         }
       } catch (err) {
         console.error("Unexpected error during auth initialization:", err);
@@ -62,36 +51,76 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     };
 
-    // Call initialization
-    initializeAuth();
+    const handleAuthError = async (error: any) => {
+      setSession(null);
+      
+      // Handle specific error cases
+      if (error.message.includes('refresh_token_not_found')) {
+        toast({
+          variant: "destructive",
+          title: "Session Expired",
+          description: "Your session has expired. Please sign in again.",
+        });
+        await supabase.auth.signOut();
+        navigate('/auth');
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Authentication Error",
+          description: "There was a problem with your session. Please sign in again.",
+        });
+      }
+    };
 
-    // Set up real-time subscription to auth state changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, newSession) => {
       console.log("Auth state changed:", event);
       
-      if (event === 'SIGNED_OUT') {
-        console.log('User signed out, clearing session');
-        setSession(null);
-      } else if (event === 'SIGNED_IN') {
-        console.log('User signed in, updating session');
-        setSession(newSession);
-      } else if (event === 'TOKEN_REFRESHED') {
-        console.log('Token refreshed successfully');
-        setSession(newSession);
+      switch (event) {
+        case 'SIGNED_OUT':
+          console.log('User signed out, clearing session');
+          setSession(null);
+          navigate('/auth');
+          break;
+        
+        case 'SIGNED_IN':
+          console.log('User signed in, updating session');
+          if (newSession?.refresh_token) {
+            setSession(newSession);
+            navigate('/');
+          }
+          break;
+        
+        case 'TOKEN_REFRESHED':
+          console.log('Token refreshed successfully');
+          if (newSession?.refresh_token) {
+            setSession(newSession);
+          } else {
+            await handleAuthError({ message: 'refresh_token_not_found' });
+          }
+          break;
+        
+        case 'USER_UPDATED':
+          console.log('User updated, checking session');
+          if (newSession?.refresh_token) {
+            setSession(newSession);
+          }
+          break;
       }
       
       setLoading(false);
     });
 
-    // Cleanup subscription on unmount
+    // Initialize auth
+    initializeAuth();
+
+    // Cleanup subscription
     return () => {
       subscription.unsubscribe();
     };
-  }, [toast]);
+  }, [toast, navigate]);
 
-  // Show loading state while initializing
   if (loading) {
     return (
       <div className="min-h-screen bg-secondary flex items-center justify-center">
