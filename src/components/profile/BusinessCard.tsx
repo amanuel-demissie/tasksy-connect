@@ -89,14 +89,20 @@ export const BusinessCard = ({ profile, onClick, onDelete }: BusinessCardProps) 
             <AlertDialogTrigger asChild>
               <Button
                 variant="ghost"
-                size="icon"
-                className="text-white hover:bg-red-500/20"
-                onClick={(e) => e.stopPropagation()} // Stop event propagation on button click
+                size="lg"
+                className="text-white hover:bg-red-500/20 p-6"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
               >
-                <Trash2 className="w-5 h-5" />
+                <Trash2 className="w-6 h-6" />
               </Button>
             </AlertDialogTrigger>
-            <AlertDialogContent onClick={(e) => e.stopPropagation()}> {/* Stop event propagation on dialog content */}
+            <AlertDialogContent 
+              onClick={(e) => e.stopPropagation()}
+              onPointerDownOutside={(e) => e.preventDefault()}
+            >
               <AlertDialogHeader>
                 <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                 <AlertDialogDescription>
