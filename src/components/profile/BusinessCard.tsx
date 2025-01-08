@@ -4,6 +4,10 @@ import { DeleteBusinessDialog } from './DeleteBusinessDialog';
 import { BusinessRating } from './BusinessRating';
 import { BusinessInfo } from './BusinessInfo';
 
+/**
+ * Interface defining the structure of a business profile
+ * @interface BusinessProfile
+ */
 interface BusinessProfile {
   id: string;
   name: string;
@@ -14,12 +18,42 @@ interface BusinessProfile {
   ratings?: number | null;
 }
 
+/**
+ * Props for the BusinessCard component
+ * @interface BusinessCardProps
+ */
 interface BusinessCardProps {
+  /** The business profile data to display */
   profile: BusinessProfile;
+  /** Callback function triggered when the card is clicked */
   onClick: () => void;
+  /** Optional callback function triggered after successful deletion */
   onDelete?: () => void;
 }
 
+/**
+ * BusinessCard Component
+ * 
+ * Displays a business profile in a card format with image, rating, and basic information.
+ * Includes hover effects and a delete button with confirmation dialog.
+ * 
+ * @component
+ * @example
+ * ```tsx
+ * const profile = {
+ *   id: '123',
+ *   name: 'Business Name',
+ *   category: 'retail',
+ *   address: '123 Main St'
+ * };
+ * 
+ * <BusinessCard 
+ *   profile={profile}
+ *   onClick={() => console.log('Card clicked')}
+ *   onDelete={() => console.log('Business deleted')}
+ * />
+ * ```
+ */
 export const BusinessCard = ({ profile, onClick, onDelete }: BusinessCardProps) => {
   return (
     <Card 

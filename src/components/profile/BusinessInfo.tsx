@@ -1,12 +1,35 @@
 import React from 'react';
 import { Building2, MapPin } from 'lucide-react';
 
+/**
+ * Props for the BusinessInfo component
+ * @interface BusinessInfoProps
+ */
 interface BusinessInfoProps {
+  /** The business category */
   category: string;
+  /** The business name */
   name: string;
+  /** The business address (optional) */
   address: string | null;
 }
 
+/**
+ * BusinessInfo Component
+ * 
+ * Displays basic business information including category, name, and address.
+ * Uses icons from lucide-react for visual enhancement.
+ * 
+ * @component
+ * @example
+ * ```tsx
+ * <BusinessInfo
+ *   category="retail"
+ *   name="My Business"
+ *   address="123 Main St"
+ * />
+ * ```
+ */
 export const BusinessInfo = ({ category, name, address }: BusinessInfoProps) => {
   return (
     <div className="space-y-2">

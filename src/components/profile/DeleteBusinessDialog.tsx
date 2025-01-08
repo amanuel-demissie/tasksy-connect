@@ -15,15 +15,42 @@ import { Trash2 } from 'lucide-react';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
+/**
+ * Props for the DeleteBusinessDialog component
+ * @interface DeleteBusinessDialogProps
+ */
 interface DeleteBusinessDialogProps {
+  /** The unique identifier of the business to delete */
   businessId: string;
+  /** The name of the business (used in confirmation messages) */
   businessName: string;
+  /** Optional callback function triggered after successful deletion */
   onDelete?: () => void;
 }
 
+/**
+ * DeleteBusinessDialog Component
+ * 
+ * Provides a confirmation dialog for deleting a business profile.
+ * Handles the deletion process through Supabase and provides feedback via toast notifications.
+ * 
+ * @component
+ * @example
+ * ```tsx
+ * <DeleteBusinessDialog
+ *   businessId="123"
+ *   businessName="My Business"
+ *   onDelete={() => console.log('Business deleted')}
+ * />
+ * ```
+ */
 export const DeleteBusinessDialog = ({ businessId, businessName, onDelete }: DeleteBusinessDialogProps) => {
   const { toast } = useToast();
 
+  /**
+   * Handles the business deletion process
+   * @param {React.MouseEvent} e - The click event
+   */
   const handleDelete = async (e: React.MouseEvent) => {
     e.stopPropagation();
     
