@@ -11,25 +11,40 @@ export const getImageUrl = (url: string | null) => {
   }
   
   // Handle Supabase storage URLs
-  if (url.includes('avatars/')) {
+  if (url.includes('business-profiles/')) {
     try {
-      // Get the full path after 'avatars/'
-      const path = url.includes('avatars/') 
-        ? url.substring(url.indexOf('avatars/')) 
-        : url;
-      
-      console.log('Attempting to get public URL for path:', path);
-      
       const { data } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(path);
+        .from('business_profile_images')
+        .getPublicUrl(url);
       
       if (data?.publicUrl) {
         console.log('Successfully generated public URL:', data.publicUrl);
         return data.publicUrl;
       }
       
-      console.error('Failed to get public URL for:', path);
+      console.error('Failed to get public URL for:', url);
+      return DEFAULT_IMAGE;
+    } catch (error) {
+      console.error('Error getting public URL:', error);
+      return DEFAULT_IMAGE;
+    }
+  }
+  
+  // Handle avatars bucket
+  if (url.includes('avatars/')) {
+    try {
+      const path = url.includes('avatars/') 
+        ? url.substring(url.indexOf('avatars/')) 
+        : url;
+      
+      const { data } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(path);
+      
+      if (data?.publicUrl) {
+        return data.publicUrl;
+      }
+      
       return DEFAULT_IMAGE;
     } catch (error) {
       console.error('Error getting public URL:', error);
