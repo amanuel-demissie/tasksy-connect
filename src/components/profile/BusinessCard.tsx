@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { DeleteBusinessDialog } from './DeleteBusinessDialog';
 import { BusinessRating } from './BusinessRating';
 import { BusinessInfo } from './BusinessInfo';
+import { getImageUrl } from '@/utils/imageUtils';
 
 /**
  * Interface defining the structure of a business profile
@@ -55,6 +56,9 @@ interface BusinessCardProps {
  * ```
  */
 export const BusinessCard = ({ profile, onClick, onDelete }: BusinessCardProps) => {
+  const [imageError, setImageError] = React.useState(false);
+  const fallbackImage = 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d';
+
   return (
     <Card 
       className="relative overflow-hidden cursor-pointer group h-[300px]"
@@ -63,13 +67,12 @@ export const BusinessCard = ({ profile, onClick, onDelete }: BusinessCardProps) 
       {/* Background Image with Overlay */}
       <div className="absolute inset-0">
         <img 
-          src={profile.image_url || 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d'} 
+          src={imageError ? fallbackImage : getImageUrl(profile.image_url)}
           alt={profile.name}
           className="w-full h-full object-cover"
-          onError={(e) => {
-            console.error('Image load error:', e);
-            const target = e.target as HTMLImageElement;
-            target.src = 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d';
+          onError={() => {
+            console.log('Image failed to load, using fallback:', profile.image_url);
+            setImageError(true);
           }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-black/30" />
