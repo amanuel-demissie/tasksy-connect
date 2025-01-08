@@ -91,7 +91,7 @@ export const DeleteBusinessDialog = ({ businessId, businessName, onDelete }: Del
         <Button
           variant="ghost"
           size="lg"
-          className="relative text-white hover:bg-red-500/20 p-6 z-[100]"
+          className="relative text-white hover:bg-red-500/20 p-6"
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
