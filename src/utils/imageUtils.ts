@@ -2,30 +2,33 @@ import { supabase } from "@/integrations/supabase/client";
 
 const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d';
 
-export const getImageUrl = (url: string | null) => {
-  if (!url) return DEFAULT_IMAGE;
-  
-  // Handle relative paths
-  if (url.startsWith('/')) {
+export const getImageUrl = (url: string | null): string => {
+  if (!url) {
+    console.log('No URL provided, using default image');
+    return DEFAULT_IMAGE;
+  }
+
+  // Handle external URLs (starting with http:// or https://)
+  if (url.startsWith('http://') || url.startsWith('https://')) {
     return url;
   }
   
-  // Handle Supabase storage URLs
-  if (url.includes('business-profiles/')) {
+  // Handle business profile images
+  if (url.startsWith('business-profiles/')) {
     try {
       const { data } = supabase.storage
         .from('business_profile_images')
         .getPublicUrl(url);
       
       if (data?.publicUrl) {
-        console.log('Successfully generated public URL:', data.publicUrl);
+        console.log('Successfully generated business profile image URL:', data.publicUrl);
         return data.publicUrl;
       }
       
-      console.error('Failed to get public URL for:', url);
+      console.error('Failed to get public URL for business profile image:', url);
       return DEFAULT_IMAGE;
     } catch (error) {
-      console.error('Error getting public URL:', error);
+      console.error('Error getting business profile image URL:', error);
       return DEFAULT_IMAGE;
     }
   }
@@ -47,17 +50,12 @@ export const getImageUrl = (url: string | null) => {
       
       return DEFAULT_IMAGE;
     } catch (error) {
-      console.error('Error getting public URL:', error);
+      console.error('Error getting avatar URL:', error);
       return DEFAULT_IMAGE;
     }
   }
-  
-  // Handle external URLs
-  try {
-    const urlObj = new URL(url);
-    return urlObj.toString();
-  } catch {
-    console.error('Invalid URL:', url);
-    return DEFAULT_IMAGE;
-  }
+
+  // If no conditions match, return default image
+  console.error('Invalid URL format:', url);
+  return DEFAULT_IMAGE;
 };
