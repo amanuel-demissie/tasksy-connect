@@ -16,6 +16,7 @@ export const getImageUrl = (url: string | null): string => {
   // Handle business profile images
   if (url.startsWith('business-profiles/')) {
     try {
+      // Get the public URL directly from the business_profile_images bucket
       const { data } = supabase.storage
         .from('business_profile_images')
         .getPublicUrl(url);
