@@ -93,8 +93,9 @@ export const DeleteBusinessDialog = ({ businessId, businessName, onDelete }: Del
           size="lg"
           className="relative text-white hover:bg-red-500/20 p-6"
           onClick={(e) => {
-            e.preventDefault();
+            //e.preventDefault();
             e.stopPropagation();
+            console.log('clicked delete button')
           }}
         >
           <Trash2 className="w-8 h-8" />
