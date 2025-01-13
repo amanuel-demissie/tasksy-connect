@@ -18,7 +18,7 @@ export const useBusinessProfileSubmit = (onSuccess: () => void) => {
       let imageUrl = null;
       if (imageFile) {
         console.log("Uploading image...");
-        imageUrl = await uploadBusinessImage(imageFile, data.name);
+        imageUrl = await uploadBusinessImage(imageFile, data.name, data.category);
         console.log("Image uploaded successfully, public URL:", imageUrl);
       }
 
