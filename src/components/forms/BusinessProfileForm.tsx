@@ -64,7 +64,11 @@ export default function BusinessProfileForm({ onSuccess }: { onSuccess: () => vo
    * @param {BusinessProfileFormData} data - Form data from react-hook-form
    */
   const onSubmit = async (data: BusinessProfileFormData) => {
-    await submitProfile(data, imageFile, services);
+    const formData = {
+      ...data,
+      category: selectedCategory // Ensure category is properly set from state
+    };
+    await submitProfile(formData, imageFile, services);
   };
 
   /**
