@@ -7,6 +7,7 @@ import { ServiceCategory } from "@/types/profile";
 import ImageUploadSection from "@/components/freelancer/ImageUploadSection";
 import FreelancerDetailsSection from "@/components/freelancer/FreelancerDetailsSection";
 import SkillsSection from "@/components/freelancer/SkillsSection";
+import { Loader2 } from "lucide-react";
 
 /**
  * Interface for freelancer profile form data
@@ -29,6 +30,7 @@ interface FreelancerProfileFormData {
  * 2. Basic freelancer information collection
  * 3. Skills management
  * 4. Form submission and data persistence
+ * 5. Loading state management during form submission
  * 
  * @component
  * @param {Object} props - Component properties
@@ -52,14 +54,19 @@ export default function FreelancerProfileForm({ onSuccess }: { onSuccess: () => 
   const [showCamera, setShowCamera] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
+  // State for managing form submission loading state
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   /**
    * Handles form submission
    * Creates freelancer profile and associated skills in Supabase
+   * Manages loading state during submission process
    * 
    * @param {FreelancerProfileFormData} data - Form data
    */
   const onSubmit = async (data: FreelancerProfileFormData) => {
     try {
+      setIsSubmitting(true);
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
@@ -124,6 +131,8 @@ export default function FreelancerProfileForm({ onSuccess }: { onSuccess: () => 
         title: "Error",
         description: "Failed to create freelancer profile",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -165,8 +174,16 @@ export default function FreelancerProfileForm({ onSuccess }: { onSuccess: () => 
       <Button 
         type="submit"
         className="w-full bg-accent text-white hover:bg-accent/90"
+        disabled={isSubmitting}
       >
-        Create Freelancer Profile
+        {isSubmitting ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Creating Profile...
+          </>
+        ) : (
+          'Create Freelancer Profile'
+        )}
       </Button>
     </form>
   );
