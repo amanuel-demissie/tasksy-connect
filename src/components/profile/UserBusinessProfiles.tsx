@@ -47,7 +47,7 @@ export const UserBusinessProfiles = ({ profiles, onProfileDeleted }: UserBusines
               <CarouselItem key={profile.id} className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
                 <BusinessCard 
                   profile={profile}
-                  onClick={() => navigate(`/business/${profile.id}`)}
+                  onClick={() => navigate(`/business-profile/${profile.id}`)}
                   onDelete={onProfileDeleted}
                 />
               </CarouselItem>
