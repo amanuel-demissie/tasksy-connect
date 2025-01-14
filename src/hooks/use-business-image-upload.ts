@@ -14,30 +14,12 @@ import { ServiceCategory } from '@/types/profile';
  * @returns {Object} Hook methods and state
  * @returns {Function} uploadBusinessImage - Function to handle image upload
  * @returns {number} uploadProgress - Current upload progress (0-100)
- * 
- * @example
- * ```tsx
- * const { uploadBusinessImage, uploadProgress } = useBusinessImageUpload();
- * 
- * // Later in your component:
- * const handleImageUpload = async (file: File, businessName: string, category: ServiceCategory) => {
- *   try {
- *     const imageUrl = await uploadBusinessImage(file, businessName, category);
- *     console.log("Uploaded image URL:", imageUrl);
- *   } catch (error) {
- *     console.error("Upload failed:", error);
- *   }
- * };
- * ```
  */
 export const useBusinessImageUpload = () => {
   const [uploadProgress, setUploadProgress] = useState(0);
 
   /**
    * Gets the appropriate folder path based on business category
-   * 
-   * @param {ServiceCategory} category - The business category
-   * @returns {string} The folder path for the category
    */
   const getCategoryFolder = (category: ServiceCategory): string => {
     switch (category) {
@@ -56,12 +38,6 @@ export const useBusinessImageUpload = () => {
 
   /**
    * Uploads a business profile image to Supabase storage in the appropriate category folder
-   * 
-   * @param {File} file - The image file to upload
-   * @param {string} businessName - The name of the business (used for filename generation)
-   * @param {ServiceCategory} category - The business category
-   * @returns {Promise<string|null>} Public URL of the uploaded image, or null if upload fails
-   * @throws {Error} If upload fails or if file is invalid
    */
   const uploadBusinessImage = async (file: File, businessName: string, category: ServiceCategory) => {
     try {
@@ -80,9 +56,9 @@ export const useBusinessImageUpload = () => {
       const fileName = `${categoryFolder}/${sanitizedName}-${Date.now()}.${file.name.split('.').pop()}`;
       
       console.log(`Uploading to path: ${fileName}`);
-      
+
       // Upload file to Supabase storage in the business_profile_images bucket
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from("business_profile_images")
         .upload(fileName, file, {
           cacheControl: '3600',
@@ -94,14 +70,15 @@ export const useBusinessImageUpload = () => {
         throw uploadError;
       }
 
-      // Get public URL for the uploaded file
-      const { data: urlData } = supabase.storage
+      // Get public URL in a separate call
+      const { data: { publicUrl } } = supabase.storage
         .from("business_profile_images")
         .getPublicUrl(fileName);
 
       setUploadProgress(100);
-      console.log("Upload successful, public URL:", urlData.publicUrl);
-      return urlData.publicUrl;
+      console.log("Upload successful, public URL:", publicUrl);
+      return publicUrl;
+
     } catch (error) {
       console.error("Image upload error:", error);
       throw error;
