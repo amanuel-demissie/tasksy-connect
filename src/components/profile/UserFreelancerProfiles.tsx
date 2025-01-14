@@ -47,7 +47,7 @@ export const UserFreelancerProfiles = ({ profiles }: UserFreelancerProfilesProps
         <Carousel
           opts={{
             align: "start",
-            loop: true,
+            loop: localProfiles.length > 1,
           }}
           className="w-full"
         >
@@ -92,8 +92,12 @@ export const UserFreelancerProfiles = ({ profiles }: UserFreelancerProfilesProps
               </CarouselItem>
             ))}
           </CarouselContent>
-          <CarouselPrevious className="left-0" />
-          <CarouselNext className="right-0" />
+          {localProfiles.length > 1 && (
+            <>
+              <CarouselPrevious className="left-0" />
+              <CarouselNext className="right-0" />
+            </>
+          )}
         </Carousel>
       </div>
     </div>

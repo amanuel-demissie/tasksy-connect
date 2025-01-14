@@ -38,7 +38,7 @@ export const UserBusinessProfiles = ({ profiles, onProfileDeleted }: UserBusines
         <Carousel
           opts={{
             align: "start",
-            loop: true,
+            loop: profiles.length > 1,
           }}
           className="w-full"
         >
@@ -53,8 +53,12 @@ export const UserBusinessProfiles = ({ profiles, onProfileDeleted }: UserBusines
               </CarouselItem>
             ))}
           </CarouselContent>
-          <CarouselPrevious className="left-0" />
-          <CarouselNext className="right-0" />
+          {profiles.length > 1 && (
+            <>
+              <CarouselPrevious className="left-0" />
+              <CarouselNext className="right-0" />
+            </>
+          )}
         </Carousel>
       </div>
     </div>
