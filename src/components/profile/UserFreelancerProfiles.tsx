@@ -11,31 +11,77 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 
+/**
+ * Interface defining the structure of a freelancer profile
+ * @interface FreelancerProfile
+ */
 interface FreelancerProfile {
+  /** Unique identifier for the freelancer profile */
   id: string;
+  /** Full name of the freelancer */
   full_name: string;
+  /** Professional title of the freelancer */
   title: string;
+  /** Optional biography or description */
   bio: string | null;
+  /** Category of service the freelancer provides */
   category: string;
+  /** Optional hourly rate for services */
   hourly_rate: number | null;
 }
 
+/**
+ * Props for the UserFreelancerProfiles component
+ * @interface UserFreelancerProfilesProps
+ */
 interface UserFreelancerProfilesProps {
+  /** Array of freelancer profiles to display */
   profiles: FreelancerProfile[];
 }
 
+/**
+ * UserFreelancerProfiles Component
+ * 
+ * Displays a carousel of freelancer profile cards for a user. Each card shows
+ * professional information and provides navigation to the detailed view.
+ * Includes functionality for profile deletion and state management.
+ * 
+ * Features:
+ * - Local state management for profile deletion
+ * - Responsive carousel layout
+ * - Conditional navigation arrows
+ * - Delete functionality with confirmation dialog
+ * - Hourly rate display when available
+ * 
+ * @component
+ * @example
+ * ```tsx
+ * const profiles = [{
+ *   id: '123',
+ *   full_name: 'John Doe',
+ *   title: 'Software Developer',
+ *   category: 'professional',
+ *   // ... other properties
+ * }];
+ * 
+ * <UserFreelancerProfiles profiles={profiles} />
+ * ```
+ */
 export const UserFreelancerProfiles = ({ profiles }: UserFreelancerProfilesProps) => {
   const navigate = useNavigate();
   const [localProfiles, setLocalProfiles] = React.useState(profiles);
 
+  // Update local state when props change
   React.useEffect(() => {
     setLocalProfiles(profiles);
   }, [profiles]);
 
+  // Handler for profile deletion
   const handleDelete = React.useCallback((deletedId: string) => {
     setLocalProfiles(prev => prev.filter(profile => profile.id !== deletedId));
   }, []);
 
+  // Don't render anything if there are no profiles
   if (localProfiles.length === 0) {
     return null;
   }
