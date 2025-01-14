@@ -2,6 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { User, DollarSign } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { DeleteFreelancerDialog } from './DeleteFreelancerDialog';
 import {
   Carousel,
   CarouselContent,
@@ -25,8 +26,17 @@ interface UserFreelancerProfilesProps {
 
 export const UserFreelancerProfiles = ({ profiles }: UserFreelancerProfilesProps) => {
   const navigate = useNavigate();
+  const [localProfiles, setLocalProfiles] = React.useState(profiles);
 
-  if (profiles.length === 0) {
+  React.useEffect(() => {
+    setLocalProfiles(profiles);
+  }, [profiles]);
+
+  const handleDelete = React.useCallback((deletedId: string) => {
+    setLocalProfiles(prev => prev.filter(profile => profile.id !== deletedId));
+  }, []);
+
+  if (localProfiles.length === 0) {
     return null;
   }
 
@@ -42,17 +52,24 @@ export const UserFreelancerProfiles = ({ profiles }: UserFreelancerProfilesProps
           className="w-full"
         >
           <CarouselContent className="-ml-2 md:-ml-4">
-            {profiles.map((profile) => (
+            {localProfiles.map((profile) => (
               <CarouselItem key={profile.id} className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
                 <Card 
-                  className="cursor-pointer hover:bg-accent/5 transition-colors"
+                  className="cursor-pointer hover:bg-accent/5 transition-colors relative"
                   onClick={() => navigate(`/freelancer-profile/${profile.id}`)}
                 >
                   <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      <User className="w-5 h-5" />
-                      {profile.full_name}
-                    </CardTitle>
+                    <div className="flex justify-between items-start">
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <User className="w-5 h-5" />
+                        {profile.full_name}
+                      </CardTitle>
+                      <DeleteFreelancerDialog 
+                        freelancerId={profile.id}
+                        freelancerName={profile.full_name}
+                        onDelete={() => handleDelete(profile.id)}
+                      />
+                    </div>
                   </CardHeader>
                   <CardContent className="space-y-2">
                     <p className="font-medium">{profile.title}</p>
