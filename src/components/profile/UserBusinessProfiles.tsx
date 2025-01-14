@@ -1,6 +1,13 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BusinessCard } from './BusinessCard';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 interface BusinessProfile {
   id: string;
@@ -27,15 +34,28 @@ export const UserBusinessProfiles = ({ profiles, onProfileDeleted }: UserBusines
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-semibold text-primary">Your Business Profiles</h2>
-      <div className="grid gap-6 md:grid-cols-2">
-        {profiles.map((profile) => (
-          <BusinessCard 
-            key={profile.id}
-            profile={profile}
-            onClick={() => navigate(`/business/${profile.id}`)}
-            onDelete={onProfileDeleted}
-          />
-        ))}
+      <div className="relative">
+        <Carousel
+          opts={{
+            align: "start",
+            loop: true,
+          }}
+          className="w-full"
+        >
+          <CarouselContent className="-ml-2 md:-ml-4">
+            {profiles.map((profile) => (
+              <CarouselItem key={profile.id} className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
+                <BusinessCard 
+                  profile={profile}
+                  onClick={() => navigate(`/business/${profile.id}`)}
+                  onDelete={onProfileDeleted}
+                />
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious className="left-0" />
+          <CarouselNext className="right-0" />
+        </Carousel>
       </div>
     </div>
   );
