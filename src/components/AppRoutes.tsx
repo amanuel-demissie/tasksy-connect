@@ -6,6 +6,8 @@ import Profile from "@/pages/Profile";
 import Messages from "@/pages/Messages";
 import Appointments from "@/pages/Appointments";
 import Explore from "@/pages/Explore";
+import BusinessProfile from "@/pages/BusinessProfile";
+import FreelancerProfile from "@/pages/FreelancerProfile";
 
 const AppRoutes = () => {
   return (
@@ -37,6 +39,14 @@ const AppRoutes = () => {
         }
       />
       <Route path="/explore" element={<Explore />} />
+      <Route 
+        path="/business-profile/:id" 
+        element={<BusinessProfile />} 
+      />
+      <Route 
+        path="/freelancer-profile/:id" 
+        element={<FreelancerProfile />} 
+      />
     </Routes>
   );
 };
