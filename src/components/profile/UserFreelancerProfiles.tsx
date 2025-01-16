@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { User, DollarSign } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { DeleteFreelancerDialog } from './DeleteFreelancerDialog';
+import { getImageUrl } from '@/utils/imageUtils';
 import {
   Carousel,
   CarouselContent,
@@ -28,6 +29,8 @@ interface FreelancerProfile {
   category: string;
   /** Optional hourly rate for services */
   hourly_rate: number | null;
+  /** Optional profile image URL */
+  image_url: string | null;
 }
 
 /**
@@ -52,6 +55,7 @@ interface UserFreelancerProfilesProps {
  * - Conditional navigation arrows
  * - Delete functionality with confirmation dialog
  * - Hourly rate display when available
+ * - Background image display with fallback
  * 
  * @component
  * @example
@@ -70,6 +74,7 @@ interface UserFreelancerProfilesProps {
 export const UserFreelancerProfiles = ({ profiles }: UserFreelancerProfilesProps) => {
   const navigate = useNavigate();
   const [localProfiles, setLocalProfiles] = React.useState(profiles);
+  const fallbackImage = 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d';
 
   // Update local state when props change
   React.useEffect(() => {
@@ -101,10 +106,25 @@ export const UserFreelancerProfiles = ({ profiles }: UserFreelancerProfilesProps
             {localProfiles.map((profile) => (
               <CarouselItem key={profile.id} className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
                 <Card 
-                  className="cursor-pointer hover:bg-accent/5 transition-colors relative"
+                  className="cursor-pointer hover:bg-accent/5 transition-colors relative h-[300px] overflow-hidden"
                   onClick={() => navigate(`/freelancer-profile/${profile.id}`)}
                 >
-                  <CardHeader>
+                  {/* Background Image with Overlay */}
+                  <div className="absolute inset-0">
+                    <img 
+                      src={getImageUrl(profile.image_url)}
+                      alt={profile.full_name}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        console.log('Image failed to load, using fallback:', profile.image_url);
+                        (e.target as HTMLImageElement).src = fallbackImage;
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-black/30" />
+                  </div>
+
+                  {/* Content */}
+                  <div className="relative h-full p-6 flex flex-col justify-between text-white">
                     <div className="flex justify-between items-start">
                       <CardTitle className="text-lg flex items-center gap-2">
                         <User className="w-5 h-5" />
@@ -116,24 +136,35 @@ export const UserFreelancerProfiles = ({ profiles }: UserFreelancerProfilesProps
                         onDelete={() => handleDelete(profile.id)}
                       />
                     </div>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    <p className="font-medium">{profile.title}</p>
-                    {profile.bio && (
-                      <p className="text-sm text-muted-foreground">{profile.bio}</p>
-                    )}
-                    <div className="flex justify-between items-center">
-                      <span className="inline-block px-2 py-1 rounded-full bg-primary/10 text-primary text-sm">
-                        {profile.category}
-                      </span>
-                      {profile.hourly_rate && (
-                        <div className="flex items-center gap-1 text-sm">
-                          <DollarSign className="w-4 h-4" />
-                          {profile.hourly_rate}/hr
-                        </div>
+                    <div className="space-y-2">
+                      <p className="font-medium">{profile.title}</p>
+                      {profile.bio && (
+                        <p className="text-sm text-white/80">{profile.bio}</p>
                       )}
+                      <div className="flex justify-between items-center">
+                        <span className="inline-block px-2 py-1 rounded-full bg-primary/10 text-white text-sm">
+                          {profile.category}
+                        </span>
+                        {profile.hourly_rate && (
+                          <div className="flex items-center gap-1 text-sm">
+                            <DollarSign className="w-4 h-4" />
+                            {profile.hourly_rate}/hr
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </CardContent>
+                  </div>
+
+                  {/* Hover Effect */}
+                  <div 
+                    className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+                  >
+                    <div className="absolute bottom-4 right-4">
+                      <button className="bg-accent text-white px-6 py-2 rounded-full font-semibold hover:bg-accent/90 transition-colors">
+                        View Details
+                      </button>
+                    </div>
+                  </div>
                 </Card>
               </CarouselItem>
             ))}
