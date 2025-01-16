@@ -9,6 +9,17 @@ import FreelancerDetailsSection from "@/components/freelancer/FreelancerDetailsS
 import SkillsSection from "@/components/freelancer/SkillsSection";
 import { Loader2 } from "lucide-react";
 
+/**
+ * Interface defining the structure of the freelancer profile form data
+ * @interface
+ * @property {string} fullName - The full name of the freelancer
+ * @property {string} title - Professional title or role
+ * @property {string} bio - Detailed description of experience and background
+ * @property {ServiceCategory} category - Type of service provided
+ * @property {number} hourlyRate - Hourly rate for services
+ * @property {string[]} skills - Array of skills possessed by the freelancer
+ * @property {File} [image] - Optional profile image file
+ */
 interface FreelancerProfileFormData {
   fullName: string;
   title: string;
@@ -19,17 +30,58 @@ interface FreelancerProfileFormData {
   image?: File;
 }
 
+/**
+ * FreelancerProfileForm Component
+ * 
+ * A comprehensive form component for creating and managing freelancer profiles.
+ * Handles image upload, basic information collection, skills management,
+ * and profile data persistence in Supabase.
+ * 
+ * Features:
+ * - Profile image upload with camera capture option
+ * - Basic freelancer information collection
+ * - Dynamic skills management
+ * - Form validation and error handling
+ * - Loading state management during submission
+ * - Supabase integration for data persistence
+ * 
+ * @component
+ * @param {Object} props - Component properties
+ * @param {Function} props.onSuccess - Callback function executed after successful profile creation
+ * @returns {JSX.Element} Rendered freelancer profile form
+ */
 export default function FreelancerProfileForm({ onSuccess }: { onSuccess: () => void }) {
+  // Form state management using react-hook-form
   const { register, handleSubmit, formState: { errors } } = useForm<FreelancerProfileFormData>();
   const { toast } = useToast();
+
+  // State for managing skills
   const [skills, setSkills] = useState<string[]>([]);
   const [newSkill, setNewSkill] = useState("");
+
+  // State for managing category selection
   const [selectedCategory, setSelectedCategory] = useState<ServiceCategory>("beauty");
+
+  // State and refs for image upload and camera functionality
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [showCamera, setShowCamera] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  // State for managing form submission loading state
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  /**
+   * Handles form submission
+   * Creates freelancer profile and associated skills in Supabase
+   * 
+   * Process:
+   * 1. Uploads profile image to Supabase storage if provided
+   * 2. Creates freelancer profile record
+   * 3. Creates and links skills to the profile
+   * 4. Handles success/error notifications
+   * 
+   * @param {FreelancerProfileFormData} data - Form data containing profile information
+   */
   const onSubmit = async (data: FreelancerProfileFormData) => {
     try {
       setIsSubmitting(true);
@@ -108,6 +160,11 @@ export default function FreelancerProfileForm({ onSuccess }: { onSuccess: () => 
     }
   };
 
+  /**
+   * Adds a new skill to the skills list
+   * Validates that the skill is not empty and not already in the list
+   * Prevents duplicate skills and maintains the skills state
+   */
   const addSkill = () => {
     if (newSkill && !skills.includes(newSkill)) {
       setSkills([...skills, newSkill]);
