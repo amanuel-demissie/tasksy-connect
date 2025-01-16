@@ -38,30 +38,33 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
 
         if (currentSession?.refresh_token) {
+          console.log("Setting session with refresh token");
           setSession(currentSession);
         } else {
           console.log("No refresh token found, clearing session");
-          setSession(null);
+          await handleAuthError({ message: 'refresh_token_not_found' });
         }
       } catch (err) {
         console.error("Unexpected error during auth initialization:", err);
-        setSession(null);
+        await handleAuthError(err);
       } finally {
         setLoading(false);
       }
     };
 
     const handleAuthError = async (error: any) => {
+      console.log("Handling auth error:", error.message);
       setSession(null);
       
-      // Handle specific error cases
+      // Clear the session from storage
+      await supabase.auth.signOut();
+      
       if (error.message.includes('refresh_token_not_found')) {
         toast({
           variant: "destructive",
           title: "Session Expired",
           description: "Your session has expired. Please sign in again.",
         });
-        await supabase.auth.signOut();
         navigate('/auth');
       } else {
         toast({
@@ -69,6 +72,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           title: "Authentication Error",
           description: "There was a problem with your session. Please sign in again.",
         });
+        navigate('/auth');
       }
     };
 
@@ -93,7 +97,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           break;
         
         case 'TOKEN_REFRESHED':
-          console.log('Token refreshed successfully');
+          console.log('Token refreshed, updating session');
           if (newSession?.refresh_token) {
             setSession(newSession);
           } else {
