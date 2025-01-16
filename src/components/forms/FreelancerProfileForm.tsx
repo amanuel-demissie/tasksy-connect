@@ -9,9 +9,6 @@ import FreelancerDetailsSection from "@/components/freelancer/FreelancerDetailsS
 import SkillsSection from "@/components/freelancer/SkillsSection";
 import { Loader2 } from "lucide-react";
 
-/**
- * Interface for freelancer profile form data
- */
 interface FreelancerProfileFormData {
   fullName: string;
   title: string;
@@ -22,48 +19,17 @@ interface FreelancerProfileFormData {
   image?: File;
 }
 
-/**
- * Form component for creating a freelancer profile
- * 
- * This component handles:
- * 1. Profile image upload and camera capture
- * 2. Basic freelancer information collection
- * 3. Skills management
- * 4. Form submission and data persistence
- * 5. Loading state management during form submission
- * 
- * @component
- * @param {Object} props - Component properties
- * @param {Function} props.onSuccess - Callback function called after successful profile creation
- * @returns {JSX.Element} Rendered freelancer profile form
- */
 export default function FreelancerProfileForm({ onSuccess }: { onSuccess: () => void }) {
-  // Form state management using react-hook-form
   const { register, handleSubmit, formState: { errors } } = useForm<FreelancerProfileFormData>();
   const { toast } = useToast();
-
-  // State for managing skills
   const [skills, setSkills] = useState<string[]>([]);
   const [newSkill, setNewSkill] = useState("");
-
-  // State for managing category selection
   const [selectedCategory, setSelectedCategory] = useState<ServiceCategory>("beauty");
-
-  // State and refs for image upload and camera functionality
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [showCamera, setShowCamera] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
-
-  // State for managing form submission loading state
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  /**
-   * Handles form submission
-   * Creates freelancer profile and associated skills in Supabase
-   * Manages loading state during submission process
-   * 
-   * @param {FreelancerProfileFormData} data - Form data
-   */
   const onSubmit = async (data: FreelancerProfileFormData) => {
     try {
       setIsSubmitting(true);
@@ -72,9 +38,15 @@ export default function FreelancerProfileForm({ onSuccess }: { onSuccess: () => 
 
       let imageUrl = null;
       if (imageFile) {
+        // Generate a sanitized filename
+        const sanitizedName = data.fullName.toLowerCase().replace(/[^a-z0-9]/g, '-');
+        const fileExt = imageFile.name.split('.').pop();
+        const fileName = `freelancer-profiles/${sanitizedName}-${Date.now()}.${fileExt}`;
+
+        // Upload to business_profile_images bucket instead of avatars
         const { data: uploadData, error: uploadError } = await supabase.storage
-          .from("avatars")
-          .upload(`freelancer-profiles/${Date.now()}-${imageFile.name}`, imageFile);
+          .from("business_profile_images")
+          .upload(fileName, imageFile);
 
         if (uploadError) throw uploadError;
         imageUrl = uploadData.path;
@@ -136,10 +108,6 @@ export default function FreelancerProfileForm({ onSuccess }: { onSuccess: () => 
     }
   };
 
-  /**
-   * Adds a new skill to the skills list
-   * Validates that the skill is not empty and not already in the list
-   */
   const addSkill = () => {
     if (newSkill && !skills.includes(newSkill)) {
       setSkills([...skills, newSkill]);
