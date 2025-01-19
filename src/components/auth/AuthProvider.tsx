@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 interface AuthContextType {
   session: Session | null;
@@ -25,24 +25,33 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        const { data: { session: currentSession }, error } = await supabase.auth.getSession();
+        // Get the initial session
+        const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
         
-        if (error) {
-          console.error("Error getting session:", error.message);
-          await handleAuthError(error);
+        if (sessionError) {
+          console.error("Error getting session:", sessionError.message);
+          await handleAuthError(sessionError);
           return;
         }
 
-        if (currentSession?.refresh_token) {
-          console.log("Setting session with refresh token");
+        if (currentSession) {
+          console.log("Initial session found");
           setSession(currentSession);
+          
+          // If we're on the auth page and have a session, redirect to home
+          if (location.pathname === '/auth') {
+            navigate('/');
+          }
         } else {
-          console.log("No refresh token found, clearing session");
-          await handleAuthError({ message: 'refresh_token_not_found' });
+          console.log("No initial session found");
+          if (location.pathname !== '/auth') {
+            navigate('/auth');
+          }
         }
       } catch (err) {
         console.error("Unexpected error during auth initialization:", err);
@@ -65,17 +74,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           title: "Session Expired",
           description: "Your session has expired. Please sign in again.",
         });
-        navigate('/auth');
       } else {
         toast({
           variant: "destructive",
           title: "Authentication Error",
           description: "There was a problem with your session. Please sign in again.",
         });
+      }
+      
+      if (location.pathname !== '/auth') {
         navigate('/auth');
       }
     };
 
+    // Set up auth state change listener
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, newSession) => {
@@ -85,20 +97,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         case 'SIGNED_OUT':
           console.log('User signed out, clearing session');
           setSession(null);
-          navigate('/auth');
+          if (location.pathname !== '/auth') {
+            navigate('/auth');
+          }
           break;
         
         case 'SIGNED_IN':
           console.log('User signed in, updating session');
-          if (newSession?.refresh_token) {
+          if (newSession) {
             setSession(newSession);
-            navigate('/');
+            if (location.pathname === '/auth') {
+              navigate('/');
+            }
           }
           break;
         
         case 'TOKEN_REFRESHED':
           console.log('Token refreshed, updating session');
-          if (newSession?.refresh_token) {
+          if (newSession) {
             setSession(newSession);
           } else {
             await handleAuthError({ message: 'refresh_token_not_found' });
@@ -107,7 +123,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         
         case 'USER_UPDATED':
           console.log('User updated, checking session');
-          if (newSession?.refresh_token) {
+          if (newSession) {
             setSession(newSession);
           }
           break;
@@ -123,7 +139,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => {
       subscription.unsubscribe();
     };
-  }, [toast, navigate]);
+  }, [toast, navigate, location.pathname]);
 
   if (loading) {
     return (
