@@ -7,9 +7,14 @@ export const useBusinessProfileSubmit = (onSuccess: () => void) => {
   const { toast } = useToast();
   const { uploadBusinessImage } = useBusinessImageUpload();
 
-  const submitProfile = async (data: BusinessProfileFormData, imageFile: File | null, services: any[]) => {
+  const submitProfile = async (
+    data: BusinessProfileFormData, 
+    imageFile: File | null, 
+    services: any[],
+    businessId?: string
+  ) => {
     try {
-      console.log("Starting business profile creation...");
+      console.log(businessId ? "Updating" : "Creating", "business profile...");
       
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
@@ -22,36 +27,50 @@ export const useBusinessProfileSubmit = (onSuccess: () => void) => {
         console.log("Image uploaded successfully, public URL:", imageUrl);
       }
 
-      console.log("Creating business profile with data:", {
+      const profileData = {
         owner_id: user.id,
         name: data.name,
         description: data.description,
         category: data.category,
         address: data.address,
-        image_url: imageUrl,
-      });
+        ...(imageFile && { image_url: imageUrl }),
+      };
 
-      const { data: profile, error: profileError } = await supabase
-        .from("business_profiles")
-        .insert({
-          owner_id: user.id,
-          name: data.name,
-          description: data.description,
-          category: data.category,
-          address: data.address,
-          image_url: imageUrl,
-        })
-        .select()
-        .single();
+      let profile;
+      if (businessId) {
+        const { data: updatedProfile, error: profileError } = await supabase
+          .from("business_profiles")
+          .update(profileData)
+          .eq('id', businessId)
+          .select()
+          .single();
 
-      if (profileError) {
-        console.error("Error creating business profile:", profileError);
-        throw profileError;
+        if (profileError) throw profileError;
+        profile = updatedProfile;
+        console.log("Business profile updated successfully:", profile);
+      } else {
+        const { data: newProfile, error: profileError } = await supabase
+          .from("business_profiles")
+          .insert(profileData)
+          .select()
+          .single();
+
+        if (profileError) throw profileError;
+        profile = newProfile;
+        console.log("Business profile created successfully:", profile);
       }
       
-      console.log("Business profile created successfully:", profile);
-
       if (services.length > 0) {
+        if (businessId) {
+          // Delete existing services
+          const { error: deleteError } = await supabase
+            .from("business_services")
+            .delete()
+            .eq('business_id', businessId);
+
+          if (deleteError) throw deleteError;
+        }
+
         console.log("Creating services:", services);
         const { error: servicesError } = await supabase
           .from("business_services")
@@ -64,16 +83,13 @@ export const useBusinessProfileSubmit = (onSuccess: () => void) => {
             }))
           );
 
-        if (servicesError) {
-          console.error("Error creating services:", servicesError);
-          throw servicesError;
-        }
+        if (servicesError) throw servicesError;
         console.log("Services created successfully");
       }
 
       toast({
         title: "Success",
-        description: "Business profile created successfully",
+        description: businessId ? "Business profile updated successfully" : "Business profile created successfully",
       });
       onSuccess();
     } catch (error) {
@@ -81,7 +97,7 @@ export const useBusinessProfileSubmit = (onSuccess: () => void) => {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to create business profile",
+        description: businessId ? "Failed to update business profile" : "Failed to create business profile",
       });
       throw error;
     }

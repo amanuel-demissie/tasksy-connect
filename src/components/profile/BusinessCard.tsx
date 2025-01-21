@@ -4,11 +4,8 @@ import { DeleteBusinessDialog } from './DeleteBusinessDialog';
 import { BusinessRating } from './BusinessRating';
 import { BusinessInfo } from './BusinessInfo';
 import { getImageUrl } from '@/utils/imageUtils';
+import { useNavigate } from 'react-router-dom';
 
-/**
- * Interface defining the structure of a business profile
- * @interface BusinessProfile
- */
 interface BusinessProfile {
   id: string;
   name: string;
@@ -19,50 +16,25 @@ interface BusinessProfile {
   ratings?: number | null;
 }
 
-/**
- * Props for the BusinessCard component
- * @interface BusinessCardProps
- */
 interface BusinessCardProps {
-  /** The business profile data to display */
   profile: BusinessProfile;
-  /** Callback function triggered when the card is clicked */
   onClick: () => void;
-  /** Optional callback function triggered after successful deletion */
   onDelete?: () => void;
 }
 
-/**
- * BusinessCard Component
- * 
- * Displays a business profile in a card format with image, rating, and basic information.
- * Includes hover effects and a delete button with confirmation dialog.
- * 
- * @component
- * @example
- * ```tsx
- * const profile = {
- *   id: '123',
- *   name: 'Business Name',
- *   category: 'retail',
- *   address: '123 Main St'
- * };
- * 
- * <BusinessCard 
- *   profile={profile}
- *   onClick={() => console.log('Card clicked')}
- *   onDelete={() => console.log('Business deleted')}
- * />
- * ```
- */
-export const BusinessCard = ({ profile, onClick, onDelete }: BusinessCardProps) => {
+export const BusinessCard = ({ profile, onDelete }: BusinessCardProps) => {
   const [imageError, setImageError] = React.useState(false);
   const fallbackImage = 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d';
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    navigate(`/business/${profile.id}/edit`);
+  };
 
   return (
     <Card 
       className="relative overflow-hidden cursor-pointer group h-[300px]"
-      onClick={onClick}
+      onClick={handleClick}
     >
       {/* Background Image with Overlay */}
       <div className="absolute inset-0">
@@ -104,7 +76,7 @@ export const BusinessCard = ({ profile, onClick, onDelete }: BusinessCardProps) 
       >
         <div className="absolute bottom-4 right-4">
           <button className="bg-accent text-white px-6 py-2 rounded-full font-semibold hover:bg-accent/90 transition-colors">
-            View Details
+            Edit Profile
           </button>
         </div>
       </div>

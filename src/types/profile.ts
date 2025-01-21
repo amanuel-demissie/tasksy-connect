@@ -9,6 +9,7 @@ export interface ImageUploadProps {
   setShowCamera?: (show: boolean) => void;
   onCapturePhoto?: () => void;
   videoRef?: React.RefObject<HTMLVideoElement>;
+  currentImageUrl?: string | null;
 }
 
 export interface ImageUploadSectionProps extends ImageUploadProps {}

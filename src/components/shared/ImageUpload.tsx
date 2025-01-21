@@ -2,6 +2,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Camera } from "lucide-react";
 import { ImageUploadProps } from "@/types/profile";
+import { getImageUrl } from "@/utils/imageUtils";
 
 export default function ImageUpload({
   imageFile,
@@ -9,7 +10,8 @@ export default function ImageUpload({
   showCamera,
   setShowCamera,
   onCapturePhoto,
-  videoRef
+  videoRef,
+  currentImageUrl
 }: ImageUploadProps) {
   if (showCamera && videoRef && setShowCamera && onCapturePhoto) {
     return (
@@ -65,10 +67,10 @@ export default function ImageUpload({
           </Button>
         )}
       </div>
-      {imageFile && (
+      {(imageFile || currentImageUrl) && (
         <div className="mt-2">
           <img
-            src={URL.createObjectURL(imageFile)}
+            src={imageFile ? URL.createObjectURL(imageFile) : getImageUrl(currentImageUrl)}
             alt="Preview"
             className="max-w-xs rounded-lg"
           />
