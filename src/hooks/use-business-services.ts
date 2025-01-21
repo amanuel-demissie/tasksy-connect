@@ -18,6 +18,7 @@ export const useBusinessServices = () => {
 
   return {
     services,
+    setServices, // Exposing setServices function
     newService,
     setNewService,
     addService
