@@ -33,6 +33,26 @@ export const getImageUrl = (url: string | null): string => {
       return DEFAULT_IMAGE;
     }
   }
+
+  if (url.startsWith('freelancer-profiles/')) {
+    try {
+      // Get the public URL directly from the business_profile_images bucket
+      const { data } = supabase.storage
+        .from('business_profile_images')
+        .getPublicUrl(url);
+      
+      if (data?.publicUrl) {
+        console.log('Successfully generated freelancer profile image URL:', data.publicUrl);
+        return data.publicUrl;
+      }
+      
+      console.error('Failed to get public URL for business profile image:', url);
+      return DEFAULT_IMAGE;
+    } catch (error) {
+      console.error('Error getting business profile image URL:', error);
+      return DEFAULT_IMAGE;
+    }
+  }
   
   // Handle avatars bucket
   if (url.includes('avatars/')) {
