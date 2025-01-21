@@ -18,17 +18,27 @@ interface BusinessProfile {
 
 interface BusinessCardProps {
   profile: BusinessProfile;
-  onClick: () => void;
+  onClick?: () => void;
   onDelete?: () => void;
 }
 
+/**
+ * BusinessCard Component
+ * 
+ * Displays a business profile card with image, details, and actions.
+ * Supports navigation to edit view and deletion functionality.
+ * 
+ * @component
+ * @param {BusinessCardProps} props - Component props
+ * @returns {JSX.Element} Rendered business card
+ */
 export const BusinessCard = ({ profile, onDelete }: BusinessCardProps) => {
   const [imageError, setImageError] = React.useState(false);
   const fallbackImage = 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d';
   const navigate = useNavigate();
 
   const handleClick = () => {
-    navigate(`/business/${profile.id}/edit`);
+    navigate(`/business-profile/${profile.id}/edit`);
   };
 
   return (

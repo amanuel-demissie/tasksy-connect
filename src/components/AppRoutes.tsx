@@ -8,7 +8,17 @@ import Appointments from "@/pages/Appointments";
 import Explore from "@/pages/Explore";
 import BusinessProfile from "@/pages/BusinessProfile";
 import FreelancerProfile from "@/pages/FreelancerProfile";
+import EditBusinessProfileForm from "@/components/forms/EditBusinessProfileForm";
 
+/**
+ * AppRoutes Component
+ * 
+ * Defines the routing configuration for the application.
+ * Handles protected and public routes.
+ * 
+ * @component
+ * @returns {JSX.Element} Application routes configuration
+ */
 const AppRoutes = () => {
   return (
     <Routes>
@@ -42,6 +52,14 @@ const AppRoutes = () => {
       <Route 
         path="/business-profile/:id" 
         element={<BusinessProfile />} 
+      />
+      <Route 
+        path="/business-profile/:id/edit" 
+        element={
+          <ProtectedRoute>
+            <EditBusinessProfileForm />
+          </ProtectedRoute>
+        }
       />
       <Route 
         path="/freelancer-profile/:id" 
