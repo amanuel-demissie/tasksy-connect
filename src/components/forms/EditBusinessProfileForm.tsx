@@ -24,6 +24,7 @@ export default function EditBusinessProfileForm() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(null);
+  const [notFound, setNotFound] = useState(false);
   
   const { submitProfile } = useBusinessProfileSubmit(() => {
     toast({
@@ -66,7 +67,7 @@ export default function EditBusinessProfileForm() {
           )
         `)
         .eq("id", id)
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error("Error fetching business profile:", error);
@@ -78,18 +79,26 @@ export default function EditBusinessProfileForm() {
         return;
       }
 
-      if (profile) {
-        setValue("name", profile.name);
-        setValue("description", profile.description || "");
-        setValue("address", profile.address || "");
-        setSelectedCategory(profile.category as ServiceCategory);
-        setCurrentImageUrl(profile.image_url);
-        setServices(profile.business_services || []);
+      if (!profile) {
+        setNotFound(true);
+        toast({
+          variant: "destructive",
+          title: "Not Found",
+          description: "Business profile not found",
+        });
+        return;
       }
+
+      setValue("name", profile.name);
+      setValue("description", profile.description || "");
+      setValue("address", profile.address || "");
+      setSelectedCategory(profile.category as ServiceCategory);
+      setCurrentImageUrl(profile.image_url);
+      setServices(profile.business_services || []);
     };
 
     fetchBusinessProfile();
-  }, [id, setValue]);
+  }, [id, setValue, toast]);
 
   const onSubmit = async (data: BusinessProfileFormData) => {
     if (!id) return;
@@ -129,6 +138,16 @@ export default function EditBusinessProfileForm() {
   const handleExit = () => {
     navigate("/profile");
   };
+
+  if (notFound) {
+    return (
+      <div className="text-center py-8">
+        <h2 className="text-xl font-semibold text-gray-900 mb-2">Business Profile Not Found</h2>
+        <p className="text-gray-600 mb-4">The business profile you're looking for doesn't exist or has been deleted.</p>
+        <Button onClick={handleExit}>Return to Profile</Button>
+      </div>
+    );
+  }
 
   return (
     <div className="relative">
