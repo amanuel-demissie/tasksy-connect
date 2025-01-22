@@ -13,8 +13,8 @@ function App() {
     <BrowserRouter>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <div className="min-h-screen bg-background w-full max-w-[428px] mx-auto">
-            <main className="pb-16 px-4">
+          <div className="min-h-screen bg-background w-full mx-auto">
+            <main className="pb-16 px-0 sm:px-4">
               <AppRoutes />
             </main>
             <Navigation />
