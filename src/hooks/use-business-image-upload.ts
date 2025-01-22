@@ -4,39 +4,12 @@ import { ServiceCategory } from '@/types/profile';
 
 /**
  * Custom hook for handling business image uploads to Supabase storage
- * 
- * This hook provides functionality to:
- * - Upload business profile images to Supabase storage in category-specific folders
- * - Track upload progress
- * - Generate and return public URLs for uploaded images
- * - Handle error cases and file validation
- * 
- * @example
- * ```tsx
- * const { uploadBusinessImage, uploadProgress } = useBusinessImageUpload();
- * 
- * // Later in your component:
- * const handleImageUpload = async (file: File) => {
- *   try {
- *     const url = await uploadBusinessImage(file, 'My Business', 'beauty');
- *     console.log('Uploaded image URL:', url);
- *   } catch (error) {
- *     console.error('Upload failed:', error);
- *   }
- * };
- * ```
- * 
- * @returns {Object} Hook methods and state
- * @returns {Function} uploadBusinessImage - Function to handle image upload
- * @returns {number} uploadProgress - Current upload progress (0-100)
  */
 export const useBusinessImageUpload = () => {
   const [uploadProgress, setUploadProgress] = useState(0);
 
   /**
    * Gets the appropriate folder path based on business category
-   * @param {ServiceCategory} category - The business category
-   * @returns {string} The storage folder path for the category
    */
   const getCategoryFolder = (category: ServiceCategory): string => {
     switch (category) {
@@ -55,14 +28,14 @@ export const useBusinessImageUpload = () => {
 
   /**
    * Uploads a business profile image to Supabase storage in the appropriate category folder
-   * @param {File | string | null} fileOrUrl - The image file to upload or existing image URL
+   * @param {File | string | URL | null} fileOrUrl - The image file to upload or existing image URL
    * @param {string} businessName - The name of the business (used in filename)
    * @param {ServiceCategory} category - The business category
    * @returns {Promise<string | null>} The public URL of the uploaded image, or null if upload fails
    * @throws {Error} If upload fails or file is invalid
    */
   const uploadBusinessImage = async (
-    fileOrUrl: File | string | null,
+    fileOrUrl: File | string | URL | null,
     businessName: string,
     category: ServiceCategory
   ): Promise<string | null> => {
@@ -74,6 +47,12 @@ export const useBusinessImageUpload = () => {
       if (typeof fileOrUrl === 'string') {
         console.log('Using existing image URL:', fileOrUrl);
         return fileOrUrl;
+      }
+
+      // If the input is a URL object, return its string representation
+      if (fileOrUrl instanceof URL) {
+        console.log('Using existing image URL from URL object:', fileOrUrl.toString());
+        return fileOrUrl.toString();
       }
 
       // At this point, we know fileOrUrl is a File
