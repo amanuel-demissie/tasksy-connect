@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { useBusinessProfileSubmit } from "@/hooks/use-business-profile-submit";
 import { useCameraCapture } from "@/hooks/use-camera-capture";
 import { useBusinessServices } from "@/hooks/use-business-services";
-import { Loader2 } from "lucide-react";
+import { Loader2, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { getImageUrl } from "@/utils/imageUtils";
@@ -126,46 +126,62 @@ export default function EditBusinessProfileForm() {
     }
   };
 
+  const handleExit = () => {
+    navigate("/profile");
+  };
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <ImageUploadSection
-        imageFile={imageFile}
-        setImageFile={setImageFile}
-        showCamera={showCamera}
-        setShowCamera={setShowCamera}
-        onCapturePhoto={handleCameraCapture}
-        videoRef={videoRef}
-        currentImageUrl={currentImageUrl}
-      />
-
-      <BusinessDetailsSection
-        register={register}
-        errors={errors}
-        selectedCategory={selectedCategory}
-        setSelectedCategory={setSelectedCategory}
-      />
-
-      <ServicesSection
-        services={services}
-        newService={newService}
-        setNewService={setNewService}
-        addService={addService}
-      />
-
-      <Button 
-        type="submit"
-        className="w-full bg-accent text-white hover:bg-accent/90"
-        disabled={isSubmitting}
+    <div className="relative">
+      <Button
+        variant="ghost"
+        size="icon"
+        className="absolute right-0 top-0 z-10"
+        onClick={handleExit}
+        aria-label="Exit form"
       >
-        {isSubmitting ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Updating Profile...
-          </>
-        ) : (
-          'Update Business Profile'
-        )}
+        <X className="h-4 w-4" />
       </Button>
-    </form>
+
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <ImageUploadSection
+          imageFile={imageFile}
+          setImageFile={setImageFile}
+          showCamera={showCamera}
+          setShowCamera={setShowCamera}
+          onCapturePhoto={handleCameraCapture}
+          videoRef={videoRef}
+          currentImageUrl={currentImageUrl}
+        />
+
+        <BusinessDetailsSection
+          register={register}
+          errors={errors}
+          selectedCategory={selectedCategory}
+          setSelectedCategory={setSelectedCategory}
+        />
+
+        <ServicesSection
+          services={services}
+          newService={newService}
+          setNewService={setNewService}
+          addService={addService}
+        />
+
+        <Button 
+          type="submit"
+          className="w-full bg-accent text-white hover:bg-accent/90"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Updating Profile...
+            </>
+          ) : (
+            'Update Business Profile'
+          )}
+        </Button>
+      </form>
+    </div>
   );
 }
