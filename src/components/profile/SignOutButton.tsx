@@ -4,6 +4,20 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "../auth/AuthProvider";
 
+/**
+ * SignOutButton Component
+ * 
+ * A button component that handles user sign-out functionality.
+ * Matches the styling of the BusinessProfileForm buttons for visual consistency.
+ * 
+ * Features:
+ * - Handles sign-out process with proper error handling
+ * - Shows toast messages for success/failure states
+ * - Redirects to auth page after sign-out
+ * - Maintains consistent styling with other form buttons
+ * 
+ * @component
+ */
 export const SignOutButton = () => {
   const navigate = useNavigate();
   const { session } = useAuth();
@@ -53,8 +67,7 @@ export const SignOutButton = () => {
   return (
     <Button 
       onClick={handleSignOut}
-      variant="destructive"
-      className="w-full"
+      className="w-full bg-accent text-white hover:bg-accent/90"
     >
       Sign Out
     </Button>
