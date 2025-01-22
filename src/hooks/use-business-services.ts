@@ -42,7 +42,7 @@ export const useBusinessServices = (businessId?: string) => {
    */
   const deleteService = async (index: number, serviceId?: string) => {
     try {
-      // If we have a businessId and serviceId, delete from database
+      // Only attempt database deletion if we have both businessId and serviceId
       if (businessId && serviceId) {
         const { error } = await supabase
           .from("business_services")
@@ -61,7 +61,7 @@ export const useBusinessServices = (businessId?: string) => {
         }
       }
 
-      // Update local state
+      // Update local state only after successful database operation (if applicable)
       setServices(services.filter((_, i) => i !== index));
       
       toast({

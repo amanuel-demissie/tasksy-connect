@@ -9,6 +9,7 @@ interface ServicesListProps {
   setNewService: (service: BusinessService) => void;
   addService: () => void;
   onDeleteService?: (index: number, serviceId?: string) => void;
+  isEditing?: boolean; // New prop to distinguish between create and edit modes
 }
 
 /**
@@ -23,13 +24,15 @@ interface ServicesListProps {
  * @param {Function} props.setNewService - Function to update new service
  * @param {Function} props.addService - Function to add a new service
  * @param {Function} props.onDeleteService - Function to handle service deletion
+ * @param {boolean} props.isEditing - Whether the component is in edit mode
  */
 export default function ServicesList({
   services,
   newService,
   setNewService,
   addService,
-  onDeleteService
+  onDeleteService,
+  isEditing = false
 }: ServicesListProps) {
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -42,6 +45,12 @@ export default function ServicesList({
     }
   };
 
+  const handleDeleteService = (index: number, serviceId?: string) => {
+    if (onDeleteService) {
+      onDeleteService(index, serviceId);
+    }
+  };
+
   return (
     <div className="space-y-4">
       {services.map((service, index) => (
@@ -50,7 +59,7 @@ export default function ServicesList({
             variant="ghost"
             size="icon"
             className="absolute top-2 right-2 h-6 w-6"
-            onClick={() => onDeleteService?.(index, service.id)}
+            onClick={() => handleDeleteService(index, service.id)}
           >
             <X className="h-4 w-4" />
           </Button>
