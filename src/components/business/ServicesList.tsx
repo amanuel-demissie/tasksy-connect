@@ -4,13 +4,26 @@ import { X } from "lucide-react";
 import { BusinessService } from "@/types/profile";
 
 interface ServicesListProps {
-  services: BusinessService[];
+  services: (BusinessService & { id?: string })[];
   newService: BusinessService;
   setNewService: (service: BusinessService) => void;
   addService: () => void;
-  onDeleteService?: (index: number) => void;
+  onDeleteService?: (index: number, serviceId?: string) => void;
 }
 
+/**
+ * ServicesList Component
+ * 
+ * Displays a list of business services and provides UI for adding/deleting services
+ * 
+ * @component
+ * @param {Object} props - Component props
+ * @param {BusinessService[]} props.services - Array of services to display
+ * @param {BusinessService} props.newService - New service being created
+ * @param {Function} props.setNewService - Function to update new service
+ * @param {Function} props.addService - Function to add a new service
+ * @param {Function} props.onDeleteService - Function to handle service deletion
+ */
 export default function ServicesList({
   services,
   newService,
@@ -37,7 +50,7 @@ export default function ServicesList({
             variant="ghost"
             size="icon"
             className="absolute top-2 right-2 h-6 w-6"
-            onClick={() => onDeleteService?.(index)}
+            onClick={() => onDeleteService?.(index, service.id)}
           >
             <X className="h-4 w-4" />
           </Button>
