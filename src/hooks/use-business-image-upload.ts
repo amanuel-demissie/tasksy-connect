@@ -55,16 +55,29 @@ export const useBusinessImageUpload = () => {
 
   /**
    * Uploads a business profile image to Supabase storage in the appropriate category folder
-   * @param {File} file - The image file to upload
+   * @param {File | string | null} fileOrUrl - The image file to upload or existing image URL
    * @param {string} businessName - The name of the business (used in filename)
    * @param {ServiceCategory} category - The business category
    * @returns {Promise<string | null>} The public URL of the uploaded image, or null if upload fails
    * @throws {Error} If upload fails or file is invalid
    */
-  const uploadBusinessImage = async (file: File, businessName: string, category: ServiceCategory) => {
+  const uploadBusinessImage = async (
+    fileOrUrl: File | string | null,
+    businessName: string,
+    category: ServiceCategory
+  ): Promise<string | null> => {
     try {
-      if (!file) return null;
+      // If no file or URL provided, return null
+      if (!fileOrUrl) return null;
 
+      // If the input is a string (URL), return it as is
+      if (typeof fileOrUrl === 'string') {
+        console.log('Using existing image URL:', fileOrUrl);
+        return fileOrUrl;
+      }
+
+      // At this point, we know fileOrUrl is a File
+      const file = fileOrUrl as File;
       setUploadProgress(0);
       console.log(`Uploading image for ${category} business...`);
 
@@ -74,8 +87,11 @@ export const useBusinessImageUpload = () => {
       // Get the appropriate folder based on category
       const categoryFolder = getCategoryFolder(category);
       
+      // Get file extension safely
+      const fileExtension = file.name.split('.').pop() || 'jpg';
+      
       // Generate unique filename with timestamp and category path
-      const fileName = `${categoryFolder}/${sanitizedName}-${Date.now()}.${file.name.split('.').pop()}`;
+      const fileName = `${categoryFolder}/${sanitizedName}-${Date.now()}.${fileExtension}`;
       
       console.log(`Uploading to path: ${fileName}`);
 
