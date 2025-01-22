@@ -14,6 +14,30 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { getImageUrl } from "@/utils/imageUtils";
 
+/**
+ * EditBusinessProfileForm Component
+ * 
+ * A comprehensive form component for editing existing business profiles.
+ * This component handles the complete lifecycle of editing a business profile including:
+ * - Fetching existing profile data
+ * - Image management (upload/update)
+ * - Business details editing
+ * - Services management
+ * - Form validation and submission
+ * - Error handling and user feedback
+ * 
+ * The component uses several custom hooks for different functionalities:
+ * - useForm: For form state and validation
+ * - useBusinessProfileSubmit: For profile update logic
+ * - useCameraCapture: For handling camera functionality
+ * - useBusinessServices: For managing services state
+ * 
+ * @component
+ * @example
+ * ```tsx
+ * <EditBusinessProfileForm />
+ * ```
+ */
 export default function EditBusinessProfileForm() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -51,6 +75,16 @@ export default function EditBusinessProfileForm() {
     addService 
   } = useBusinessServices();
 
+  /**
+   * Fetches the business profile data when the component mounts
+   * or when the profile ID changes.
+   * 
+   * This effect:
+   * 1. Validates the presence of an ID
+   * 2. Fetches profile data from Supabase
+   * 3. Handles error cases and notFound states
+   * 4. Populates the form with existing data
+   */
   useEffect(() => {
     const fetchBusinessProfile = async () => {
       if (!id) return;
@@ -100,6 +134,12 @@ export default function EditBusinessProfileForm() {
     fetchBusinessProfile();
   }, [id, setValue, toast]);
 
+  /**
+   * Handles form submission for updating the business profile
+   * 
+   * @param {BusinessProfileFormData} data - The form data to be submitted
+   * @returns {Promise<void>}
+   */
   const onSubmit = async (data: BusinessProfileFormData) => {
     if (!id) return;
 
@@ -126,6 +166,12 @@ export default function EditBusinessProfileForm() {
     }
   };
 
+  /**
+   * Handles photo capture from the device camera
+   * Processes the captured photo and updates the image file state
+   * 
+   * @returns {Promise<void>}
+   */
   const handleCameraCapture = async () => {
     try {
       const file = await capturePhoto();
@@ -135,6 +181,9 @@ export default function EditBusinessProfileForm() {
     }
   };
 
+  /**
+   * Handles navigation back to the profile page
+   */
   const handleExit = () => {
     navigate("/profile");
   };

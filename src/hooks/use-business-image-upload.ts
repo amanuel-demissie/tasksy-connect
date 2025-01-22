@@ -4,12 +4,25 @@ import { ServiceCategory } from '@/types/profile';
 
 /**
  * Custom hook for handling business image uploads to Supabase storage
+ * 
+ * This hook provides functionality for:
+ * - Uploading images to the appropriate category folder
+ * - Tracking upload progress
+ * - Handling different input types (File, URL, string)
+ * - Error handling and logging
+ * 
+ * @returns {Object} Hook methods and state
+ * @returns {Function} uploadBusinessImage - Function to handle image uploads
+ * @returns {number} uploadProgress - Current upload progress (0-100)
  */
 export const useBusinessImageUpload = () => {
   const [uploadProgress, setUploadProgress] = useState(0);
 
   /**
-   * Gets the appropriate folder path based on business category
+   * Gets the appropriate storage folder path based on business category
+   * 
+   * @param {ServiceCategory} category - The business category
+   * @returns {string} The folder path for the category
    */
   const getCategoryFolder = (category: ServiceCategory): string => {
     switch (category) {
@@ -27,7 +40,16 @@ export const useBusinessImageUpload = () => {
   };
 
   /**
-   * Uploads a business profile image to Supabase storage in the appropriate category folder
+   * Uploads a business profile image to Supabase storage
+   * 
+   * This function handles:
+   * - New image file uploads
+   * - Existing image URLs
+   * - URL objects
+   * - Proper file naming and categorization
+   * - Progress tracking
+   * - Error handling
+   * 
    * @param {File | string | URL | null} fileOrUrl - The image file to upload or existing image URL
    * @param {string} businessName - The name of the business (used in filename)
    * @param {ServiceCategory} category - The business category
@@ -74,7 +96,7 @@ export const useBusinessImageUpload = () => {
       
       console.log(`Uploading to path: ${fileName}`);
 
-      // Upload file to Supabase storage in the business_profile_images bucket
+      // Upload file to Supabase storage
       const { error: uploadError } = await supabase.storage
         .from("business_profile_images")
         .upload(fileName, file, {
