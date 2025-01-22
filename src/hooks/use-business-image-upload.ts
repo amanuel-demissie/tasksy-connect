@@ -11,6 +11,21 @@ import { ServiceCategory } from '@/types/profile';
  * - Generate and return public URLs for uploaded images
  * - Handle error cases and file validation
  * 
+ * @example
+ * ```tsx
+ * const { uploadBusinessImage, uploadProgress } = useBusinessImageUpload();
+ * 
+ * // Later in your component:
+ * const handleImageUpload = async (file: File) => {
+ *   try {
+ *     const url = await uploadBusinessImage(file, 'My Business', 'beauty');
+ *     console.log('Uploaded image URL:', url);
+ *   } catch (error) {
+ *     console.error('Upload failed:', error);
+ *   }
+ * };
+ * ```
+ * 
  * @returns {Object} Hook methods and state
  * @returns {Function} uploadBusinessImage - Function to handle image upload
  * @returns {number} uploadProgress - Current upload progress (0-100)
@@ -20,6 +35,8 @@ export const useBusinessImageUpload = () => {
 
   /**
    * Gets the appropriate folder path based on business category
+   * @param {ServiceCategory} category - The business category
+   * @returns {string} The storage folder path for the category
    */
   const getCategoryFolder = (category: ServiceCategory): string => {
     switch (category) {
@@ -38,6 +55,11 @@ export const useBusinessImageUpload = () => {
 
   /**
    * Uploads a business profile image to Supabase storage in the appropriate category folder
+   * @param {File} file - The image file to upload
+   * @param {string} businessName - The name of the business (used in filename)
+   * @param {ServiceCategory} category - The business category
+   * @returns {Promise<string | null>} The public URL of the uploaded image, or null if upload fails
+   * @throws {Error} If upload fails or file is invalid
    */
   const uploadBusinessImage = async (file: File, businessName: string, category: ServiceCategory) => {
     try {

@@ -1,55 +1,108 @@
-import { useState, useRef } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { useRef, useState } from 'react';
 
+/**
+ * Custom hook for managing device camera capture functionality
+ * 
+ * This hook provides functionality to:
+ * - Access device camera
+ * - Start and stop camera stream
+ * - Capture photos from camera feed
+ * - Handle camera permissions and errors
+ * 
+ * @example
+ * ```tsx
+ * const {
+ *   showCamera,
+ *   setShowCamera,
+ *   videoRef,
+ *   startCamera,
+ *   capturePhoto,
+ *   stopCamera
+ * } = useCameraCapture();
+ * 
+ * // Later in your component:
+ * const handleCapture = async () => {
+ *   const photo = await capturePhoto();
+ *   console.log('Captured photo:', photo);
+ * };
+ * ```
+ * 
+ * @returns {Object} Hook methods and state
+ * @returns {boolean} showCamera - Whether camera feed is visible
+ * @returns {Function} setShowCamera - Function to toggle camera visibility
+ * @returns {React.RefObject<HTMLVideoElement>} videoRef - Reference to video element
+ * @returns {Function} startCamera - Function to initialize camera
+ * @returns {Function} capturePhoto - Function to take photo
+ * @returns {Function} stopCamera - Function to stop camera feed
+ */
 export const useCameraCapture = () => {
   const [showCamera, setShowCamera] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const { toast } = useToast();
+  const streamRef = useRef<MediaStream | null>(null);
 
+  /**
+   * Initializes the device camera and starts the video stream
+   * @throws {Error} If camera access is denied or unavailable
+   */
   const startCamera = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: 'user' } 
+      });
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
+        streamRef.current = stream;
       }
-      setShowCamera(true);
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Camera Error",
-        description: "Unable to access camera. Please check permissions.",
-      });
+      console.error('Error accessing camera:', error);
+      throw error;
     }
   };
 
-  const capturePhoto = () => {
-    if (videoRef.current) {
-      const canvas = document.createElement('canvas');
-      canvas.width = videoRef.current.videoWidth;
-      canvas.height = videoRef.current.videoHeight;
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        ctx.drawImage(videoRef.current, 0, 0);
-        return new Promise<File>((resolve) => {
-          canvas.toBlob((blob) => {
-            if (blob) {
-              const file = new File([blob], `camera-capture-${Date.now()}.jpg`, { type: 'image/jpeg' });
-              const stream = videoRef.current?.srcObject as MediaStream;
-              stream?.getTracks().forEach(track => track.stop());
-              setShowCamera(false);
-              resolve(file);
-            }
-          }, 'image/jpeg');
-        });
-      }
+  /**
+   * Captures a photo from the current camera feed
+   * @returns {Promise<File>} The captured photo as a File object
+   * @throws {Error} If camera is not active or capture fails
+   */
+  const capturePhoto = async (): Promise<File> => {
+    if (!videoRef.current) {
+      throw new Error('Camera not initialized');
     }
-    return Promise.reject("No video stream available");
+
+    const canvas = document.createElement('canvas');
+    canvas.width = videoRef.current.videoWidth;
+    canvas.height = videoRef.current.videoHeight;
+    
+    const context = canvas.getContext('2d');
+    if (!context) {
+      throw new Error('Could not get canvas context');
+    }
+    
+    context.drawImage(videoRef.current, 0, 0);
+    
+    return new Promise((resolve, reject) => {
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const file = new File([blob], 'camera-capture.jpg', { type: 'image/jpeg' });
+          resolve(file);
+        } else {
+          reject(new Error('Failed to capture photo'));
+        }
+      }, 'image/jpeg');
+    });
   };
 
+  /**
+   * Stops the camera stream and cleans up resources
+   */
   const stopCamera = () => {
-    const stream = videoRef.current?.srcObject as MediaStream;
-    stream?.getTracks().forEach(track => track.stop());
-    setShowCamera(false);
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
   };
 
   return {
