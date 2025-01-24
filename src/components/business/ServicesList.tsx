@@ -8,8 +8,8 @@ interface ServicesListProps {
   newService: BusinessService;
   setNewService: (service: BusinessService) => void;
   addService: () => void;
-  onDeleteService?: (index: number, serviceId?: string) => void;
-  isEditing?: boolean; // New prop to distinguish between create and edit modes
+  onDeleteService?: (index: number, serviceId?: string, isEditing?: boolean) => void;
+  isEditing?: boolean; // Prop to distinguish between create and edit modes
 }
 
 /**
@@ -47,7 +47,7 @@ export default function ServicesList({
 
   const handleDeleteService = (index: number, serviceId?: string) => {
     if (onDeleteService) {
-      onDeleteService(index, serviceId);
+      onDeleteService(index, serviceId, isEditing);
     }
   };
 

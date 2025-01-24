@@ -39,11 +39,12 @@ export const useBusinessServices = (businessId?: string) => {
    * Deletes a service from the list and database if applicable
    * @param {number} index - Index of service to delete
    * @param {string} serviceId - Database ID of service to delete
+   * @param {boolean} isEditing - Whether we're in edit mode
    */
-  const deleteService = async (index: number, serviceId?: string) => {
+  const deleteService = async (index: number, serviceId?: string, isEditing: boolean = false) => {
     try {
-      // Only attempt database deletion if we have both businessId and serviceId
-      if (businessId && serviceId) {
+      // Only attempt database deletion if we're in edit mode and have both businessId and serviceId
+      if (isEditing && businessId && serviceId) {
         const { error } = await supabase
           .from("business_services")
           .delete()
@@ -61,20 +62,25 @@ export const useBusinessServices = (businessId?: string) => {
         }
       }
 
-      // Update local state only after successful database operation (if applicable)
+      // Update local state
       setServices(services.filter((_, i) => i !== index));
       
-      toast({
-        title: "Success",
-        description: "Service deleted successfully",
-      });
+      // Only show toast in edit mode when deleting from database
+      if (isEditing) {
+        toast({
+          title: "Success",
+          description: "Service deleted successfully",
+        });
+      }
     } catch (error) {
       console.error("Error in deleteService:", error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to delete service. Please try again.",
-      });
+      if (isEditing) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to delete service. Please try again.",
+        });
+      }
     }
   };
 
