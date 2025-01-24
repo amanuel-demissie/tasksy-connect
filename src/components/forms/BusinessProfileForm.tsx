@@ -10,47 +10,13 @@ import { useCameraCapture } from "@/hooks/use-camera-capture";
 import { useBusinessServices } from "@/hooks/use-business-services";
 import { Loader2 } from "lucide-react";
 
-/**
- * BusinessProfileForm Component
- * 
- * A comprehensive form component for creating and managing business profiles.
- * This component integrates multiple features including image upload, business details,
- * and services management into a cohesive form interface.
- * 
- * Features:
- * - Image upload with camera capture functionality
- * - Business details input (name, description, category, address)
- * - Services management (add/delete/list business services)
- * - Loading state management during form submission
- * - Form validation using react-hook-form
- * 
- * The component uses several custom hooks:
- * - useBusinessProfileSubmit: Handles the profile creation logic
- * - useCameraCapture: Manages device camera functionality
- * - useBusinessServices: Manages the services state and operations
- * 
- * @component
- * @param {Object} props - Component props
- * @param {() => void} props.onSuccess - Callback function executed after successful profile creation
- * 
- * @example
- * ```tsx
- * <BusinessProfileForm onSuccess={() => {
- *   console.log('Profile created successfully');
- *   // Handle post-creation navigation or UI updates
- * }} />
- * ```
- */
 export default function BusinessProfileForm({ onSuccess }: { onSuccess: () => void }) {
-  // Form state management using react-hook-form
   const { register, handleSubmit, formState: { errors } } = useForm<BusinessProfileFormData>();
   
-  // State management for form data and UI
   const [selectedCategory, setSelectedCategory] = useState<ServiceCategory>("beauty");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Custom hooks for business profile functionality
   const { submitProfile } = useBusinessProfileSubmit(onSuccess);
   const { 
     showCamera, 
@@ -68,12 +34,6 @@ export default function BusinessProfileForm({ onSuccess }: { onSuccess: () => vo
     deleteService 
   } = useBusinessServices();
 
-  /**
-   * Handles form submission
-   * Processes the form data and creates a new business profile
-   * 
-   * @param {BusinessProfileFormData} data - Form data collected from inputs
-   */
   const onSubmit = async (data: BusinessProfileFormData) => {
     try {
       setIsSubmitting(true);
@@ -87,10 +47,6 @@ export default function BusinessProfileForm({ onSuccess }: { onSuccess: () => vo
     }
   };
 
-  /**
-   * Handles photo capture from device camera
-   * Processes the captured photo and updates the image file state
-   */
   const handleCameraCapture = async () => {
     try {
       const file = await capturePhoto();
@@ -98,6 +54,12 @@ export default function BusinessProfileForm({ onSuccess }: { onSuccess: () => vo
     } catch (error) {
       console.error("Error capturing photo:", error);
     }
+  };
+
+  // Prevent form submission on service deletion
+  const handleServiceDelete = (index: number, serviceId?: string) => {
+    // Explicitly set isEditing to false since we're in create mode
+    deleteService(index, serviceId, false);
   };
 
   return (
@@ -123,7 +85,7 @@ export default function BusinessProfileForm({ onSuccess }: { onSuccess: () => vo
         newService={newService}
         setNewService={setNewService}
         addService={addService}
-        onDeleteService={deleteService}
+        onDeleteService={handleServiceDelete}
       />
 
       <Button 
