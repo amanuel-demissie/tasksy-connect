@@ -45,7 +45,8 @@ export default function ServicesList({
     }
   };
 
-  const handleDeleteService = (index: number, serviceId?: string) => {
+  const handleDeleteService = (event: React.MouseEvent<HTMLButtonElement>, index: number, serviceId?: string) => {
+    event.preventDefault();
     if (onDeleteService) {
       onDeleteService(index, serviceId, isEditing);
     }
@@ -59,7 +60,7 @@ export default function ServicesList({
             variant="ghost"
             size="icon"
             className="absolute top-2 right-2 h-6 w-6"
-            onClick={() => handleDeleteService(index, service.id)}
+            onClick={(event) => handleDeleteService(event, index, service.id)}
           >
             <X className="h-4 w-4" />
           </Button>
