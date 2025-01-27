@@ -6,21 +6,8 @@ import { useBusinessProfileSubmit } from "./use-business-profile-submit";
 import { useToast } from "./use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { getImageUrl } from "@/utils/imageUtils";
+import { useBusinessServices } from "./use-business-services";
 
-/**
- * Custom hook for managing business profile form state and operations
- * 
- * This hook centralizes the form logic including:
- * - Form state management
- * - Profile data fetching
- * - Image handling
- * - Form submission
- * - Navigation
- * 
- * @param {string} profileId - The ID of the business profile being edited
- * @param {() => void} onSuccess - Callback function executed after successful submission
- * @returns {Object} Form state and handlers
- */
 export const useBusinessProfileForm = (profileId: string) => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -40,9 +27,8 @@ export const useBusinessProfileForm = (profileId: string) => {
     navigate("/profile");
   });
 
-  /**
-   * Fetches the business profile data
-   */
+  const { services, setServices } = useBusinessServices();
+
   const fetchProfile = async () => {
     if (!profileId) return;
 
@@ -80,16 +66,24 @@ export const useBusinessProfileForm = (profileId: string) => {
       return;
     }
 
+    // Set form values
     setValue("name", profile.name);
     setValue("description", profile.description || "");
     setValue("address", profile.address || "");
     setSelectedCategory(profile.category as ServiceCategory);
     setCurrentImageUrl(profile.image_url);
+
+    // Set services with their IDs
+    if (profile.business_services) {
+      setServices(profile.business_services.map(service => ({
+        id: service.id,
+        name: service.name,
+        description: service.description || "",
+        price: Number(service.price)
+      })));
+    }
   };
 
-  /**
-   * Handles form submission
-   */
   const onSubmit = async (data: BusinessProfileFormData) => {
     if (!profileId) return;
 
@@ -102,7 +96,7 @@ export const useBusinessProfileForm = (profileId: string) => {
 
       const imageToSubmit = imageFile || (currentImageUrl ? new URL(getImageUrl(currentImageUrl)) : null);
       
-      await submitProfile(formData, imageToSubmit as File | null, [], profileId);
+      await submitProfile(formData, imageToSubmit as File | null, services, profileId);
     } catch (error) {
       console.error("Error updating business profile:", error);
       toast({
@@ -132,6 +126,7 @@ export const useBusinessProfileForm = (profileId: string) => {
     isSubmitting,
     notFound,
     handleExit,
-    fetchProfile
+    fetchProfile,
+    services
   };
 };
