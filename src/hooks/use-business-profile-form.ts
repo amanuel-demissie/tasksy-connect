@@ -8,6 +8,19 @@ import { supabase } from "@/integrations/supabase/client";
 import { getImageUrl } from "@/utils/imageUtils";
 import { useBusinessServices } from "./use-business-services";
 
+/**
+ * Custom hook for managing business profile form state and operations
+ * 
+ * This hook centralizes the form logic including:
+ * - Form state management
+ * - Profile data fetching
+ * - Image handling
+ * - Form submission
+ * - Navigation
+ * 
+ * @param {string} profileId - The ID of the business profile being edited
+ * @returns {Object} Form state and handlers
+ */
 export const useBusinessProfileForm = (profileId: string) => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -29,6 +42,10 @@ export const useBusinessProfileForm = (profileId: string) => {
 
   const { services, setServices } = useBusinessServices();
 
+  /**
+   * Fetches the business profile data from Supabase
+   * Sets form values and services if profile is found
+   */
   const fetchProfile = async () => {
     if (!profileId) return;
 
@@ -84,6 +101,11 @@ export const useBusinessProfileForm = (profileId: string) => {
     }
   };
 
+  /**
+   * Handles form submission
+   * Updates the business profile with new data
+   * @param {BusinessProfileFormData} data - Form data to submit
+   */
   const onSubmit = async (data: BusinessProfileFormData) => {
     if (!profileId) return;
 
@@ -109,6 +131,10 @@ export const useBusinessProfileForm = (profileId: string) => {
     }
   };
 
+  /**
+   * Handles exiting the form
+   * Navigates back to the profile page
+   */
   const handleExit = () => {
     navigate("/profile");
   };
