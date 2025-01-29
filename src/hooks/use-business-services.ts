@@ -66,10 +66,68 @@ export const useBusinessServices = (businessId?: string) => {
    * Adds a new service to the list
    * If businessId is provided, also persists to database
    */
-  const addService = () => {
-    if (newService.name && newService.price > 0) {
-      setServices([...services, newService]);
-      setNewService({ name: "", description: "", price: 0 });
+  const addService = async(
+    index: number,
+    serviceId?: string,
+    isEditing: boolean = false
+  ) => {
+    try {
+      if (newService.name && newService.price > 0) {
+        // If we're in edit mode and have a businessId, add to database
+        if (isEditing && businessId) {
+          const { data, error } = await supabase
+            .from("business_services")
+            .insert({
+              business_id: businessId,
+              name: newService.name,
+              description: newService.description,
+              price: newService.price,
+            })
+            .select()
+            .single();
+
+          if (error) {
+            console.error("Error adding service:", error);
+            toast({
+              variant: "destructive",
+              title: "Error",
+              description: "Failed to add service. Please try again.",
+            });
+            return;
+          }
+
+          // Update local state with the database response
+          setServices([...services, {
+            //id: data.id,
+            name: data.name,
+            description: data.description,
+            price: Number(data.price)
+          }]);
+        } else {
+          // If not editing, just update local state
+          setServices([...services, newService]);
+        }
+
+        // Reset the new service form
+        setNewService({ name: "", description: "", price: 0 });
+
+        // Show success toast only in edit mode
+        if (isEditing) {
+          toast({
+            title: "Success",
+            description: "Service added successfully",
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error in addService:", error);
+      if (isEditing) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to add service. Please try again.",
+        });
+      }
     }
   };
 

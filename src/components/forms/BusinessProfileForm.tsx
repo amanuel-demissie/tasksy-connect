@@ -84,7 +84,7 @@ export default function BusinessProfileForm({ onSuccess }: { onSuccess: () => vo
         services={services}
         newService={newService}
         setNewService={setNewService}
-        addService={addService}
+        addService={() => addService(services.length, undefined, false)}
         onDeleteService={handleServiceDelete}
       />
 

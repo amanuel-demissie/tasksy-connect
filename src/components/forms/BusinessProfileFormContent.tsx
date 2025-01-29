@@ -73,7 +73,7 @@ export function BusinessProfileFormContent({
         services={services}
         newService={newService}
         setNewService={setNewService}
-        addService={addService}
+        addService={() => addService()}
         onDeleteService={deleteService}
       />
     </>

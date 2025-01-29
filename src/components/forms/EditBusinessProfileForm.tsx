@@ -71,6 +71,10 @@ export default function EditBusinessProfileForm() {
     //fetchServices();
   }; 
 
+  const handleServiceAdd = () => {
+    addService(services.length, undefined, true); // true because we're in edit mode
+  };
+
   if (notFound) {
     return <NotFoundState onExit={handleExit} />;
   }
@@ -103,7 +107,7 @@ export default function EditBusinessProfileForm() {
           services={services}
           newService={newService}
           setNewService={setNewService}
-          addService={addService}
+          addService={handleServiceAdd}
           deleteService={handleServiceDelete}
         />
 
