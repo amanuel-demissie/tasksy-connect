@@ -33,6 +33,8 @@ export default function EditBusinessProfileForm() {
     handleExit,
     fetchProfile
   } = useBusinessProfileForm(id!);
+  
+
 
   const { 
     showCamera, 
@@ -45,11 +47,14 @@ export default function EditBusinessProfileForm() {
     services, 
     newService, 
     setNewService, 
-    addService 
-  } = useBusinessServices();
+    addService,
+    deleteService,
+    fetchServices
+  } = useBusinessServices(id!);
 
   useEffect(() => {
     fetchProfile();
+    fetchServices();
   }, [id]);
 
   const handleCameraCapture = async () => {
@@ -60,6 +65,11 @@ export default function EditBusinessProfileForm() {
       console.error("Error capturing photo:", error);
     }
   };
+
+   const handleServiceDelete =  (index: number, serviceId?: string) => {
+     deleteService(index, serviceId, true);
+    //fetchServices();
+  }; 
 
   if (notFound) {
     return <NotFoundState onExit={handleExit} />;
@@ -94,6 +104,7 @@ export default function EditBusinessProfileForm() {
           newService={newService}
           setNewService={setNewService}
           addService={addService}
+          deleteService={handleServiceDelete}
         />
 
         <Button 

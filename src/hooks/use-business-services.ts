@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { BusinessService } from "@/types/profile";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -6,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 /**
  * Custom hook for managing business services
  * Handles CRUD operations for services including database persistence
- * 
+ *
  * @returns {Object} Hook methods and state
  * @returns {BusinessService[]} services - Array of current services
  * @returns {Function} setServices - Function to update services state
@@ -17,12 +17,49 @@ import { useToast } from "@/hooks/use-toast";
  */
 export const useBusinessServices = (businessId?: string) => {
   const [services, setServices] = useState<BusinessService[]>([]);
-  const [newService, setNewService] = useState<BusinessService>({ 
-    name: "", 
-    description: "", 
-    price: 0 
+  const [newService, setNewService] = useState<BusinessService>({
+    name: "",
+    description: "",
+    price: 0,
   });
   const { toast } = useToast();
+
+  const fetchServices = async () => {
+    if (!businessId) return;
+    const { data: profile, error } = await supabase
+      .from("business_profiles")
+      .select(
+        `
+        *,
+        business_services (
+          id,
+          name,
+          description,
+          price
+        )
+      `
+      )
+      .eq("id", businessId)
+      .maybeSingle();
+
+
+      if(profile.business_services) {
+        setServices(profile.business_services.map(service => ({
+          id: service.id,
+          name: service.name,
+          description: service.description || "",
+          price: Number(service.price)
+        })));
+      }
+
+  };
+
+  //just for debugging
+  if (services.length > 0) {
+    console.log("services from useBusinessServices", services);
+  } else {
+    console.log("no services from useBusinessServices");
+  }
 
   /**
    * Adds a new service to the list
@@ -41,15 +78,19 @@ export const useBusinessServices = (businessId?: string) => {
    * @param {string} serviceId - Database ID of service to delete
    * @param {boolean} isEditing - Whether we're in edit mode
    */
-  const deleteService = async (index: number, serviceId?: string, isEditing: boolean = false) => {
+  const deleteService = async (
+    index: number,
+    serviceId?: string,
+    isEditing: boolean = false
+  ) => {
     try {
       // Only attempt database deletion if we're in edit mode and have both businessId and serviceId
       if (isEditing && businessId && serviceId) {
         const { error } = await supabase
           .from("business_services")
           .delete()
-          .eq('id', serviceId)
-          .eq('business_id', businessId);
+          .eq("id", serviceId)
+          .eq("business_id", businessId);
 
         if (error) {
           console.error("Error deleting service:", error);
@@ -64,7 +105,7 @@ export const useBusinessServices = (businessId?: string) => {
 
       // Update local state
       setServices(services.filter((_, i) => i !== index));
-      
+
       // Only show toast in edit mode when deleting from database
       if (isEditing) {
         toast({
@@ -90,6 +131,7 @@ export const useBusinessServices = (businessId?: string) => {
     newService,
     setNewService,
     addService,
-    deleteService
+    deleteService,
+    fetchServices
   };
 };

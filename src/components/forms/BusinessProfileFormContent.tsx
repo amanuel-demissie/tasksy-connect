@@ -19,6 +19,7 @@ interface BusinessProfileFormContentProps {
   newService: BusinessService;
   setNewService: (service: BusinessService) => void;
   addService: () => void;
+  deleteService: (index: number, serviceId?: string) => void;
 }
 
 /**
@@ -46,7 +47,8 @@ export function BusinessProfileFormContent({
   services,
   newService,
   setNewService,
-  addService
+  addService,
+  deleteService,
 }: BusinessProfileFormContentProps) {
   return (
     <>
@@ -72,6 +74,7 @@ export function BusinessProfileFormContent({
         newService={newService}
         setNewService={setNewService}
         addService={addService}
+        onDeleteService={deleteService}
       />
     </>
   );

@@ -40,7 +40,7 @@ export const useBusinessProfileForm = (profileId: string) => {
     navigate("/profile");
   });
 
-  const { services, setServices } = useBusinessServices();
+  const { services, setServices } = useBusinessServices(profileId!);
 
   /**
    * Fetches the business profile data from Supabase
@@ -71,7 +71,15 @@ export const useBusinessProfileForm = (profileId: string) => {
         description: "Failed to fetch business profile",
       });
       return;
-    }
+    } /* else {
+      profile.business_services.map( service => {
+        console.log(service.id);
+        console.log(service.name);
+        console.log(service.description);
+        console.log(service.price);
+      });
+      ;
+    } */
 
     if (!profile) {
       setNotFound(true);
@@ -91,14 +99,15 @@ export const useBusinessProfileForm = (profileId: string) => {
     setCurrentImageUrl(profile.image_url);
 
     // Set services with their IDs
-    if (profile.business_services) {
+    /* if (profile.business_services) {
       setServices(profile.business_services.map(service => ({
         id: service.id,
         name: service.name,
         description: service.description || "",
         price: Number(service.price)
       })));
-    }
+      console.log('services from fetchProfile in useBusinessProfileForm', services);
+    } */
   };
 
   /**
@@ -153,6 +162,6 @@ export const useBusinessProfileForm = (profileId: string) => {
     notFound,
     handleExit,
     fetchProfile,
-    services
+    //services
   };
 };
