@@ -24,6 +24,7 @@ export const useBusinessServices = (businessId?: string) => {
   });
   const { toast } = useToast();
 
+  //fetch services from database and set services state
   const fetchServices = async () => {
     if (!businessId) return;
     const { data: profile, error } = await supabase

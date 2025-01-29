@@ -54,7 +54,7 @@ export default function EditBusinessProfileForm() {
 
   useEffect(() => {
     fetchProfile();
-    fetchServices();
+    fetchServices(); //function to fetch services separate from profile fetch
   }, [id]);
 
   const handleCameraCapture = async () => {
