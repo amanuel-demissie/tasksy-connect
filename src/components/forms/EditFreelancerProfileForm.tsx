@@ -57,8 +57,44 @@ export default function EditFreelancerProfileForm({
     }
   };
 
-  const removeSkill = (index: number) => {
-    setSkills(skills.filter((_, i) => i !== index));
+  const removeSkill = async (index: number) => {
+    // Get the skill being removed
+    const skillToRemove = skills[index];
+
+    try {
+      // First, get the skill_id for the skill being removed
+      const { data: skillData, error: skillError } = await supabase
+        .from('skills')
+        .select('id')
+        .eq('name', skillToRemove)
+        .single();
+
+      if (skillError) throw skillError;
+
+      // Delete the freelancer_skills record
+      const { error: deleteError } = await supabase
+        .from('freelancer_skills')
+        .delete()
+        .eq('freelancer_id', profileId)
+        .eq('skill_id', skillData.id);
+
+      if (deleteError) throw deleteError;
+
+      // Update local state only after successful database update
+      setSkills(skills.filter((_, i) => i !== index));
+
+      toast({
+        title: "Success",
+        description: "Skill removed successfully",
+      });
+    } catch (error) {
+      console.error("Error removing skill:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to remove skill",
+      });
+    }
   };
 
   const onSubmit = async (formData: any) => {
