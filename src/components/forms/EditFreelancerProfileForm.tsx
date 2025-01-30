@@ -146,17 +146,17 @@ export default function EditFreelancerProfileForm({
   };
 
   return (
-    <div className="relative">
+    <div className="relative pt-8">
       <Button
         type="button"
         variant="ghost"
         size="icon"
-        className="absolute right-0 top-0"
+        className="absolute -top-2 right-0"
         onClick={onClose}
       >
         <X className="h-4 w-4" />
       </Button>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 mt-8">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 mt-4">
         <ImageUploadSection
           imageFile={imageFile}
           setImageFile={setImageFile}
