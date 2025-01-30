@@ -80,15 +80,11 @@ export const BusinessCard = ({ profile, onDelete }: BusinessCardProps) => {
         />
       </div>
 
-      {/* Hover Effect */}
-      <div 
-        className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
-      >
-        <div className="absolute bottom-4 right-4">
-          <button className="bg-accent text-white px-6 py-2 rounded-full font-semibold hover:bg-accent/90 transition-colors">
-            Edit Profile
-          </button>
-        </div>
+      {/* Edit Button - Always Visible */}
+      <div className="absolute bottom-4 right-4">
+        <button className="bg-accent text-white px-6 py-2 rounded-full font-semibold hover:bg-accent/90 transition-colors">
+          Edit Profile
+        </button>
       </div>
     </Card>
   );
