@@ -12,9 +12,6 @@ export const FreelancerInfo = ({ title, bio, category, hourlyRate }: FreelancerI
   return (
     <div className="space-y-2">
       <p className="font-medium">{title}</p>
-      {bio && (
-        <p className="text-sm">{bio}</p>
-      )}
       <div className="flex justify-between items-center">
         <span className="inline-block px-2 py-1 rounded-full bg-primary/10 text-white text-sm">
           {category}
