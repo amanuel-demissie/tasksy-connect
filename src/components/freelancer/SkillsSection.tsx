@@ -6,6 +6,7 @@ interface SkillsSectionProps {
   newSkill: string;
   setNewSkill: (skill: string) => void;
   addSkill: () => void;
+  onRemoveSkill?: (index: number) => void;
 }
 
 /**
@@ -14,7 +15,7 @@ interface SkillsSectionProps {
  * This component:
  * 1. Displays existing skills
  * 2. Provides interface for adding new skills
- * 3. Manages skill input and validation
+ * 3. Manages skill input, validation, and removal
  * 
  * @component
  * @param {SkillsSectionProps} props - Component properties
@@ -24,7 +25,8 @@ export default function SkillsSection({
   skills,
   newSkill,
   setNewSkill,
-  addSkill
+  addSkill,
+  onRemoveSkill
 }: SkillsSectionProps) {
   return (
     <div className="space-y-4">
@@ -34,6 +36,7 @@ export default function SkillsSection({
         newSkill={newSkill}
         setNewSkill={setNewSkill}
         addSkill={addSkill}
+        onRemoveSkill={onRemoveSkill}
       />
     </div>
   );

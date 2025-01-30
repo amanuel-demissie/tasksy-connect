@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { X } from "lucide-react";
 
 /**
  * Props for the SkillsList component
@@ -13,6 +14,8 @@ interface SkillsListProps {
   setNewSkill: (skill: string) => void;
   /** Function to add the new skill to the list */
   addSkill: () => void;
+  /** Function to remove a skill from the list */
+  onRemoveSkill?: (index: number) => void;
 }
 
 /**
@@ -21,21 +24,31 @@ interface SkillsListProps {
  * Features:
  * 1. Displays existing skills as tags
  * 2. Provides input for adding new skills
- * 3. Manages skill creation
+ * 3. Manages skill creation and deletion
  */
 export default function SkillsList({
   skills,
   newSkill,
   setNewSkill,
-  addSkill
+  addSkill,
+  onRemoveSkill
 }: SkillsListProps) {
   return (
     <div className="space-y-4">
       {/* Display existing skills as tags */}
       <div className="flex flex-wrap gap-2">
         {skills.map((skill, index) => (
-          <div key={index} className="bg-secondary px-3 py-1 rounded-full">
+          <div key={index} className="bg-secondary px-3 py-1 rounded-full flex items-center gap-2">
             {skill}
+            {onRemoveSkill && (
+              <button
+                onClick={() => onRemoveSkill(index)}
+                className="hover:text-destructive transition-colors"
+                aria-label={`Remove ${skill}`}
+              >
+                <X className="h-3 w-3" />
+              </button>
+            )}
           </div>
         ))}
       </div>

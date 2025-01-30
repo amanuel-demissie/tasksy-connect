@@ -29,6 +29,7 @@ export default function FreelancerProfileForm({ onSuccess }: { onSuccess: () => 
     newSkill,
     setNewSkill,
     addSkill,
+    removeSkill,
     selectedCategory,
     setSelectedCategory,
     imageFile,
@@ -61,6 +62,7 @@ export default function FreelancerProfileForm({ onSuccess }: { onSuccess: () => 
         newSkill={newSkill}
         setNewSkill={setNewSkill}
         addSkill={addSkill}
+        onRemoveSkill={removeSkill}
       />
 
       <Button 

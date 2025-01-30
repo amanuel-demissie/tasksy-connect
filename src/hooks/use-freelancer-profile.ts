@@ -14,12 +14,6 @@ interface FreelancerProfileFormData {
   image?: File;
 }
 
-/**
- * Custom hook for managing freelancer profile form state and submission
- * 
- * @param onSuccess - Callback function to execute after successful profile creation
- * @returns Form state and handlers
- */
 export const useFreelancerProfile = (onSuccess: () => void) => {
   const { register, handleSubmit, formState: { errors } } = useForm<FreelancerProfileFormData>();
   const { toast } = useToast();
@@ -109,15 +103,15 @@ export const useFreelancerProfile = (onSuccess: () => void) => {
     }
   };
 
-  /**
-   * Adds a new skill to the skills list
-   * Validates that the skill is not empty and not already in the list
-   */
   const addSkill = () => {
     if (newSkill && !skills.includes(newSkill)) {
       setSkills([...skills, newSkill]);
       setNewSkill("");
     }
+  };
+
+  const removeSkill = (index: number) => {
+    setSkills(skills.filter((_, i) => i !== index));
   };
 
   return {
@@ -130,6 +124,7 @@ export const useFreelancerProfile = (onSuccess: () => void) => {
     newSkill,
     setNewSkill,
     addSkill,
+    removeSkill,
     selectedCategory,
     setSelectedCategory,
     imageFile,
