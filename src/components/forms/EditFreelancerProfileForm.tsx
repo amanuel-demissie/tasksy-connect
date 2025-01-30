@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { Loader2, X } from "lucide-react";
 import ImageUploadSection from "@/components/freelancer/ImageUploadSection";
 import FreelancerDetailsSection from "@/components/freelancer/FreelancerDetailsSection";
 import SkillsSection from "@/components/freelancer/SkillsSection";
@@ -22,13 +22,15 @@ interface EditFreelancerProfileFormProps {
   };
   initialSkills: string[];
   onSuccess: () => void;
+  onClose: () => void;
 }
 
 export default function EditFreelancerProfileForm({ 
   profileId, 
   initialData, 
   initialSkills,
-  onSuccess 
+  onSuccess,
+  onClose 
 }: EditFreelancerProfileFormProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -144,45 +146,56 @@ export default function EditFreelancerProfileForm({
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <ImageUploadSection
-        imageFile={imageFile}
-        setImageFile={setImageFile}
-        showCamera={showCamera}
-        setShowCamera={setShowCamera}
-        videoRef={videoRef}
-        currentImageUrl={initialData.image_url}
-      />
-
-      <FreelancerDetailsSection
-        register={register}
-        errors={errors}
-        selectedCategory={selectedCategory}
-        setSelectedCategory={setSelectedCategory}
-      />
-
-      <SkillsSection
-        skills={skills}
-        newSkill={newSkill}
-        setNewSkill={setNewSkill}
-        addSkill={addSkill}
-        onRemoveSkill={removeSkill}
-      />
-
-      <Button 
-        type="submit"
-        className="w-full bg-accent text-white hover:bg-accent/90"
-        disabled={isSubmitting}
+    <div className="relative">
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        className="absolute right-0 top-0"
+        onClick={onClose}
       >
-        {isSubmitting ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Updating Profile...
-          </>
-        ) : (
-          'Update Freelancer Profile'
-        )}
+        <X className="h-4 w-4" />
       </Button>
-    </form>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 mt-8">
+        <ImageUploadSection
+          imageFile={imageFile}
+          setImageFile={setImageFile}
+          showCamera={showCamera}
+          setShowCamera={setShowCamera}
+          videoRef={videoRef}
+          currentImageUrl={initialData.image_url}
+        />
+
+        <FreelancerDetailsSection
+          register={register}
+          errors={errors}
+          selectedCategory={selectedCategory}
+          setSelectedCategory={setSelectedCategory}
+        />
+
+        <SkillsSection
+          skills={skills}
+          newSkill={newSkill}
+          setNewSkill={setNewSkill}
+          addSkill={addSkill}
+          onRemoveSkill={removeSkill}
+        />
+
+        <Button 
+          type="submit"
+          className="w-full bg-accent text-white hover:bg-accent/90"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Updating Profile...
+            </>
+          ) : (
+            'Update Freelancer Profile'
+          )}
+        </Button>
+      </form>
+    </div>
   );
 }

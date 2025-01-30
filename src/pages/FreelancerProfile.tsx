@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
 import EditFreelancerProfileForm from '@/components/forms/EditFreelancerProfileForm';
 import { useToast } from "@/hooks/use-toast";
 
 const FreelancerProfile = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [profileData, setProfileData] = useState<any>(null);
   const [skills, setSkills] = useState<string[]>([]);
@@ -57,6 +58,10 @@ const FreelancerProfile = () => {
     });
   };
 
+  const handleClose = () => {
+    navigate('/profile');
+  };
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -73,6 +78,7 @@ const FreelancerProfile = () => {
         initialData={profileData}
         initialSkills={skills}
         onSuccess={handleSuccess}
+        onClose={handleClose}
       />
     </div>
   );
