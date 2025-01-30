@@ -42,7 +42,11 @@ export default function SkillsList({
             {skill}
             {onRemoveSkill && (
               <button
-                onClick={() => onRemoveSkill(index)}
+                type="button" // Add this to prevent form submission
+                onClick={(e) => {
+                  e.preventDefault(); // Prevent any form submission
+                  onRemoveSkill(index);
+                }}
                 className="hover:text-destructive transition-colors"
                 aria-label={`Remove ${skill}`}
               >
