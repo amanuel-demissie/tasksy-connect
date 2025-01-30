@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Loader2, X } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import ImageUploadSection from "@/components/freelancer/ImageUploadSection";
 import FreelancerDetailsSection from "@/components/freelancer/FreelancerDetailsSection";
 import SkillsSection from "@/components/freelancer/SkillsSection";
@@ -147,16 +147,7 @@ export default function EditFreelancerProfileForm({
 
   return (
     <div className="relative">
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon"
-        className="absolute top-0 right-0"
-        onClick={onClose}
-      >
-        <X className="h-4 w-4" />
-      </Button>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 mt-8">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <ImageUploadSection
           imageFile={imageFile}
           setImageFile={setImageFile}

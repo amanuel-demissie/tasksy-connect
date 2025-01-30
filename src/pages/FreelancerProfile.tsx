@@ -3,6 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
 import EditFreelancerProfileForm from '@/components/forms/EditFreelancerProfileForm';
 import { useToast } from "@/hooks/use-toast";
+import { Button } from '@/components/ui/button';
+import { X } from 'lucide-react';
 
 const FreelancerProfile = () => {
   const { id } = useParams();
@@ -71,7 +73,16 @@ const FreelancerProfile = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 relative">
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        className="absolute top-0 right-0"
+        onClick={handleClose}
+      >
+        <X className="h-4 w-4" />
+      </Button>
       <h1 className="text-2xl font-semibold mb-6">Edit Freelancer Profile</h1>
       <EditFreelancerProfileForm
         profileId={id!}
