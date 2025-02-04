@@ -78,7 +78,7 @@ const Index = () => {
         <SearchBar />
         <ServiceCategories onCategoryClick={scrollToSection} />
         <FeaturedServices />
-        <UpcomingAppointments />
+        
         <RecommendedServices />
 
         {/* Profile creation dialog */}
