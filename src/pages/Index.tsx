@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Plus } from "lucide-react";
 import SearchBar from "@/components/home/SearchBar";
@@ -46,7 +47,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-secondary pb-20">
-      <div className="container max-w-4xl mx-auto px-4 py-8 space-y-4">
+      <div className="container max-w-4xl mx-auto px-4 py-8 space-y-8">
         <div className="flex justify-between items-center">
           <div className="space-y-4">
             <h1 className="text-2xl font-semibold text-primary">
@@ -77,7 +78,9 @@ const Index = () => {
 
         <SearchBar />
         <ServiceCategories onCategoryClick={scrollToSection} />
-        <FeaturedServices />
+        <div className="mb-16">
+          <FeaturedServices />
+        </div>
         
         <RecommendedServices />
 
