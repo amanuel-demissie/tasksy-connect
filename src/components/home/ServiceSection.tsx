@@ -2,9 +2,12 @@
 import { useQuery } from "@tanstack/react-query";
 import ServiceCard from "./ServiceCard";
 import { supabase } from "@/integrations/supabase/client";
+import { Database } from "@/integrations/supabase/types";
+
+type ServiceCategory = Database['public']['Enums']['service_category'];
 
 interface ServiceSectionProps {
-  category: string;
+  category: ServiceCategory;
 }
 
 const ServiceSection = ({ category }: ServiceSectionProps) => {
@@ -20,7 +23,7 @@ const ServiceSection = ({ category }: ServiceSectionProps) => {
             email
           )
         `)
-        .eq('category', category.replace(" ", "_").toLowerCase());
+        .eq('category', category);
       
       if (error) throw error;
       return data || [];
@@ -31,7 +34,7 @@ const ServiceSection = ({ category }: ServiceSectionProps) => {
     return (
       <div id={category} className="space-y-4 py-0">
         <h2 className="text-lg font-semibold text-neutral-800 capitalize">
-          {category.replace("-", " ")} Services
+          {category.replace("_", " ")} Services
         </h2>
         <div className="overflow-x-auto">
           <div className="flex space-x-4 pb-4">
@@ -47,7 +50,7 @@ const ServiceSection = ({ category }: ServiceSectionProps) => {
   return (
     <div id={category} className="space-y-4 py-0">
       <h2 className="text-lg font-semibold text-neutral-800 capitalize">
-        {category.replace("-", " ")} Services
+        {category.replace("_", " ")} Services
       </h2>
       <div className="overflow-x-auto">
         <div className="flex space-x-4 pb-4">
