@@ -1,3 +1,4 @@
+
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Camera } from "lucide-react";
@@ -72,7 +73,7 @@ export default function ImageUpload({
           <img
             src={imageFile ? URL.createObjectURL(imageFile) : getImageUrl(currentImageUrl)}
             alt="Preview"
-            className="max-w-xs rounded-lg"
+            className="max-w-xs max-h-48 rounded-lg object-contain"
           />
         </div>
       )}
