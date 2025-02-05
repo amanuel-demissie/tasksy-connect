@@ -39,14 +39,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   // Handle authentication errors
   if (error) {
-    if (error.message.includes('refresh_token_not_found')) {
-      // Handle expired sessions
+    // Clear session and redirect to auth page for refresh token errors
+    if (error.message.includes('refresh_token_not_found') || 
+        error.message.includes('Invalid Refresh Token')) {
+      console.log('Refresh token error detected, redirecting to auth page');
       toast.error("Your session has expired. Please sign in again.");
       navigate("/auth");
       return null;
     }
     
     // Handle other authentication errors
+    console.error('Authentication error:', error);
     toast.error("Authentication error. Please try signing in again.");
     navigate("/auth");
     return null;

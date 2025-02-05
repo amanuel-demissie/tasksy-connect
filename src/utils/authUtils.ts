@@ -1,3 +1,4 @@
+
 import { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -10,7 +11,8 @@ export const handleAuthError = async (error: any): Promise<[boolean, string]> =>
   // Clear the session from storage
   await supabase.auth.signOut();
   
-  if (error.message.includes('refresh_token_not_found')) {
+  if (error.message.includes('refresh_token_not_found') || 
+      error.message.includes('Invalid Refresh Token')) {
     return [true, "Your session has expired. Please sign in again."];
   }
   

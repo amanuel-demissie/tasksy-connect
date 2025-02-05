@@ -29,6 +29,7 @@ export const useAuthState = () => {
     // Get initial session
     supabase.auth.getSession().then(({ data: { session }, error }) => {
       if (error) {
+        console.error('Error getting session:', error);
         handleAuthError(error).then(([shouldRedirect, errorMessage]) => {
           setError(new Error(errorMessage));
           if (shouldRedirect) {
