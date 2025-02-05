@@ -1,6 +1,9 @@
+
 import { useEffect, useState } from "react";
 import { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { handleAuthError } from "@/utils/authUtils";
+import { useNavigate } from "react-router-dom";
 
 /**
  * Custom hook for managing authentication state
@@ -20,12 +23,17 @@ export const useAuthState = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session }, error }) => {
+    supabase.auth.getSession().then(async ({ data: { session }, error }) => {
       if (error) {
-        setError(error);
+        const [shouldRedirect, errorMessage] = await handleAuthError(error);
+        setError(new Error(errorMessage));
+        if (shouldRedirect) {
+          navigate("/auth");
+        }
       } else {
         setSession(session);
       }
@@ -35,7 +43,7 @@ export const useAuthState = () => {
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
       setLoading(false);
       // Reset error when auth state changes successfully
@@ -44,7 +52,7 @@ export const useAuthState = () => {
 
     // Cleanup subscription
     return () => subscription.unsubscribe();
-  }, []);
+  }, [navigate]);
 
   return { session, loading, error };
 };
