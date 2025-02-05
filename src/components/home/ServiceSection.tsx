@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import ServiceCard from "./ServiceCard";
 import { supabase } from "@/integrations/supabase/client";
 import { Database } from "@/integrations/supabase/types";
+import { Scissors, Utensils, Briefcase, Home } from "lucide-react";
 
 type ServiceCategory = Database['public']['Enums']['service_category'];
 
@@ -30,10 +31,26 @@ const ServiceSection = ({ category }: ServiceSectionProps) => {
     },
   });
 
+  const getCategoryIcon = () => {
+    switch (category) {
+      case "beauty":
+        return <Scissors className="w-6 h-6 text-accent" />;
+      case "dining":
+        return <Utensils className="w-6 h-6 text-accent" />;
+      case "professional":
+        return <Briefcase className="w-6 h-6 text-accent" />;
+      case "home":
+        return <Home className="w-6 h-6 text-accent" />;
+      default:
+        return null;
+    }
+  };
+
   if (isLoading) {
     return (
       <div id={category} className="space-y-4 py-0">
-        <h2 className="text-lg font-semibold text-neutral-800 capitalize">
+        <h2 className="text-lg font-semibold text-neutral-800 capitalize flex items-center gap-2">
+          {getCategoryIcon()}
           {category.replace("_", " ")} Services
         </h2>
         <div className="overflow-x-auto">
@@ -49,7 +66,8 @@ const ServiceSection = ({ category }: ServiceSectionProps) => {
 
   return (
     <div id={category} className="space-y-4 py-0">
-      <h2 className="text-lg font-semibold text-neutral-800 capitalize">
+      <h2 className="text-lg font-semibold text-neutral-800 capitalize flex items-center gap-2">
+        {getCategoryIcon()}
         {category.replace("_", " ")} Services
       </h2>
       <div className="overflow-x-auto">
@@ -64,3 +82,4 @@ const ServiceSection = ({ category }: ServiceSectionProps) => {
 };
 
 export default ServiceSection;
+
