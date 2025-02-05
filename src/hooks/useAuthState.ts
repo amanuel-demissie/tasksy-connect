@@ -27,13 +27,14 @@ export const useAuthState = () => {
 
   useEffect(() => {
     // Get initial session
-    supabase.auth.getSession().then(async ({ data: { session }, error }) => {
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
       if (error) {
-        const [shouldRedirect, errorMessage] = await handleAuthError(error);
-        setError(new Error(errorMessage));
-        if (shouldRedirect) {
-          navigate("/auth");
-        }
+        handleAuthError(error).then(([shouldRedirect, errorMessage]) => {
+          setError(new Error(errorMessage));
+          if (shouldRedirect) {
+            navigate("/auth");
+          }
+        });
       } else {
         setSession(session);
       }
@@ -43,7 +44,7 @@ export const useAuthState = () => {
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setLoading(false);
       // Reset error when auth state changes successfully

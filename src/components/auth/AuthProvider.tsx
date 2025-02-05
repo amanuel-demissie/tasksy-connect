@@ -1,3 +1,4 @@
+
 import { createContext, useContext } from "react";
 import { Session } from "@supabase/supabase-js";
 import { useAuthState } from "@/hooks/useAuthState";
@@ -39,7 +40,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // Handle authentication errors
   if (error) {
     if (error.message.includes('refresh_token_not_found')) {
-      // Redirect to auth page for refresh token errors
+      // Handle expired sessions
       toast.error("Your session has expired. Please sign in again.");
       navigate("/auth");
       return null;
