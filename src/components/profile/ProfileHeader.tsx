@@ -85,15 +85,15 @@ export const ProfileHeader = ({ session }: ProfileHeaderProps) => {
   };
 
   return (
-    <div className="flex flex-col items-center space-y-4">
-      <div className="relative">
+    <div className="flex flex-col items-center justify-center w-full max-w-4xl mx-auto px-4">
+      <div className="relative w-full flex flex-col items-center space-y-4">
         <Avatar className="w-24 h-24">
           <AvatarImage src={session?.user?.user_metadata?.avatar_url} />
           <AvatarFallback>
             {session?.user?.email?.[0]?.toUpperCase() || 'U'}
           </AvatarFallback>
         </Avatar>
-        <div className="mt-4">
+        <div className="mt-4 w-full flex flex-col items-center">
           <ImageUpload
             imageFile={imageFile}
             setImageFile={setImageFile}
@@ -113,7 +113,7 @@ export const ProfileHeader = ({ session }: ProfileHeaderProps) => {
           )}
         </div>
       </div>
-      <h1 className="text-2xl font-semibold text-primary">
+      <h1 className="text-2xl font-semibold text-primary mt-4">
         Profile
       </h1>
     </div>
