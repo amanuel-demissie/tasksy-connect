@@ -88,12 +88,12 @@ const BusinessProfile = () => {
                   <div className="flex-grow">
                     <h3 className="text-lg font-semibold text-gray-900">{service.name}</h3>
                     {service.description && <p className="mt-2 text-sm text-gray-500">{service.description}</p>}
-                    <div className="mt-4 flex items-center gap-2 text-gray-500">
+                    <div className="mt-0 flex items-center gap-2 text-gray-500">
                       <Clock className="h-4 w-4" />
                       <span className="text-sm">{service.duration} min</span>
                     </div>
                   </div>
-                  <div className="mt-4 pt-4 border-t flex items-center justify-between">
+                  <div className="mt-0 pt-4 border-t flex items-center justify-between">
                     <span className="text-xl font-semibold text-gray-900">
                       ${service.price.toFixed(2)}
                     </span>
