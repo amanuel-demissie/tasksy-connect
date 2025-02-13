@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Plus } from "lucide-react";
 import SearchBar from "@/components/home/SearchBar";
@@ -7,14 +6,8 @@ import FeaturedServices from "@/components/home/FeaturedServices";
 import UpcomingAppointments from "@/components/home/UpcomingAppointments";
 import RecommendedServices from "@/components/home/RecommendedServices";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import CreateProfileDialog from "@/components/forms/CreateProfileDialog";
-
 const Index = () => {
   // State to control the profile creation dialog visibility
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -28,7 +21,9 @@ const Index = () => {
   const scrollToSection = (categoryId: string) => {
     const element = document.getElementById(categoryId);
     if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
+      element.scrollIntoView({
+        behavior: "smooth"
+      });
     }
   };
 
@@ -44,10 +39,8 @@ const Index = () => {
     setProfileType(type);
     setIsDialogOpen(true);
   };
-
-  return (
-    <div className="min-h-screen bg-secondary pb-20">
-      <div className="container max-w-4xl mx-auto px-4 py-8 space-y-8">
+  return <div className="min-h-screen bg-secondary pb-20">
+      <div className="container max-w-4xl mx-auto px-4 py-8 space-y-8 bg-gray-800 hover:bg-gray-700">
         <div className="flex justify-between items-center">
           <div className="space-y-4">
             <h1 className="text-2xl font-semibold text-primary">
@@ -85,17 +78,11 @@ const Index = () => {
         <RecommendedServices />
 
         {/* Profile creation dialog */}
-        <CreateProfileDialog
-          isOpen={isDialogOpen}
-          onClose={() => {
-            setIsDialogOpen(false);
-            setProfileType(null);
-          }}
-          type={profileType}
-        />
+        <CreateProfileDialog isOpen={isDialogOpen} onClose={() => {
+        setIsDialogOpen(false);
+        setProfileType(null);
+      }} type={profileType} />
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default Index;
