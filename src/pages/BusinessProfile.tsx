@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { BusinessInfo } from "@/components/profile/BusinessInfo";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
+
 interface BusinessService {
   id: string;
   name: string;
@@ -13,6 +14,7 @@ interface BusinessService {
   price: number;
   duration: number;
 }
+
 interface BusinessProfileData {
   id: string;
   name: string;
@@ -20,14 +22,16 @@ interface BusinessProfileData {
   address: string | null;
   category: string;
   business_services: BusinessService[];
+  ratings?: number | null;
+  review_count?: number | null;
 }
+
 const BusinessProfile = () => {
-  const {
-    id
-  } = useParams();
+  const { id } = useParams();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [profile, setProfile] = useState<BusinessProfileData | null>(null);
+
   useEffect(() => {
     const fetchBusinessProfile = async () => {
       if (!id) return;
@@ -55,30 +59,52 @@ const BusinessProfile = () => {
     };
     fetchBusinessProfile();
   }, [id]);
+
   if (isLoading) {
-    return <div className="container mx-auto px-4 py-8 space-y-6">
+    return (
+      <div className="container mx-auto px-4 py-8 space-y-6">
         <Skeleton className="h-8 w-48" />
         <Skeleton className="h-24 w-full" />
         <Skeleton className="h-40 w-full" />
-      </div>;
+      </div>
+    );
   }
+
   if (!profile) {
-    return <div className="container mx-auto px-4 py-8">
+    return (
+      <div className="container mx-auto px-4 py-8">
         <h1 className="text-2xl font-semibold">Business not found</h1>
-      </div>;
+      </div>
+    );
   }
-  return <div className="min-h-screen bg-white">
+
+  return (
+    <div className="min-h-screen bg-white">
       <div className="container mx-auto px-4 py-6 space-y-8">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+        <div className="flex items-start gap-4">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={() => navigate(-1)}
+            className="mt-1"
+          >
             <ArrowLeft className="h-6 w-6" />
           </Button>
-          <BusinessInfo category={profile.category} name={profile.name} address={profile.address} />
+          <BusinessInfo 
+            category={profile.category}
+            name={profile.name}
+            address={profile.address}
+            rating={profile.ratings}
+            reviews={profile.review_count}
+            tags={["Entrepreneur"]}
+          />
         </div>
 
-        {profile.description && <div className="py-4 border-b">
+        {profile.description && (
+          <div className="py-4 border-b">
             <p className="text-gray-600">{profile.description}</p>
-          </div>}
+          </div>
+        )}
 
         <div className="space-y-6">
           <h2 className="text-xl font-semibold">Services</h2>
@@ -106,6 +132,8 @@ const BusinessProfile = () => {
           </div>
         </div>
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default BusinessProfile;
