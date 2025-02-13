@@ -61,6 +61,7 @@ export type Database = {
           business_id: string
           created_at: string
           description: string | null
+          duration: number
           id: string
           name: string
           price: number
@@ -70,6 +71,7 @@ export type Database = {
           business_id: string
           created_at?: string
           description?: string | null
+          duration?: number
           id?: string
           name: string
           price: number
@@ -79,6 +81,7 @@ export type Database = {
           business_id?: string
           created_at?: string
           description?: string | null
+          duration?: number
           id?: string
           name?: string
           price?: number

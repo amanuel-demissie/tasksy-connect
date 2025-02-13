@@ -1,7 +1,7 @@
 
 import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { BusinessInfo } from "@/components/profile/BusinessInfo";
@@ -13,6 +13,7 @@ interface BusinessService {
   name: string;
   description: string | null;
   price: number;
+  duration: number;
 }
 
 interface BusinessProfileData {
@@ -43,7 +44,8 @@ const BusinessProfile = () => {
               id,
               name,
               description,
-              price
+              price,
+              duration
             )
           `)
           .eq('id', id)
@@ -109,25 +111,28 @@ const BusinessProfile = () => {
             {profile.business_services?.map((service) => (
               <div 
                 key={service.id}
-                className="p-4 border rounded-lg bg-white shadow-sm hover:shadow-md transition-shadow"
+                className="p-6 border rounded-lg bg-white shadow-sm hover:shadow-md transition-shadow"
               >
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <h3 className="font-semibold text-lg">{service.name}</h3>
+                <div className="flex flex-col h-full">
+                  <div className="flex-grow">
+                    <h3 className="text-lg font-semibold text-gray-900">{service.name}</h3>
                     {service.description && (
-                      <p className="text-gray-600 text-sm mt-1">{service.description}</p>
+                      <p className="mt-2 text-sm text-gray-500">{service.description}</p>
                     )}
+                    <div className="mt-4 flex items-center gap-2 text-gray-500">
+                      <Clock className="h-4 w-4" />
+                      <span className="text-sm">{service.duration} min</span>
+                    </div>
                   </div>
-                  <span className="font-semibold text-lg">
-                    ${service.price.toFixed(2)}
-                  </span>
+                  <div className="mt-4 pt-4 border-t flex items-center justify-between">
+                    <span className="text-xl font-semibold text-gray-900">
+                      ${service.price.toFixed(2)}
+                    </span>
+                    <Button onClick={() => navigate('/messages')}>
+                      Book Now
+                    </Button>
+                  </div>
                 </div>
-                <Button 
-                  className="w-full mt-4"
-                  onClick={() => navigate('/messages')} // Placeholder for booking functionality
-                >
-                  Book Now
-                </Button>
               </div>
             ))}
           </div>
