@@ -40,14 +40,14 @@ const Index = () => {
     setIsDialogOpen(true);
   };
   return <div className="min-h-screen bg-secondary pb-20">
-      <div className="container max-w-4xl mx-auto px-4 py-8 space-y-8 bg-slate-950 hover:bg-slate-800">
+      <div className="container max-w-4xl mx-auto px-4 py-8 space-y-8 bg-slate-950 ">
         <div className="flex justify-between items-center">
           <div className="space-y-4">
             <h1 className="text-2xl font-semibold text-primary">
               Create, Find & Book Services
             </h1>
             <p className="text-neutral-600">
-              Connect with customers and services with easeeeeeee
+              Connect with customers and services with easee
             </p>
           </div>
 
