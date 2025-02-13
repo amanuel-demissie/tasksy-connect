@@ -47,7 +47,7 @@ const Index = () => {
               Create, Find & Book Services
             </h1>
             <p className="text-neutral-600">
-              Connect with customers and services with ease
+              Connect with customers and services with easeeeeeee
             </p>
           </div>
 
