@@ -79,7 +79,7 @@ const BusinessProfile = () => {
           {/* Header Image */}
           <div className="relative h-48 w-full mb-4">
             <img src={profile.image_url || "https://placehold.co/600x300"} alt={profile.name} className="w-full h-48 object-cover rounded-lg" />
-            <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="absolute top-4 left-4 bg-white/80 hover:bg-white">
+            <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="absolute top-4 left-4 bg-violet-600 hover:bg-violet-500">
               <ArrowLeft className="h-6 w-6" />
             </Button>
           </div>
