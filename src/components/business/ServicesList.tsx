@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { X } from "lucide-react";
@@ -9,7 +10,7 @@ interface ServicesListProps {
   setNewService: (service: BusinessService) => void;
   addService: () => void;
   onDeleteService?: (index: number, serviceId?: string, isEditing?: boolean) => void;
-  isEditing?: boolean; // Prop to distinguish between create and edit modes
+  isEditing?: boolean;
 }
 
 /**
@@ -45,6 +46,14 @@ export default function ServicesList({
     }
   };
 
+  const handleDurationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const numericValue = value === '' ? 30 : Number(value); // Default to 30 minutes if empty
+    if (!isNaN(numericValue) && numericValue >= 0) {
+      setNewService({ ...newService, duration: numericValue });
+    }
+  };
+
   const handleDeleteService = (event: React.MouseEvent<HTMLButtonElement>, index: number, serviceId?: string) => {
     event.preventDefault();
     if (onDeleteService) {
@@ -67,6 +76,7 @@ export default function ServicesList({
           <p><strong>Name:</strong> {service.name}</p>
           <p><strong>Description:</strong> {service.description}</p>
           <p><strong>Price:</strong> ${service.price.toFixed(2)}</p>
+          <p><strong>Duration:</strong> {service.duration}m</p>
         </div>
       ))}
 
@@ -88,6 +98,14 @@ export default function ServicesList({
           value={newService.price || ''}
           onChange={handlePriceChange}
           pattern="^\d*\.?\d{0,2}$"
+        />
+        <Input
+          type="number"
+          placeholder="Duration in minutes (default: 30)"
+          value={newService.duration || ''}
+          onChange={handleDurationChange}
+          min="0"
+          className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
         />
         <Button 
           type="button" 
