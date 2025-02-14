@@ -1,3 +1,4 @@
+
 import { Database } from "@/integrations/supabase/types";
 
 export type ServiceCategory = Database["public"]["Enums"]["service_category"];
@@ -18,6 +19,7 @@ export interface BusinessService {
   name: string;
   description: string;
   price: number;
+  duration: number;  // Added this line to include duration
 }
 
 export interface BusinessProfileFormData {
