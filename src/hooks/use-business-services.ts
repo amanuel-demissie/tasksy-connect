@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { BusinessService } from "@/types/profile";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,6 +22,7 @@ export const useBusinessServices = (businessId?: string) => {
     name: "",
     description: "",
     price: 0,
+    duration: 30, // Set default duration to 30 minutes
   });
   const { toast } = useToast();
 
@@ -36,23 +38,23 @@ export const useBusinessServices = (businessId?: string) => {
           id,
           name,
           description,
-          price
+          price,
+          duration
         )
       `
       )
       .eq("id", businessId)
       .maybeSingle();
 
-
-      if(profile.business_services) {
-        setServices(profile.business_services.map(service => ({
-          id: service.id,
-          name: service.name,
-          description: service.description || "",
-          price: Number(service.price)
-        })));
-      }
-
+    if (profile?.business_services) {
+      setServices(profile.business_services.map(service => ({
+        id: service.id,
+        name: service.name,
+        description: service.description || "",
+        price: Number(service.price),
+        duration: service.duration || 30 // Default to 30 if not set
+      })));
+    }
   };
 
   //just for debugging
@@ -82,6 +84,7 @@ export const useBusinessServices = (businessId?: string) => {
               name: newService.name,
               description: newService.description,
               price: newService.price,
+              duration: newService.duration
             })
             .select()
             .single();
@@ -98,10 +101,10 @@ export const useBusinessServices = (businessId?: string) => {
 
           // Update local state with the database response
           setServices([...services, {
-            //id: data.id,
             name: data.name,
             description: data.description,
-            price: Number(data.price)
+            price: Number(data.price),
+            duration: data.duration || 30
           }]);
         } else {
           // If not editing, just update local state
@@ -109,7 +112,12 @@ export const useBusinessServices = (businessId?: string) => {
         }
 
         // Reset the new service form
-        setNewService({ name: "", description: "", price: 0 });
+        setNewService({ 
+          name: "", 
+          description: "", 
+          price: 0,
+          duration: 30 
+        });
 
         // Show success toast only in edit mode
         if (isEditing) {
