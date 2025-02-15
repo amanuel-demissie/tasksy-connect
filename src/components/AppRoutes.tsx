@@ -9,6 +9,7 @@ import Explore from "@/pages/Explore";
 import BusinessProfile from "@/pages/BusinessProfile";
 import FreelancerProfile from "@/pages/FreelancerProfile";
 import EditBusinessProfileForm from "@/components/forms/EditBusinessProfileForm";
+import BookingPage from "@/pages/BookingPage";
 
 /**
  * AppRoutes Component
@@ -65,6 +66,7 @@ const AppRoutes = () => {
         path="/freelancer-profile/:id" 
         element={<FreelancerProfile />} 
       />
+      <Route path="/booking/:businessId/:serviceId" element={<BookingPage />} />
     </Routes>
   );
 };
