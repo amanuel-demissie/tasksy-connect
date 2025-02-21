@@ -4,11 +4,13 @@ import { ServiceCategory, BusinessProfileFormData } from "@/types/profile";
 import ImageUploadSection from "@/components/business/ImageUploadSection";
 import BusinessDetailsSection from "@/components/business/BusinessDetailsSection";
 import ServicesSection from "@/components/business/ServicesSection";
+import AvailabilitySection from "@/components/business/AvailabilitySection";
 import { Button } from "@/components/ui/button";
 import { useBusinessProfileSubmit } from "@/hooks/use-business-profile-submit";
 import { useCameraCapture } from "@/hooks/use-camera-capture";
 import { useBusinessServices } from "@/hooks/use-business-services";
 import { Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function BusinessProfileForm({ onSuccess }: { onSuccess: () => void }) {
   const { register, handleSubmit, formState: { errors } } = useForm<BusinessProfileFormData>();
@@ -16,6 +18,8 @@ export default function BusinessProfileForm({ onSuccess }: { onSuccess: () => vo
   const [selectedCategory, setSelectedCategory] = useState<ServiceCategory>("beauty");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [availability, setAvailability] = useState<any[]>([]);
+  const [blockedDates, setBlockedDates] = useState<any[]>([]);
   
   const { submitProfile } = useBusinessProfileSubmit(onSuccess);
   const { 
@@ -41,7 +45,46 @@ export default function BusinessProfileForm({ onSuccess }: { onSuccess: () => vo
         ...data,
         category: selectedCategory
       };
-      await submitProfile(formData, imageFile, services);
+
+      const profileResult = await submitProfile(formData, imageFile, services);
+
+      if (profileResult) {
+        if (availability.length > 0) {
+          const { error: availabilityError } = await supabase
+            .from("business_availability")
+            .insert(
+              availability.map(slot => ({
+                business_id: profileResult.id,
+                day_of_week: slot.dayOfWeek,
+                start_time: slot.startTime,
+                end_time: slot.endTime,
+                slot_duration: slot.slotDuration
+              }))
+            );
+
+          if (availabilityError) {
+            console.error("Error saving availability:", availabilityError);
+          }
+        }
+
+        if (blockedDates.length > 0) {
+          const { error: blockedDatesError } = await supabase
+            .from("business_blocked_dates")
+            .insert(
+              blockedDates.map(date => ({
+                business_id: profileResult.id,
+                blocked_date: date.date,
+                reason: date.reason
+              }))
+            );
+
+          if (blockedDatesError) {
+            console.error("Error saving blocked dates:", blockedDatesError);
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error creating business profile:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -56,9 +99,7 @@ export default function BusinessProfileForm({ onSuccess }: { onSuccess: () => vo
     }
   };
 
-  // Prevent form submission on service deletion
   const handleServiceDelete = (index: number, serviceId?: string) => {
-    // Explicitly set isEditing to false since we're in create mode
     deleteService(index, serviceId, false);
   };
 
@@ -86,6 +127,11 @@ export default function BusinessProfileForm({ onSuccess }: { onSuccess: () => vo
         setNewService={setNewService}
         addService={() => addService(services.length, undefined, false)}
         onDeleteService={handleServiceDelete}
+      />
+
+      <AvailabilitySection
+        onAvailabilityChange={setAvailability}
+        onBlockedDatesChange={setBlockedDates}
       />
 
       <Button 
