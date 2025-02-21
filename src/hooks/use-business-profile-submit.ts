@@ -1,51 +1,24 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { BusinessProfileFormData } from "@/types/profile";
 import { useToast } from "@/hooks/use-toast";
 import { useBusinessImageUpload } from "./use-business-image-upload";
 
-/**
- * Custom hook for handling business profile submission and updates
- * 
- * This hook manages:
- * - Creating and updating business profiles in Supabase
- * - Handling image uploads for business profiles
- * - Managing associated business services
- * - Error handling and success notifications
- * 
- * @example
- * ```tsx
- * const { submitProfile } = useBusinessProfileSubmit(() => {
- *   console.log('Profile submitted successfully');
- * });
- * 
- * // Later in your component:
- * const handleSubmit = async (data: BusinessProfileFormData) => {
- *   await submitProfile(data, imageFile, services);
- * };
- * ```
- * 
- * @param {Function} onSuccess - Callback function executed after successful profile submission
- * @returns {Object} Hook methods
- * @returns {Function} submitProfile - Function to handle profile submission
- */
+interface BusinessProfileResult {
+  id: string;
+  [key: string]: any;
+}
+
 export const useBusinessProfileSubmit = (onSuccess: () => void) => {
   const { toast } = useToast();
   const { uploadBusinessImage } = useBusinessImageUpload();
 
-  /**
-   * Submits or updates a business profile with associated services
-   * @param {BusinessProfileFormData} data - Form data for the business profile
-   * @param {File | null} imageFile - Optional image file to upload
-   * @param {Array} services - Array of services associated with the business
-   * @param {string} [businessId] - Optional business ID for updates
-   * @throws {Error} If profile creation/update fails
-   */
   const submitProfile = async (
     data: BusinessProfileFormData, 
     imageFile: File | null, 
     services: any[],
     businessId?: string
-  ) => {
+  ): Promise<BusinessProfileResult | null> => {
     try {
       console.log(businessId ? "Updating" : "Creating", "business profile...");
       
@@ -95,7 +68,6 @@ export const useBusinessProfileSubmit = (onSuccess: () => void) => {
       
       if (services.length > 0) {
         if (businessId) {
-          // Delete existing services
           const { error: deleteError } = await supabase
             .from("business_services")
             .delete()
@@ -113,6 +85,7 @@ export const useBusinessProfileSubmit = (onSuccess: () => void) => {
               name: service.name,
               description: service.description,
               price: service.price,
+              duration: service.duration
             }))
           );
 
@@ -125,6 +98,7 @@ export const useBusinessProfileSubmit = (onSuccess: () => void) => {
         description: businessId ? "Business profile updated successfully" : "Business profile created successfully",
       });
       onSuccess();
+      return profile;
     } catch (error) {
       console.error("Final error:", error);
       toast({
@@ -132,7 +106,7 @@ export const useBusinessProfileSubmit = (onSuccess: () => void) => {
         title: "Error",
         description: businessId ? "Failed to update business profile" : "Failed to create business profile",
       });
-      throw error;
+      return null;
     }
   };
 

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -137,20 +136,18 @@ export const useBusinessProfileForm = (profileId: string) => {
       
       const profileResult = await submitProfile(formData, imageToSubmit as File | null, services, profileId);
       
-      if (profileResult && profileResult.id) {
-        const businessId = profileResult.id;
-
+      if (profileResult) {
         if (availability.length > 0) {
           await supabase
             .from("business_availability")
             .delete()
-            .eq("business_id", businessId);
+            .eq("business_id", profileResult.id);
 
           const { error: availabilityError } = await supabase
             .from("business_availability")
             .insert(
               availability.map(slot => ({
-                business_id: businessId,
+                business_id: profileResult.id,
                 day_of_week: slot.dayOfWeek,
                 start_time: slot.startTime,
                 end_time: slot.endTime,
@@ -167,13 +164,13 @@ export const useBusinessProfileForm = (profileId: string) => {
           await supabase
             .from("business_blocked_dates")
             .delete()
-            .eq("business_id", businessId);
+            .eq("business_id", profileResult.id);
 
           const { error: blockedDatesError } = await supabase
             .from("business_blocked_dates")
             .insert(
               blockedDates.map(date => ({
-                business_id: businessId,
+                business_id: profileResult.id,
                 blocked_date: date.date,
                 reason: date.reason
               }))
