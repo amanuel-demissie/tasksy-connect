@@ -67,6 +67,82 @@ export type Database = {
           },
         ]
       }
+      business_availability: {
+        Row: {
+          business_id: string
+          created_at: string
+          day_of_week: number
+          end_time: string
+          id: string
+          slot_duration: number
+          start_time: string
+          updated_at: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          day_of_week: number
+          end_time: string
+          id?: string
+          slot_duration: number
+          start_time: string
+          updated_at?: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          day_of_week?: number
+          end_time?: string
+          id?: string
+          slot_duration?: number
+          start_time?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_availability_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "business_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      business_blocked_dates: {
+        Row: {
+          blocked_date: string
+          business_id: string
+          created_at: string
+          id: string
+          reason: string | null
+          updated_at: string
+        }
+        Insert: {
+          blocked_date: string
+          business_id: string
+          created_at?: string
+          id?: string
+          reason?: string | null
+          updated_at?: string
+        }
+        Update: {
+          blocked_date?: string
+          business_id?: string
+          created_at?: string
+          id?: string
+          reason?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_blocked_dates_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "business_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       business_profiles: {
         Row: {
           address: string | null

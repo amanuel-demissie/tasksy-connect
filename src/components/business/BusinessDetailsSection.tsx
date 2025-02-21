@@ -1,3 +1,5 @@
+
+import { ServiceCategory } from "@/types/profile";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -8,27 +10,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ServiceCategory } from "@/types/profile";
+import AvailabilitySection from "./AvailabilitySection";
 
 interface BusinessDetailsSectionProps {
-  register: any; // Replace with proper type from react-hook-form
-  errors: any; // Replace with proper type from react-hook-form
+  register: any;
+  errors: any;
   selectedCategory: ServiceCategory;
   setSelectedCategory: (category: ServiceCategory) => void;
+  onAvailabilityChange?: (availability: any[]) => void;
+  onBlockedDatesChange?: (blockedDates: any[]) => void;
 }
 
-/**
- * Component for collecting basic business details in the profile form
- * 
- * @component
- * @param {BusinessDetailsSectionProps} props - Component props
- * @returns {JSX.Element} Rendered business details section
- */
 export default function BusinessDetailsSection({
   register,
   errors,
   selectedCategory,
-  setSelectedCategory
+  setSelectedCategory,
+  onAvailabilityChange,
+  onBlockedDatesChange,
 }: BusinessDetailsSectionProps) {
   return (
     <>
@@ -72,6 +71,13 @@ export default function BusinessDetailsSection({
           className={errors.address ? "border-red-500" : ""}
         />
       </div>
+
+      {onAvailabilityChange && onBlockedDatesChange && (
+        <AvailabilitySection
+          onAvailabilityChange={onAvailabilityChange}
+          onBlockedDatesChange={onBlockedDatesChange}
+        />
+      )}
     </>
   );
 }
