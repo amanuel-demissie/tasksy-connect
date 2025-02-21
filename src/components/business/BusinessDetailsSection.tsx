@@ -30,7 +30,7 @@ export default function BusinessDetailsSection({
   onBlockedDatesChange,
 }: BusinessDetailsSectionProps) {
   return (
-    <>
+    <div className="space-y-6">
       <div className="space-y-2">
         <Label htmlFor="name">Business Name</Label>
         <Input
@@ -78,6 +78,6 @@ export default function BusinessDetailsSection({
           onBlockedDatesChange={onBlockedDatesChange}
         />
       )}
-    </>
+    </div>
   );
 }
