@@ -8,15 +8,8 @@ import { useBusinessServices } from "@/hooks/use-business-services";
 import { useBusinessProfileForm } from "@/hooks/use-business-profile-form";
 import { BusinessProfileFormContent } from "./BusinessProfileFormContent";
 import { NotFoundState } from "./NotFoundState";
+import { supabase } from "@/integrations/supabase/client";
 
-/**
- * EditBusinessProfileForm Component
- * 
- * Main container component for editing business profiles.
- * Handles the overall form state and layout.
- * 
- * @component
- */
 export default function EditBusinessProfileForm() {
   const { id } = useParams();
   const {
@@ -34,7 +27,9 @@ export default function EditBusinessProfileForm() {
     handleExit,
     fetchProfile,
     setAvailability,
-    setBlockedDates
+    setBlockedDates,
+    availability,
+    blockedDates,
   } = useBusinessProfileForm(id!);
 
   const { 
@@ -54,8 +49,40 @@ export default function EditBusinessProfileForm() {
   } = useBusinessServices(id!);
 
   useEffect(() => {
-    fetchProfile();
-    fetchServices();
+    const fetchData = async () => {
+      await fetchProfile();
+      await fetchServices();
+      
+      // Fetch availability
+      const { data: availabilityData } = await supabase
+        .from("business_availability")
+        .select("*")
+        .eq("business_id", id);
+      
+      if (availabilityData) {
+        setAvailability(availabilityData.map(slot => ({
+          dayOfWeek: slot.day_of_week,
+          startTime: slot.start_time,
+          endTime: slot.end_time,
+          slotDuration: slot.slot_duration
+        })));
+      }
+
+      // Fetch blocked dates
+      const { data: blockedDatesData } = await supabase
+        .from("business_blocked_dates")
+        .select("*")
+        .eq("business_id", id);
+      
+      if (blockedDatesData) {
+        setBlockedDates(blockedDatesData.map(date => ({
+          date: new Date(date.blocked_date),
+          reason: date.reason
+        })));
+      }
+    };
+
+    fetchData();
   }, [id]);
 
   const handleCameraCapture = async () => {
@@ -75,12 +102,12 @@ export default function EditBusinessProfileForm() {
     addService(services.length, undefined, true);
   };
 
-  const handleAvailabilityChange = (availability: any[]) => {
-    setAvailability(availability);
+  const handleAvailabilityChange = (newAvailability: any[]) => {
+    setAvailability(newAvailability);
   };
 
-  const handleBlockedDatesChange = (blockedDates: any[]) => {
-    setBlockedDates(blockedDates);
+  const handleBlockedDatesChange = (newBlockedDates: any[]) => {
+    setBlockedDates(newBlockedDates);
   };
 
   if (notFound) {

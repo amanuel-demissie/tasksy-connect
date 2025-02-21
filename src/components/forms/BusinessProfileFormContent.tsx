@@ -1,8 +1,9 @@
 
+import { ServiceCategory } from "@/types/profile";
 import ImageUploadSection from "@/components/business/ImageUploadSection";
 import BusinessDetailsSection from "@/components/business/BusinessDetailsSection";
 import ServicesSection from "@/components/business/ServicesSection";
-import { ServiceCategory, BusinessService } from "@/types/profile";
+import AvailabilitySection from "@/components/business/AvailabilitySection";
 
 interface BusinessProfileFormContentProps {
   register: any;
@@ -15,26 +16,16 @@ interface BusinessProfileFormContentProps {
   setShowCamera: (show: boolean) => void;
   onCapturePhoto: () => void;
   videoRef: React.RefObject<HTMLVideoElement>;
-  currentImageUrl: string | null;
-  services: BusinessService[];
-  newService: BusinessService;
-  setNewService: (service: BusinessService) => void;
+  currentImageUrl?: string | null;
+  services: any[];
+  newService: any;
+  setNewService: (service: any) => void;
   addService: () => void;
   deleteService: (index: number, serviceId?: string) => void;
   onAvailabilityChange: (availability: any[]) => void;
   onBlockedDatesChange: (blockedDates: any[]) => void;
 }
 
-/**
- * BusinessProfileFormContent Component
- * 
- * Renders the main content sections of the business profile form:
- * - Image upload
- * - Business details
- * - Services
- * 
- * @component
- */
 export function BusinessProfileFormContent({
   register,
   errors,
@@ -53,10 +44,10 @@ export function BusinessProfileFormContent({
   addService,
   deleteService,
   onAvailabilityChange,
-  onBlockedDatesChange
+  onBlockedDatesChange,
 }: BusinessProfileFormContentProps) {
   return (
-    <>
+    <div className="space-y-6">
       <ImageUploadSection
         imageFile={imageFile}
         setImageFile={setImageFile}
@@ -72,17 +63,20 @@ export function BusinessProfileFormContent({
         errors={errors}
         selectedCategory={selectedCategory}
         setSelectedCategory={setSelectedCategory}
-        onAvailabilityChange={onAvailabilityChange}
-        onBlockedDatesChange={onBlockedDatesChange}
       />
 
       <ServicesSection
         services={services}
         newService={newService}
         setNewService={setNewService}
-        addService={() => addService()}
+        addService={addService}
         onDeleteService={deleteService}
       />
-    </>
+
+      <AvailabilitySection
+        onAvailabilityChange={onAvailabilityChange}
+        onBlockedDatesChange={onBlockedDatesChange}
+      />
+    </div>
   );
 }
