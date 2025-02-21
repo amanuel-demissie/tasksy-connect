@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -31,10 +32,10 @@ export default function EditBusinessProfileForm() {
     isSubmitting,
     notFound,
     handleExit,
-    fetchProfile
+    fetchProfile,
+    setAvailability,
+    setBlockedDates
   } = useBusinessProfileForm(id!);
-  
-
 
   const { 
     showCamera, 
@@ -54,7 +55,7 @@ export default function EditBusinessProfileForm() {
 
   useEffect(() => {
     fetchProfile();
-    fetchServices(); //function to fetch services separate from profile fetch
+    fetchServices();
   }, [id]);
 
   const handleCameraCapture = async () => {
@@ -66,13 +67,20 @@ export default function EditBusinessProfileForm() {
     }
   };
 
-   const handleServiceDelete =  (index: number, serviceId?: string) => {
-     deleteService(index, serviceId, true);
-    //fetchServices();
-  }; 
+  const handleServiceDelete = (index: number, serviceId?: string) => {
+    deleteService(index, serviceId, true);
+  };
 
   const handleServiceAdd = () => {
-    addService(services.length, undefined, true); // true because we're in edit mode
+    addService(services.length, undefined, true);
+  };
+
+  const handleAvailabilityChange = (availability: any[]) => {
+    setAvailability(availability);
+  };
+
+  const handleBlockedDatesChange = (blockedDates: any[]) => {
+    setBlockedDates(blockedDates);
   };
 
   if (notFound) {
@@ -109,6 +117,8 @@ export default function EditBusinessProfileForm() {
           setNewService={setNewService}
           addService={handleServiceAdd}
           deleteService={handleServiceDelete}
+          onAvailabilityChange={handleAvailabilityChange}
+          onBlockedDatesChange={handleBlockedDatesChange}
         />
 
         <Button 

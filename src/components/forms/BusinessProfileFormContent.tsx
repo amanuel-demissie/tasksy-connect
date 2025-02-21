@@ -1,3 +1,4 @@
+
 import ImageUploadSection from "@/components/business/ImageUploadSection";
 import BusinessDetailsSection from "@/components/business/BusinessDetailsSection";
 import ServicesSection from "@/components/business/ServicesSection";
@@ -20,6 +21,8 @@ interface BusinessProfileFormContentProps {
   setNewService: (service: BusinessService) => void;
   addService: () => void;
   deleteService: (index: number, serviceId?: string) => void;
+  onAvailabilityChange: (availability: any[]) => void;
+  onBlockedDatesChange: (blockedDates: any[]) => void;
 }
 
 /**
@@ -49,6 +52,8 @@ export function BusinessProfileFormContent({
   setNewService,
   addService,
   deleteService,
+  onAvailabilityChange,
+  onBlockedDatesChange
 }: BusinessProfileFormContentProps) {
   return (
     <>
@@ -67,6 +72,8 @@ export function BusinessProfileFormContent({
         errors={errors}
         selectedCategory={selectedCategory}
         setSelectedCategory={setSelectedCategory}
+        onAvailabilityChange={onAvailabilityChange}
+        onBlockedDatesChange={onBlockedDatesChange}
       />
 
       <ServicesSection

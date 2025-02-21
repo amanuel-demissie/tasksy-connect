@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -31,6 +32,8 @@ export const useBusinessProfileForm = (profileId: string) => {
   const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(null);
   const [notFound, setNotFound] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [availability, setAvailability] = useState<any[]>([]);
+  const [blockedDates, setBlockedDates] = useState<any[]>([]);
 
   const { submitProfile } = useBusinessProfileSubmit(() => {
     toast({
@@ -71,15 +74,7 @@ export const useBusinessProfileForm = (profileId: string) => {
         description: "Failed to fetch business profile",
       });
       return;
-    } /* else {
-      profile.business_services.map( service => {
-        console.log(service.id);
-        console.log(service.name);
-        console.log(service.description);
-        console.log(service.price);
-      });
-      ;
-    } */
+    }
 
     if (!profile) {
       setNotFound(true);
@@ -99,15 +94,34 @@ export const useBusinessProfileForm = (profileId: string) => {
     setCurrentImageUrl(profile.image_url);
 
     // Set services with their IDs
-    /* if (profile.business_services) {
+    if (profile.business_services) {
       setServices(profile.business_services.map(service => ({
         id: service.id,
         name: service.name,
         description: service.description || "",
         price: Number(service.price)
       })));
-      console.log('services from fetchProfile in useBusinessProfileForm', services);
-    } */
+    }
+
+    // Fetch availability
+    const { data: availabilityData } = await supabase
+      .from("business_availability")
+      .select("*")
+      .eq("business_id", profileId);
+
+    if (availabilityData) {
+      setAvailability(availabilityData);
+    }
+
+    // Fetch blocked dates
+    const { data: blockedDatesData } = await supabase
+      .from("business_blocked_dates")
+      .select("*")
+      .eq("business_id", profileId);
+
+    if (blockedDatesData) {
+      setBlockedDates(blockedDatesData);
+    }
   };
 
   /**
@@ -127,7 +141,60 @@ export const useBusinessProfileForm = (profileId: string) => {
 
       const imageToSubmit = imageFile || (currentImageUrl ? new URL(getImageUrl(currentImageUrl)) : null);
       
-      await submitProfile(formData, imageToSubmit as File | null, services, profileId);
+      // Submit profile and get the ID
+      const profileResult = await submitProfile(formData, imageToSubmit as File | null, services, profileId);
+      
+      if (profileResult?.id) {
+        // Handle availability
+        if (availability.length > 0) {
+          // Delete existing availability
+          await supabase
+            .from("business_availability")
+            .delete()
+            .eq("business_id", profileResult.id);
+
+          // Insert new availability
+          const { error: availabilityError } = await supabase
+            .from("business_availability")
+            .insert(
+              availability.map(slot => ({
+                business_id: profileResult.id,
+                day_of_week: slot.dayOfWeek,
+                start_time: slot.startTime,
+                end_time: slot.endTime,
+                slot_duration: slot.slotDuration
+              }))
+            );
+
+          if (availabilityError) {
+            console.error("Error saving availability:", availabilityError);
+          }
+        }
+
+        // Handle blocked dates
+        if (blockedDates.length > 0) {
+          // Delete existing blocked dates
+          await supabase
+            .from("business_blocked_dates")
+            .delete()
+            .eq("business_id", profileResult.id);
+
+          // Insert new blocked dates
+          const { error: blockedDatesError } = await supabase
+            .from("business_blocked_dates")
+            .insert(
+              blockedDates.map(date => ({
+                business_id: profileResult.id,
+                blocked_date: date.date,
+                reason: date.reason
+              }))
+            );
+
+          if (blockedDatesError) {
+            console.error("Error saving blocked dates:", blockedDatesError);
+          }
+        }
+      }
     } catch (error) {
       console.error("Error updating business profile:", error);
       toast({
@@ -162,6 +229,7 @@ export const useBusinessProfileForm = (profileId: string) => {
     notFound,
     handleExit,
     fetchProfile,
-    //services
+    setAvailability,
+    setBlockedDates,
   };
 };
