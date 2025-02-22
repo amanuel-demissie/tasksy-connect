@@ -8,7 +8,6 @@ import { useBusinessServices } from "@/hooks/use-business-services";
 import { useBusinessProfileForm } from "@/hooks/use-business-profile-form";
 import { BusinessProfileFormContent } from "./BusinessProfileFormContent";
 import { NotFoundState } from "./NotFoundState";
-import { supabase } from "@/integrations/supabase/client";
 
 export default function EditBusinessProfileForm() {
   const { id } = useParams();
@@ -52,34 +51,6 @@ export default function EditBusinessProfileForm() {
     const fetchData = async () => {
       await fetchProfile();
       await fetchServices();
-      
-      // Fetch availability
-      const { data: availabilityData } = await supabase
-        .from("business_availability")
-        .select("*")
-        .eq("business_id", id);
-      
-      if (availabilityData) {
-        setAvailability(availabilityData.map(slot => ({
-          dayOfWeek: slot.day_of_week,
-          startTime: slot.start_time,
-          endTime: slot.end_time,
-          slotDuration: slot.slot_duration
-        })));
-      }
-
-      // Fetch blocked dates
-      const { data: blockedDatesData } = await supabase
-        .from("business_blocked_dates")
-        .select("*")
-        .eq("business_id", id);
-      
-      if (blockedDatesData) {
-        setBlockedDates(blockedDatesData.map(date => ({
-          date: new Date(date.blocked_date),
-          reason: date.reason
-        })));
-      }
     };
 
     fetchData();
