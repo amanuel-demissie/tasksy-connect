@@ -1,16 +1,4 @@
-/**
- * Profile Page Component
- * 
- * Main profile page that displays user information and associated profiles.
- * Fetches and displays user details, business profiles, and freelancer profiles.
- * Provides functionality to manage user information and view associated profiles.
- * 
- * @component
- * @example
- * ```tsx
- * <Profile />
- * ```
- */
+
 import React, { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -34,51 +22,73 @@ const Profile = () => {
   const [businessProfiles, setBusinessProfiles] = useState([]);
   const [freelancerProfiles, setFreelancerProfiles] = useState([]);
   
-  useEffect(() => {
-    /**
-     * Fetches all profile-related data from Supabase
-     * Includes user profile, business profiles, and freelancer profiles
-     */
-    const fetchData = async () => {
-      if (!session?.user) return;
+  const fetchBusinessProfiles = async () => {
+    if (!session?.user) return;
+    
+    try {
+      const { data: businessData, error: businessError } = await supabase
+        .from('business_profiles')
+        .select('*')
+        .eq('owner_id', session.user.id);
       
-      try {
-        // Fetch user profile
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('email, created_at, username, phone_number')
-          .eq('id', session.user.id)
-          .single();
-        
-        if (profileError) throw profileError;
-        setProfile(profileData);
+      if (businessError) throw businessError;
+      setBusinessProfiles(businessData || []);
+    } catch (error) {
+      console.error("Error fetching business profiles:", error);
+      toast.error("Failed to load business profiles");
+    }
+  };
 
-        // Fetch business profiles
-        const { data: businessData, error: businessError } = await supabase
-          .from('business_profiles')
-          .select('*')
-          .eq('owner_id', session.user.id);
-        
-        if (businessError) throw businessError;
-        setBusinessProfiles(businessData);
+  const fetchFreelancerProfiles = async () => {
+    if (!session?.user) return;
+    
+    try {
+      const { data: freelancerData, error: freelancerError } = await supabase
+        .from('freelancer_profiles')
+        .select('*')
+        .eq('owner_id', session.user.id);
+      
+      if (freelancerError) throw freelancerError;
+      setFreelancerProfiles(freelancerData || []);
+    } catch (error) {
+      console.error("Error fetching freelancer profiles:", error);
+      toast.error("Failed to load freelancer profiles");
+    }
+  };
 
-        // Fetch freelancer profiles
-        const { data: freelancerData, error: freelancerError } = await supabase
-          .from('freelancer_profiles')
-          .select('*')
-          .eq('owner_id', session.user.id);
-        
-        if (freelancerError) throw freelancerError;
-        setFreelancerProfiles(freelancerData);
+  const fetchUserProfile = async () => {
+    if (!session?.user) return;
+    
+    try {
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('email, created_at, username, phone_number')
+        .eq('id', session.user.id)
+        .single();
+      
+      if (profileError) throw profileError;
+      setProfile(profileData);
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+      toast.error("Failed to load profile data");
+    }
+  };
 
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        toast.error("Failed to load profile data");
-      }
+  useEffect(() => {
+    const fetchData = async () => {
+      await Promise.all([
+        fetchUserProfile(),
+        fetchBusinessProfiles(),
+        fetchFreelancerProfiles()
+      ]);
     };
 
     fetchData();
   }, [session]);
+
+  const handleBusinessProfileDeleted = async () => {
+    await fetchBusinessProfiles();
+  };
 
   // Show loading state while profile data is being fetched
   if (!profile) {
@@ -96,7 +106,10 @@ const Profile = () => {
         <UserDetailsSection profile={profile} setProfile={setProfile} />
         
         <div className="space-y-8">
-          <UserBusinessProfiles profiles={businessProfiles} />
+          <UserBusinessProfiles 
+            profiles={businessProfiles} 
+            onProfileDeleted={handleBusinessProfileDeleted}
+          />
           <UserFreelancerProfiles profiles={freelancerProfiles} />
         </div>
 
