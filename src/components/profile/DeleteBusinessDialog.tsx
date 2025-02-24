@@ -1,3 +1,4 @@
+
 import React from 'react';
 import {
   AlertDialog,
@@ -35,14 +36,6 @@ interface DeleteBusinessDialogProps {
  * Handles the deletion process through Supabase and provides feedback via toast notifications.
  * 
  * @component
- * @example
- * ```tsx
- * <DeleteBusinessDialog
- *   businessId="123"
- *   businessName="My Business"
- *   onDelete={() => console.log('Business deleted')}
- * />
- * ```
  */
 export const DeleteBusinessDialog = ({ businessId, businessName, onDelete }: DeleteBusinessDialogProps) => {
   const { toast } = useToast();
@@ -57,6 +50,40 @@ export const DeleteBusinessDialog = ({ businessId, businessName, onDelete }: Del
     console.log('Attempting to delete business profile:', businessId);
     
     try {
+      // First, delete related availability records
+      const { error: availabilityError } = await supabase
+        .from('business_availability')
+        .delete()
+        .eq('business_id', businessId);
+
+      if (availabilityError) {
+        console.error('Error deleting availability:', availabilityError);
+        throw availabilityError;
+      }
+
+      // Then delete blocked dates
+      const { error: blockedDatesError } = await supabase
+        .from('business_blocked_dates')
+        .delete()
+        .eq('business_id', businessId);
+
+      if (blockedDatesError) {
+        console.error('Error deleting blocked dates:', blockedDatesError);
+        throw blockedDatesError;
+      }
+
+      // Finally delete the business services
+      const { error: servicesError } = await supabase
+        .from('business_services')
+        .delete()
+        .eq('business_id', businessId);
+
+      if (servicesError) {
+        console.error('Error deleting services:', servicesError);
+        throw servicesError;
+      }
+
+      // Now delete the business profile
       const { error } = await supabase
         .from('business_profiles')
         .delete()
@@ -93,7 +120,6 @@ export const DeleteBusinessDialog = ({ businessId, businessName, onDelete }: Del
           size="lg"
           className="relative text-white hover:bg-red-500/20 p-6"
           onClick={(e) => {
-            //e.preventDefault();
             e.stopPropagation();
             console.log('clicked delete button')
           }}
@@ -109,7 +135,7 @@ export const DeleteBusinessDialog = ({ businessId, businessName, onDelete }: Del
           <AlertDialogTitle>Are you sure?</AlertDialogTitle>
           <AlertDialogDescription>
             This action cannot be undone. This will permanently delete your business profile
-            and all associated services.
+            and all associated services, availability, and blocked dates.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
