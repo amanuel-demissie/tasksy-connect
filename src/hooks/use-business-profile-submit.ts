@@ -1,11 +1,29 @@
 
+/**
+ * Custom hook for handling business profile submission
+ * 
+ * Manages the submission of business profile data to Supabase, including:
+ * - Profile information persistence
+ * - Image upload handling
+ * - Services creation/update
+ * - Error handling and success notifications
+ * 
+ * @param {Function} onSuccess - Callback function to execute after successful submission
+ * @returns {Object} Object containing submission handler
+ */
 import { supabase } from "@/integrations/supabase/client";
 import { BusinessProfileFormData } from "@/types/profile";
 import { useToast } from "@/hooks/use-toast";
 import { useBusinessImageUpload } from "./use-business-image-upload";
 
+/**
+ * Interface for the business profile result
+ * @interface BusinessProfileResult
+ */
 interface BusinessProfileResult {
+  /** Unique identifier for the business profile */
   id: string;
+  /** Additional dynamic properties */
   [key: string]: any;
 }
 
@@ -13,6 +31,15 @@ export const useBusinessProfileSubmit = (onSuccess: () => void) => {
   const { toast } = useToast();
   const { uploadBusinessImage } = useBusinessImageUpload();
 
+  /**
+   * Submits or updates a business profile
+   * 
+   * @param {BusinessProfileFormData} data - Form data containing profile information
+   * @param {File | null} imageFile - Image file to upload (if any)
+   * @param {Array} services - Array of services to associate with the profile
+   * @param {string} [businessId] - Optional business ID for updates
+   * @returns {Promise<BusinessProfileResult | null>} Created/updated profile or null if submission fails
+   */
   const submitProfile = async (
     data: BusinessProfileFormData, 
     imageFile: File | null, 

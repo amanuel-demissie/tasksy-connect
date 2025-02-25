@@ -1,32 +1,34 @@
 
+/**
+ * Custom hook for managing business services
+ * 
+ * Handles CRUD operations for business services, including:
+ * - Service list management
+ * - Database persistence
+ * - State management
+ * - Error handling
+ * 
+ * @returns {Object} Hook methods and state
+ */
 import { useEffect, useState } from "react";
 import { BusinessService } from "@/types/profile";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
-/**
- * Custom hook for managing business services
- * Handles CRUD operations for services including database persistence
- *
- * @returns {Object} Hook methods and state
- * @returns {BusinessService[]} services - Array of current services
- * @returns {Function} setServices - Function to update services state
- * @returns {BusinessService} newService - Current new service being created
- * @returns {Function} setNewService - Function to update new service state
- * @returns {Function} addService - Function to add a new service
- * @returns {Function} deleteService - Function to delete a service
- */
 export const useBusinessServices = (businessId?: string) => {
   const [services, setServices] = useState<BusinessService[]>([]);
   const [newService, setNewService] = useState<BusinessService>({
     name: "",
     description: "",
     price: 0,
-    duration: 30, // Set default duration to 30 minutes
+    duration: 30, // Default duration in minutes
   });
   const { toast } = useToast();
 
-  //fetch services from database and set services state
+  /**
+   * Fetches services from the database and updates state
+   * @async
+   */
   const fetchServices = async () => {
     if (!businessId) return;
     const { data: profile, error } = await supabase
@@ -52,12 +54,12 @@ export const useBusinessServices = (businessId?: string) => {
         name: service.name,
         description: service.description || "",
         price: Number(service.price),
-        duration: service.duration || 30 // Default to 30 if not set
+        duration: service.duration || 30
       })));
     }
   };
 
-  //just for debugging
+  // Debug logging
   if (services.length > 0) {
     console.log("services from useBusinessServices", services);
   } else {
@@ -65,8 +67,10 @@ export const useBusinessServices = (businessId?: string) => {
   }
 
   /**
-   * Adds a new service to the list
-   * If businessId is provided, also persists to database
+   * Adds a new service to the list and optionally persists to database
+   * @param {number} index - Index where to add the service
+   * @param {string} [serviceId] - Optional service ID for updates
+   * @param {boolean} [isEditing] - Whether we're in edit mode
    */
   const addService = async(
     index: number,
@@ -75,7 +79,6 @@ export const useBusinessServices = (businessId?: string) => {
   ) => {
     try {
       if (newService.name && newService.price > 0) {
-        // If we're in edit mode and have a businessId, add to database
         if (isEditing && businessId) {
           const { data, error } = await supabase
             .from("business_services")
@@ -99,7 +102,6 @@ export const useBusinessServices = (businessId?: string) => {
             return;
           }
 
-          // Update local state with the database response
           setServices([...services, {
             name: data.name,
             description: data.description,
@@ -107,11 +109,9 @@ export const useBusinessServices = (businessId?: string) => {
             duration: data.duration || 30
           }]);
         } else {
-          // If not editing, just update local state
           setServices([...services, newService]);
         }
 
-        // Reset the new service form
         setNewService({ 
           name: "", 
           description: "", 
@@ -119,7 +119,6 @@ export const useBusinessServices = (businessId?: string) => {
           duration: 30 
         });
 
-        // Show success toast only in edit mode
         if (isEditing) {
           toast({
             title: "Success",
@@ -140,10 +139,10 @@ export const useBusinessServices = (businessId?: string) => {
   };
 
   /**
-   * Deletes a service from the list and database if applicable
+   * Deletes a service from the list and optionally from database
    * @param {number} index - Index of service to delete
-   * @param {string} serviceId - Database ID of service to delete
-   * @param {boolean} isEditing - Whether we're in edit mode
+   * @param {string} [serviceId] - Optional service ID for database deletion
+   * @param {boolean} [isEditing] - Whether we're in edit mode
    */
   const deleteService = async (
     index: number,
@@ -151,7 +150,6 @@ export const useBusinessServices = (businessId?: string) => {
     isEditing: boolean = false
   ) => {
     try {
-      // Only attempt database deletion if we're in edit mode and have both businessId and serviceId
       if (isEditing && businessId && serviceId) {
         const { error } = await supabase
           .from("business_services")
@@ -170,10 +168,8 @@ export const useBusinessServices = (businessId?: string) => {
         }
       }
 
-      // Update local state
       setServices(services.filter((_, i) => i !== index));
 
-      // Only show toast in edit mode when deleting from database
       if (isEditing) {
         toast({
           title: "Success",
