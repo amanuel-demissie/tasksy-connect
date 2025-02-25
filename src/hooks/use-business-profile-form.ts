@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -46,7 +45,8 @@ export const useBusinessProfileForm = (profileId: string) => {
     navigate("/profile");
   });
 
-  const { services, setServices } = useBusinessServices(profileId!);
+  const businessServicesHook = useBusinessServices(profileId!);
+  const { services, setServices } = businessServicesHook;
 
   const fetchProfile = async () => {
     if (!profileId) return;
@@ -216,5 +216,8 @@ export const useBusinessProfileForm = (profileId: string) => {
     setBlockedDates,
     availability,
     blockedDates,
+    services,
+    setServices,
+    businessServicesHook,
   };
 };

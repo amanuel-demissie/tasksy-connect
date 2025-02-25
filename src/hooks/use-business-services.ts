@@ -1,4 +1,3 @@
-
 /**
  * Custom hook for managing business services
  * 
@@ -78,8 +77,14 @@ export const useBusinessServices = (businessId?: string) => {
     isEditing: boolean = false
   ) => {
     try {
+      console.log("addService called with:", { index, serviceId, isEditing, businessId });
+      
       if (newService.name && newService.price > 0) {
+        console.log("Service validation passed with newService:", newService);
+        
         if (isEditing && businessId) {
+          console.log("Attempting database insertion with businessId:", businessId);
+          
           const { data, error } = await supabase
             .from("business_services")
             .insert({
@@ -92,6 +97,8 @@ export const useBusinessServices = (businessId?: string) => {
             .select()
             .single();
 
+          console.log("Database response:", { data, error });
+
           if (error) {
             console.error("Error adding service:", error);
             toast({
@@ -103,12 +110,16 @@ export const useBusinessServices = (businessId?: string) => {
           }
 
           setServices([...services, {
+            id: data.id,
             name: data.name,
             description: data.description,
             price: Number(data.price),
             duration: data.duration || 30
           }]);
+          
+          console.log("Updated services state with DB data");
         } else {
+          console.log("Not in editing mode or no businessId, updating local state only");
           setServices([...services, newService]);
         }
 

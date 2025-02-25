@@ -16,6 +16,7 @@ export interface ImageUploadProps {
 export interface ImageUploadSectionProps extends ImageUploadProps {}
 
 export interface BusinessService {
+  id?: string;
   name: string;
   description: string;
   price: number;

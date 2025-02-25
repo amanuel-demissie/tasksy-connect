@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -29,6 +28,8 @@ export default function EditBusinessProfileForm() {
     setBlockedDates,
     availability,
     blockedDates,
+    services: formServices,
+    setServices: setFormServices,
   } = useBusinessProfileForm(id!);
 
   const { 
@@ -39,7 +40,7 @@ export default function EditBusinessProfileForm() {
   } = useCameraCapture();
 
   const { 
-    services, 
+    services: hookServices,
     newService, 
     setNewService, 
     addService,
@@ -47,6 +48,7 @@ export default function EditBusinessProfileForm() {
     fetchServices
   } = useBusinessServices(id!);
 
+  // Initial data fetch
   useEffect(() => {
     const fetchData = async () => {
       await fetchProfile();
@@ -55,6 +57,12 @@ export default function EditBusinessProfileForm() {
 
     fetchData();
   }, [id]);
+
+  // Synchronize services between hooks
+  useEffect(() => {
+    console.log("Synchronizing services from useBusinessServices to form:", hookServices);
+    setFormServices(hookServices);
+  }, [hookServices, setFormServices]);
 
   const handleCameraCapture = async () => {
     try {
@@ -70,7 +78,7 @@ export default function EditBusinessProfileForm() {
   };
 
   const handleServiceAdd = () => {
-    addService(services.length, undefined, true);
+    addService(formServices.length, undefined, true);
   };
 
   const handleAvailabilityChange = (newAvailability: any[]) => {
@@ -110,7 +118,7 @@ export default function EditBusinessProfileForm() {
           onCapturePhoto={handleCameraCapture}
           videoRef={videoRef}
           currentImageUrl={currentImageUrl}
-          services={services}
+          services={formServices}
           newService={newService}
           setNewService={setNewService}
           addService={handleServiceAdd}
