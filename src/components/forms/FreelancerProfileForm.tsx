@@ -1,10 +1,3 @@
-import { useRef, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
-import ImageUploadSection from "@/components/freelancer/ImageUploadSection";
-import FreelancerDetailsSection from "@/components/freelancer/FreelancerDetailsSection";
-import SkillsSection from "@/components/freelancer/SkillsSection";
-import { useFreelancerProfile } from "@/hooks/use-freelancer-profile";
 
 /**
  * FreelancerProfileForm Component
@@ -13,11 +6,26 @@ import { useFreelancerProfile } from "@/hooks/use-freelancer-profile";
  * Handles image upload, basic information collection, skills management,
  * and profile data persistence in Supabase.
  * 
+ * Features:
+ * - Profile image upload with camera support
+ * - Basic information collection (name, title, bio)
+ * - Service category selection
+ * - Hourly rate setting
+ * - Skills management (add/remove skills)
+ * 
  * @component
  * @param {Object} props - Component properties
  * @param {Function} props.onSuccess - Callback function executed after successful profile creation
  * @returns {JSX.Element} Rendered freelancer profile form
  */
+import { useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
+import ImageUploadSection from "@/components/freelancer/ImageUploadSection";
+import FreelancerDetailsSection from "@/components/freelancer/FreelancerDetailsSection";
+import SkillsSection from "@/components/freelancer/SkillsSection";
+import { useFreelancerProfile } from "@/hooks/use-freelancer-profile";
+
 export default function FreelancerProfileForm({ onSuccess }: { onSuccess: () => void }) {
   const {
     register,

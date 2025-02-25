@@ -1,16 +1,37 @@
+
+/**
+ * Custom hook for managing freelancer profile form state and submission
+ * 
+ * Handles form state, validation, image upload, skills management,
+ * and profile submission to Supabase.
+ * 
+ * @param {Function} onSuccess - Callback function executed after successful profile creation
+ * @returns {Object} Form state and handlers
+ */
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { ServiceCategory } from "@/types/profile";
 
+/**
+ * Interface for freelancer profile form data
+ * @interface FreelancerProfileFormData
+ */
 interface FreelancerProfileFormData {
+  /** Freelancer's full name */
   fullName: string;
+  /** Professional title */
   title: string;
+  /** Professional bio/description */
   bio: string;
+  /** Service category */
   category: ServiceCategory;
+  /** Hourly rate in currency units */
   hourlyRate: number;
+  /** Array of skills */
   skills: string[];
+  /** Optional profile image */
   image?: File;
 }
 
@@ -25,7 +46,7 @@ export const useFreelancerProfile = (onSuccess: () => void) => {
 
   /**
    * Handles form submission and profile creation
-   * @param data - Form data containing profile information
+   * @param {FreelancerProfileFormData} data - Form data containing profile information
    */
   const onSubmit = async (data: FreelancerProfileFormData) => {
     try {
@@ -103,6 +124,10 @@ export const useFreelancerProfile = (onSuccess: () => void) => {
     }
   };
 
+  /**
+   * Adds a new skill to the skills list
+   * Only adds if the skill is not empty and not already in the list
+   */
   const addSkill = () => {
     if (newSkill && !skills.includes(newSkill)) {
       setSkills([...skills, newSkill]);
@@ -110,6 +135,10 @@ export const useFreelancerProfile = (onSuccess: () => void) => {
     }
   };
 
+  /**
+   * Removes a skill from the skills list
+   * @param {number} index - Index of the skill to remove
+   */
   const removeSkill = (index: number) => {
     setSkills(skills.filter((_, i) => i !== index));
   };
