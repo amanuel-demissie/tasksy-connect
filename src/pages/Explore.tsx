@@ -1,9 +1,25 @@
+
+/**
+ * Explore Page Component
+ * 
+ * Provides a search interface for discovering services.
+ * Includes search functionality and filtering options.
+ * 
+ * @component
+ * @example
+ * ```tsx
+ * <Explore />
+ * ```
+ */
 import React from "react";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const Explore = () => {
+  /**
+   * Available filter options for service discovery
+   */
   const filters = ["All", "Popular", "Trending", "New", "Near Me"];
 
   return (

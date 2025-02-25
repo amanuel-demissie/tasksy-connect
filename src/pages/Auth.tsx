@@ -1,3 +1,17 @@
+
+/**
+ * Authentication Page Component
+ * 
+ * Handles user authentication using Supabase Auth UI.
+ * Provides sign-in and sign-up functionality with a clean interface.
+ * Automatically redirects authenticated users to the home page.
+ * 
+ * @component
+ * @example
+ * ```tsx
+ * <AuthPage />
+ * ```
+ */
 import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,7 +24,10 @@ const AuthPage = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check if user is already logged in
+    /**
+     * Sets up authentication state listener
+     * Redirects user based on auth state changes
+     */
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (event === 'SIGNED_IN' && session) {

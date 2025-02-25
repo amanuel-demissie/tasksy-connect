@@ -1,10 +1,40 @@
+
+/**
+ * Messages Page Component
+ * 
+ * Displays user's conversations and messages.
+ * Shows recent conversations with businesses and service providers.
+ * 
+ * @component
+ * @example
+ * ```tsx
+ * <Messages />
+ * ```
+ */
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
+/**
+ * Interface for conversation data
+ * @interface Conversation
+ */
+interface Conversation {
+  /** Unique identifier for the conversation */
+  id: number;
+  /** Name of the business or service provider */
+  name: string;
+  /** Most recent message in the conversation */
+  lastMessage: string;
+  /** Time elapsed since the last message */
+  time: string;
+  /** Avatar text (fallback for when image is not available) */
+  avatar: string;
+}
+
 const Messages = () => {
-  const conversations = [
+  const conversations: Conversation[] = [
     {
       id: 1,
       name: "Hair Salon",
@@ -19,7 +49,6 @@ const Messages = () => {
       time: "1h ago",
       avatar: "RA",
     },
-    // Add more conversations as needed
   ];
 
   return (

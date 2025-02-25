@@ -1,4 +1,17 @@
 
+/**
+ * Profile Page Component
+ * 
+ * Main profile page that displays user information and associated profiles.
+ * Fetches and displays user details, business profiles, and freelancer profiles.
+ * Provides functionality to manage user information and view associated profiles.
+ * 
+ * @component
+ * @example
+ * ```tsx
+ * <Profile />
+ * ```
+ */
 import React, { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -9,10 +22,18 @@ import { UserBusinessProfiles } from "@/components/profile/UserBusinessProfiles"
 import { UserFreelancerProfiles } from "@/components/profile/UserFreelancerProfiles";
 import { SignOutButton } from "@/components/profile/SignOutButton";
 
+/**
+ * Interface for user profile data
+ * @interface Profile
+ */
 interface Profile {
+  /** User's email address */
   email: string | null;
+  /** Account creation timestamp */
   created_at: string;
+  /** User's chosen username */
   username: string | null;
+  /** User's phone number */
   phone_number: string | null;
 }
 
@@ -22,6 +43,10 @@ const Profile = () => {
   const [businessProfiles, setBusinessProfiles] = useState([]);
   const [freelancerProfiles, setFreelancerProfiles] = useState([]);
   
+  /**
+   * Fetches business profiles associated with the current user
+   * @async
+   */
   const fetchBusinessProfiles = async () => {
     if (!session?.user) return;
     
@@ -39,6 +64,10 @@ const Profile = () => {
     }
   };
 
+  /**
+   * Fetches freelancer profiles associated with the current user
+   * @async
+   */
   const fetchFreelancerProfiles = async () => {
     if (!session?.user) return;
     
@@ -56,6 +85,10 @@ const Profile = () => {
     }
   };
 
+  /**
+   * Fetches the user's basic profile information
+   * @async
+   */
   const fetchUserProfile = async () => {
     if (!session?.user) return;
     
@@ -86,6 +119,11 @@ const Profile = () => {
     fetchData();
   }, [session]);
 
+  /**
+   * Handles the successful deletion of a business profile
+   * Refreshes the business profiles list
+   * @async
+   */
   const handleBusinessProfileDeleted = async () => {
     await fetchBusinessProfiles();
   };

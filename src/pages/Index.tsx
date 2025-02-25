@@ -1,3 +1,17 @@
+
+/**
+ * Home Page Component
+ * 
+ * Main landing page of the application that displays search functionality,
+ * service categories, featured services, and recommended services.
+ * Includes functionality to create new business or freelancer profiles.
+ * 
+ * @component
+ * @example
+ * ```tsx
+ * <Index />
+ * ```
+ */
 import { useState } from "react";
 import { Plus } from "lucide-react";
 import SearchBar from "@/components/home/SearchBar";
@@ -8,6 +22,7 @@ import RecommendedServices from "@/components/home/RecommendedServices";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import CreateProfileDialog from "@/components/forms/CreateProfileDialog";
+
 const Index = () => {
   // State to control the profile creation dialog visibility
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -39,7 +54,9 @@ const Index = () => {
     setProfileType(type);
     setIsDialogOpen(true);
   };
-  return <div className="min-h-screen bg-secondary pb-20">
+
+  return (
+    <div className="min-h-screen bg-secondary pb-20">
       <div className="container max-w-4xl mx-auto px-4 py-8 space-y-8 bg-slate-950 ">
         <div className="flex justify-between items-center">
           <div className="space-y-4">
@@ -78,11 +95,17 @@ const Index = () => {
         <RecommendedServices />
 
         {/* Profile creation dialog */}
-        <CreateProfileDialog isOpen={isDialogOpen} onClose={() => {
-        setIsDialogOpen(false);
-        setProfileType(null);
-      }} type={profileType} />
+        <CreateProfileDialog 
+          isOpen={isDialogOpen} 
+          onClose={() => {
+            setIsDialogOpen(false);
+            setProfileType(null);
+          }} 
+          type={profileType} 
+        />
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default Index;
