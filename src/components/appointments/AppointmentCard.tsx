@@ -9,17 +9,7 @@ import {
 } from "@/components/ui/collapsible";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-interface Appointment {
-  id: string;
-  status: string;
-  serviceName: string;
-  providerName: string;
-  businessName: string;
-  businessLogo: string;
-  date: string;
-  time: string;
-}
+import { Appointment } from "@/types/appointment";
 
 interface AppointmentCardProps {
   appointment: Appointment;
