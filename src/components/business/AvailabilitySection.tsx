@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -161,6 +160,7 @@ export default function AvailabilitySection({
         </div>
 
         <Button 
+          type="button"
           onClick={addTimeSlot}
           className="w-full md:w-auto"
         >
@@ -187,6 +187,7 @@ export default function AvailabilitySection({
                   </span>
                 </div>
                 <Button
+                  type="button"
                   variant="ghost"
                   size="icon"
                   onClick={() => removeTimeSlot(index)}
@@ -202,6 +203,7 @@ export default function AvailabilitySection({
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Blocked Dates</h3>
         <Button
+          type="button"
           variant="outline"
           onClick={() => setShowBlockDateInput(true)}
           className="w-full md:w-auto"
@@ -224,8 +226,9 @@ export default function AvailabilitySection({
               onChange={(e) => setBlockReason(e.target.value)}
             />
             <div className="flex space-x-2">
-              <Button onClick={addBlockedDate}>Add Blocked Date</Button>
+              <Button type="button" onClick={addBlockedDate}>Add Blocked Date</Button>
               <Button
+                type="button"
                 variant="ghost"
                 onClick={() => setShowBlockDateInput(false)}
               >
@@ -253,6 +256,7 @@ export default function AvailabilitySection({
                   )}
                 </div>
                 <Button
+                  type="button"
                   variant="ghost"
                   size="icon"
                   onClick={() => removeBlockedDate(index)}
