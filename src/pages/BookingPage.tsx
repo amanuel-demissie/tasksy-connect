@@ -20,6 +20,17 @@ interface BlockedDate {
   reason?: string;
 }
 
+interface BusinessAvailabilityResponse {
+  business_id: string;
+  created_at: string;
+  day_of_week: number;
+  end_time: string;
+  id: string;
+  slot_duration: number;
+  start_time: string;
+  updated_at: string;
+}
+
 const BookingPage = () => {
   const { businessId, serviceId } = useParams();
   const navigate = useNavigate();
@@ -46,6 +57,14 @@ const BookingPage = () => {
         return;
       }
 
+      // Map the Supabase response to our TimeSlot interface
+      const mappedAvailability: TimeSlot[] = (availabilityData || []).map((slot: BusinessAvailabilityResponse) => ({
+        dayOfWeek: slot.day_of_week,
+        startTime: slot.start_time,
+        endTime: slot.end_time,
+        slotDuration: slot.slot_duration
+      }));
+
       // Fetch blocked dates
       const { data: blockedDatesData, error: blockedDatesError } = await supabase
         .from('business_blocked_dates')
@@ -57,7 +76,7 @@ const BookingPage = () => {
         return;
       }
 
-      setAvailability(availabilityData || []);
+      setAvailability(mappedAvailability);
       setBlockedDates(blockedDatesData || []);
     };
 
