@@ -110,7 +110,13 @@ export const useBusinessProfileForm = (profileId: string) => {
       .eq("business_id", profileId);
 
     if (availabilityData) {
-      setAvailability(availabilityData);
+      const formattedAvailability = availabilityData.map(slot => ({
+        dayOfWeek: slot.day_of_week,
+        startTime: slot.start_time,
+        endTime: slot.end_time,
+        slotDuration: slot.slot_duration
+      }));
+      setAvailability(formattedAvailability);
     }
 
     const { data: blockedDatesData } = await supabase
@@ -119,7 +125,11 @@ export const useBusinessProfileForm = (profileId: string) => {
       .eq("business_id", profileId);
 
     if (blockedDatesData) {
-      setBlockedDates(blockedDatesData);
+      const formattedBlockedDates = blockedDatesData.map(date => ({
+        date: new Date(date.blocked_date),
+        reason: date.reason || undefined
+      }));
+      setBlockedDates(formattedBlockedDates);
     }
   };
 

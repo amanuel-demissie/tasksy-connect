@@ -125,6 +125,8 @@ export default function EditBusinessProfileForm() {
           deleteService={handleServiceDelete}
           onAvailabilityChange={handleAvailabilityChange}
           onBlockedDatesChange={handleBlockedDatesChange}
+          initialAvailability={availability}
+          initialBlockedDates={blockedDates}
         />
 
         <Button 

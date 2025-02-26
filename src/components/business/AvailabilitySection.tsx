@@ -1,4 +1,11 @@
-import { useState } from "react";
+
+/**
+ * AvailabilitySection Component
+ * 
+ * Manages and displays business availability settings including weekly time slots
+ * and blocked dates.
+ */
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
@@ -39,12 +46,16 @@ interface BlockedDate {
 
 interface AvailabilitySectionProps {
   businessId?: string;
+  initialAvailability?: TimeSlot[];
+  initialBlockedDates?: BlockedDate[];
   onAvailabilityChange: (availability: TimeSlot[]) => void;
   onBlockedDatesChange: (blockedDates: BlockedDate[]) => void;
 }
 
 export default function AvailabilitySection({
   businessId,
+  initialAvailability,
+  initialBlockedDates,
   onAvailabilityChange,
   onBlockedDatesChange,
 }: AvailabilitySectionProps) {
@@ -57,6 +68,16 @@ export default function AvailabilitySection({
   const [showBlockDateInput, setShowBlockDateInput] = useState(false);
   const [selectedBlockedDate, setSelectedBlockedDate] = useState<Date>();
   const [blockReason, setBlockReason] = useState("");
+
+  // Initialize with provided data
+  useEffect(() => {
+    if (initialAvailability && initialAvailability.length > 0) {
+      setTimeSlots(initialAvailability);
+    }
+    if (initialBlockedDates && initialBlockedDates.length > 0) {
+      setBlockedDates(initialBlockedDates);
+    }
+  }, [initialAvailability, initialBlockedDates]);
 
   const addTimeSlot = () => {
     const newSlot: TimeSlot = {
