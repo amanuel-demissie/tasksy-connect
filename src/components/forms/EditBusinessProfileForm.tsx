@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -5,7 +6,7 @@ import { X, Loader2 } from "lucide-react";
 import { useCameraCapture } from "@/hooks/use-camera-capture";
 import { useBusinessServices } from "@/hooks/use-business-services";
 import { useBusinessProfileForm } from "@/hooks/use-business-profile-form";
-import { BusinessProfileFormContent } from "./BusinessProfileFormContent";
+import { BusinessProfileFormContent } from "@/components/business/BusinessProfileFormContent";
 import { NotFoundState } from "./NotFoundState";
 
 export default function EditBusinessProfileForm() {

@@ -1,37 +1,73 @@
-import {
-  BusinessDetailsSection,
-  ImageUploadSection,
-  ServicesSection,
-  AvailabilitySection,
-} from "@/components";
-import {
-  BusinessService,
-  BusinessProfileFormData,
-  ImageUploadProps,
-  ServiceCategory,
-} from "@/types/profile";
 
+/**
+ * BusinessProfileFormContent Component
+ * 
+ * Renders the content sections of the business profile form.
+ * This component is used by both the create and edit forms to maintain consistency
+ * and reduce code duplication.
+ */
+import { ServiceCategory } from "@/types/profile";
+import ImageUploadSection from "@/components/business/ImageUploadSection";
+import BusinessDetailsSection from "@/components/business/BusinessDetailsSection";
+import ServicesSection from "@/components/business/ServicesSection";
+import AvailabilitySection from "@/components/business/AvailabilitySection";
+
+interface TimeSlot {
+  dayOfWeek: number;
+  startTime: string;
+  endTime: string;
+  slotDuration: number;
+}
+
+interface BlockedDate {
+  date: Date;
+  reason?: string;
+}
+
+/**
+ * Props for the BusinessProfileFormContent component
+ */
 interface BusinessProfileFormContentProps {
+  /** Form register function from react-hook-form */
   register: any;
+  /** Form errors from react-hook-form */
   errors: any;
+  /** Currently selected service category */
   selectedCategory: ServiceCategory;
+  /** Function to update selected category */
   setSelectedCategory: (category: ServiceCategory) => void;
+  /** Currently selected image file */
   imageFile: File | null;
+  /** Function to update image file */
   setImageFile: (file: File | null) => void;
+  /** Camera visibility state */
   showCamera: boolean;
+  /** Function to toggle camera visibility */
   setShowCamera: (show: boolean) => void;
-  onCapturePhoto: () => Promise<void>;
+  /** Function to handle photo capture */
+  onCapturePhoto: () => void;
+  /** Reference to video element for camera capture */
   videoRef: React.RefObject<HTMLVideoElement>;
-  currentImageUrl: string | null;
-  services: BusinessService[];
-  newService: string;
-  setNewService: (service: string) => void;
+  /** Optional current image URL (for edit mode) */
+  currentImageUrl?: string | null;
+  /** Array of business services */
+  services: any[];
+  /** New service being added */
+  newService: any;
+  /** Function to update new service */
+  setNewService: (service: any) => void;
+  /** Function to add a new service */
   addService: () => void;
+  /** Function to delete a service */
   deleteService: (index: number, serviceId?: string) => void;
-  onAvailabilityChange: (availability: any[]) => void;
-  onBlockedDatesChange: (blockedDates: any[]) => void;
-  initialAvailability?: any[];
-  initialBlockedDates?: any[];
+  /** Function to update availability */
+  onAvailabilityChange: (availability: TimeSlot[]) => void;
+  /** Function to update blocked dates */
+  onBlockedDatesChange: (blockedDates: BlockedDate[]) => void;
+  /** Initial availability data */
+  initialAvailability?: TimeSlot[];
+  /** Initial blocked dates data */
+  initialBlockedDates?: BlockedDate[];
 }
 
 export function BusinessProfileFormContent({
@@ -73,8 +109,6 @@ export function BusinessProfileFormContent({
         errors={errors}
         selectedCategory={selectedCategory}
         setSelectedCategory={setSelectedCategory}
-        onAvailabilityChange={onAvailabilityChange}
-        onBlockedDatesChange={onBlockedDatesChange}
       />
 
       <ServicesSection
