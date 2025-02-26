@@ -1,4 +1,9 @@
 
+/**
+ * @file EditBusinessProfileForm.tsx
+ * @description Form component for editing an existing business profile.
+ */
+
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -9,6 +14,26 @@ import { useBusinessProfileForm } from "@/hooks/use-business-profile-form";
 import { BusinessProfileFormContent } from "@/components/business/BusinessProfileFormContent";
 import { NotFoundState } from "./NotFoundState";
 
+/**
+ * EditBusinessProfileForm Component
+ * 
+ * @component
+ * @description
+ * Provides a form interface for editing an existing business profile.
+ * Handles loading existing profile data, image management, services,
+ * availability, and form submission. Uses several custom hooks for
+ * managing different aspects of the form state and operations.
+ * 
+ * Key features:
+ * - Loads and displays existing profile data
+ * - Handles image upload and camera capture
+ * - Manages services list
+ * - Handles availability settings
+ * - Provides form validation
+ * - Handles profile updates
+ * 
+ * @returns {JSX.Element} Rendered edit form
+ */
 export default function EditBusinessProfileForm() {
   const { id } = useParams();
   const {

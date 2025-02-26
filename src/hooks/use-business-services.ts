@@ -1,19 +1,30 @@
+
 /**
- * Custom hook for managing business services
- * 
- * Handles CRUD operations for business services, including:
- * - Service list management
- * - Database persistence
- * - State management
- * - Error handling
- * 
- * @returns {Object} Hook methods and state
+ * @file use-business-services.ts
+ * @description Custom hook for managing business services
  */
+
 import { useEffect, useState } from "react";
 import { BusinessService } from "@/types/profile";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
+/**
+ * useBusinessServices Hook
+ * 
+ * @description
+ * Custom hook that provides functionality for managing business services.
+ * Handles CRUD operations for services, including:
+ * - Fetching services from the database
+ * - Adding new services
+ * - Updating existing services
+ * - Deleting services
+ * - State management for services
+ * - Error handling and notifications
+ * 
+ * @param {string} [businessId] - Optional business ID for fetching existing services
+ * @returns {Object} Service management methods and state
+ */
 export const useBusinessServices = (businessId?: string) => {
   const [services, setServices] = useState<BusinessService[]>([]);
   const [newService, setNewService] = useState<BusinessService>({

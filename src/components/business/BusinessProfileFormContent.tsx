@@ -1,31 +1,45 @@
 
 /**
- * BusinessProfileFormContent Component
- * 
- * Renders the content sections of the business profile form.
- * This component is used by both the create and edit forms to maintain consistency
- * and reduce code duplication.
+ * @file BusinessProfileFormContent.tsx
+ * @description Main component for rendering business profile form content.
+ * This component is used in both create and edit forms to maintain consistency.
  */
+
 import { ServiceCategory } from "@/types/profile";
 import ImageUploadSection from "@/components/business/ImageUploadSection";
 import BusinessDetailsSection from "@/components/business/BusinessDetailsSection";
 import ServicesSection from "@/components/business/ServicesSection";
 import AvailabilitySection from "@/components/business/AvailabilitySection";
 
+/**
+ * @interface TimeSlot
+ * @description Represents a time slot for business availability
+ */
 interface TimeSlot {
+  /** Day of the week (0-6, where 0 is Sunday) */
   dayOfWeek: number;
+  /** Start time in HH:mm format */
   startTime: string;
+  /** End time in HH:mm format */
   endTime: string;
+  /** Duration of each slot in minutes */
   slotDuration: number;
 }
 
+/**
+ * @interface BlockedDate
+ * @description Represents a blocked date in the business calendar
+ */
 interface BlockedDate {
+  /** The blocked date */
   date: Date;
+  /** Optional reason for blocking the date */
   reason?: string;
 }
 
 /**
- * Props for the BusinessProfileFormContent component
+ * @interface BusinessProfileFormContentProps
+ * @description Props for the BusinessProfileFormContent component
  */
 interface BusinessProfileFormContentProps {
   /** Form register function from react-hook-form */
@@ -70,6 +84,22 @@ interface BusinessProfileFormContentProps {
   initialBlockedDates?: BlockedDate[];
 }
 
+/**
+ * BusinessProfileFormContent Component
+ * 
+ * @component
+ * @description
+ * Renders the main content sections of the business profile form.
+ * This component is used by both the create and edit forms to maintain
+ * consistency and reduce code duplication. It handles:
+ * - Image upload and camera capture
+ * - Business details input
+ * - Services management
+ * - Availability scheduling
+ * 
+ * @param {BusinessProfileFormContentProps} props - Component props
+ * @returns {JSX.Element} Rendered form content
+ */
 export function BusinessProfileFormContent({
   register,
   errors,

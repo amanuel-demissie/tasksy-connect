@@ -1,19 +1,27 @@
 
 /**
- * Custom hook for handling business image uploads to Supabase storage
+ * @file use-business-image-upload.ts
+ * @description Custom hook for handling business image uploads to Supabase storage
+ */
+
+import { useState } from 'react';
+import { supabase } from "@/integrations/supabase/client";
+import { ServiceCategory } from '@/types/profile';
+
+/**
+ * useBusinessImageUpload Hook
  * 
- * This hook provides functionality for:
+ * @description
+ * Provides functionality for:
  * - Uploading images to the appropriate category folder
  * - Tracking upload progress
  * - Handling different input types (File, URL, string)
  * - Error handling and logging
  * 
  * @returns {Object} Hook methods and state
+ * @property {Function} uploadBusinessImage - Function to handle image upload
+ * @property {number} uploadProgress - Current upload progress (0-100)
  */
-import { useState } from 'react';
-import { supabase } from "@/integrations/supabase/client";
-import { ServiceCategory } from '@/types/profile';
-
 export const useBusinessImageUpload = () => {
   const [uploadProgress, setUploadProgress] = useState(0);
 

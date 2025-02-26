@@ -1,3 +1,9 @@
+
+/**
+ * @file use-business-profile-form.ts
+ * @description Custom hook for managing business profile form state and operations
+ */
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -8,13 +14,24 @@ import { supabase } from "@/integrations/supabase/client";
 import { getImageUrl } from "@/utils/imageUtils";
 import { useBusinessServices } from "./use-business-services";
 
+/**
+ * @interface BusinessProfileResponse
+ * @description Response structure from the business profile API
+ */
 interface BusinessProfileResponse {
+  /** Unique identifier for the business profile */
   id: string;
+  /** Business name */
   name: string;
+  /** Optional business description */
   description: string | null;
+  /** Optional business address */
   address: string | null;
+  /** Business category */
   category: ServiceCategory;
+  /** Optional URL for business image */
   image_url: string | null;
+  /** Array of business services */
   business_services: {
     id: string;
     name: string;
@@ -24,6 +41,23 @@ interface BusinessProfileResponse {
   }[];
 }
 
+/**
+ * useBusinessProfileForm Hook
+ * 
+ * @description
+ * Custom hook that manages the state and operations for a business profile form.
+ * Handles both creation and editing of business profiles, including:
+ * - Form state management
+ * - Image upload
+ * - Services management
+ * - Availability settings
+ * - Data fetching and submission
+ * - Navigation
+ * - Error handling
+ * 
+ * @param {string} profileId - ID of the business profile (for edit mode)
+ * @returns {Object} Form state and handlers
+ */
 export const useBusinessProfileForm = (profileId: string) => {
   const navigate = useNavigate();
   const { toast } = useToast();

@@ -1,39 +1,28 @@
-import { useRef, useState } from 'react';
+/**
+ * @file use-camera-capture.ts
+ * @description Custom hook for managing camera capture functionality
+ */
+
+import { useRef, useState } from "react";
 
 /**
- * Custom hook for managing device camera capture functionality
+ * useCameraCapture Hook
  * 
- * This hook provides functionality to:
- * - Access device camera
- * - Start and stop camera stream
- * - Capture photos from camera feed
- * - Handle camera permissions and errors
+ * @description
+ * Provides functionality for:
+ * - Managing camera state
+ * - Handling camera access
+ * - Capturing photos
+ * - Managing video stream
+ * - Error handling
  * 
- * @example
- * ```tsx
- * const {
- *   showCamera,
- *   setShowCamera,
- *   videoRef,
- *   startCamera,
- *   capturePhoto,
- *   stopCamera
- * } = useCameraCapture();
- * 
- * // Later in your component:
- * const handleCapture = async () => {
- *   const photo = await capturePhoto();
- *   console.log('Captured photo:', photo);
- * };
- * ```
- * 
- * @returns {Object} Hook methods and state
- * @returns {boolean} showCamera - Whether camera feed is visible
- * @returns {Function} setShowCamera - Function to toggle camera visibility
- * @returns {React.RefObject<HTMLVideoElement>} videoRef - Reference to video element
- * @returns {Function} startCamera - Function to initialize camera
- * @returns {Function} capturePhoto - Function to take photo
- * @returns {Function} stopCamera - Function to stop camera feed
+ * @returns {Object} Camera control methods and state
+ * @property {boolean} showCamera - Whether camera is currently active
+ * @property {Function} setShowCamera - Toggle camera visibility
+ * @property {React.RefObject<HTMLVideoElement>} videoRef - Reference to video element
+ * @property {Function} startCamera - Start camera stream
+ * @property {Function} stopCamera - Stop camera stream
+ * @property {Function} capturePhoto - Capture photo from camera
  */
 export const useCameraCapture = () => {
   const [showCamera, setShowCamera] = useState(false);
