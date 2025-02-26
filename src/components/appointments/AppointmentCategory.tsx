@@ -1,22 +1,16 @@
+
 import React from "react";
 import { AppointmentCard } from "./AppointmentCard";
 import { Appointment } from "@/types/appointment";
 
 interface AppointmentCategoryProps {
   category: string;
+  appointments: Appointment[];
 }
 
-export const AppointmentCategory = ({ category }: AppointmentCategoryProps) => {
-  const mockAppointments: Appointment[] = [1, 2, 3].map((i) => ({
-    id: i,
-    status: "Upcoming",
-    serviceName: `${category} Service ${i}`,
-    providerName: "Provider Name",
-    businessName: "Business Name",
-    businessLogo: "placeholder.svg",
-    date: "November 15",
-    time: "2:00 PM"
-  }));
+export const AppointmentCategory = ({ category, appointments }: AppointmentCategoryProps) => {
+  // Filter appointments for this category if needed
+  const categoryAppointments = appointments || [];
 
   return (
     <div className="space-y-4">
@@ -26,12 +20,17 @@ export const AppointmentCategory = ({ category }: AppointmentCategoryProps) => {
       <div className="relative">
         <div className="overflow-x-auto pb-4">
           <div className="flex space-x-4 min-w-max">
-            {mockAppointments.map((appointment) => (
+            {categoryAppointments.map((appointment) => (
               <AppointmentCard
                 key={appointment.id}
                 appointment={appointment}
               />
             ))}
+            {categoryAppointments.length === 0 && (
+              <p className="text-muted-foreground py-4">
+                No {category.toLowerCase()} appointments found
+              </p>
+            )}
           </div>
         </div>
       </div>

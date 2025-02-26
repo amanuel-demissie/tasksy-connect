@@ -1,3 +1,4 @@
+
 import React from "react";
 import { AppointmentCard } from "./AppointmentCard";
 import { Appointment } from "@/types/appointment";
@@ -22,6 +23,11 @@ export const UpcomingAppointments = ({ appointments, appointmentRefs }: Upcoming
             <AppointmentCard appointment={appointment} />
           </div>
         ))}
+        {appointments.length === 0 && (
+          <p className="text-muted-foreground text-center py-4">
+            No upcoming appointments
+          </p>
+        )}
       </div>
     </div>
   );

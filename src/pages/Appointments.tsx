@@ -1,52 +1,72 @@
-import React, { useRef } from "react";
+
+import React, { useRef, useEffect, useState } from "react";
 import { format } from "date-fns";
 import { AppointmentCalendar } from "@/components/appointments/AppointmentCalendar";
 import { UpcomingAppointments } from "@/components/appointments/UpcomingAppointments";
 import { AppointmentCategory } from "@/components/appointments/AppointmentCategory";
 import { Appointment } from "@/types/appointment";
-
-const appointments: Appointment[] = [
-  {
-    id: 1,
-    status: "Upcoming",
-    serviceName: "Haircut",
-    providerName: "Mike Johnson",
-    businessName: "Classic Cuts",
-    businessLogo: "placeholder.svg",
-    date: "November 2",
-    time: "2:00 PM"
-  },
-  {
-    id: 2,
-    status: "Upcoming",
-    serviceName: "Beard Trim",
-    providerName: "Sarah Smith",
-    businessName: "Style Studio",
-    businessLogo: "placeholder.svg",
-    date: "November 5",
-    time: "3:30 PM"
-  },
-  {
-    id: 3,
-    status: "Pending",
-    serviceName: "Hair Coloring",
-    providerName: "Juan 'Jago' Gomez",
-    businessName: "Ace Of Fadez Barber Lounge",
-    businessLogo: "placeholder.svg",
-    date: "November 10",
-    time: "1:00 PM"
-  }
-];
+import { supabase } from "@/integrations/supabase/client";
+import { Loader2 } from "lucide-react";
 
 const Appointments = () => {
   const appointmentRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [loading, setLoading] = useState(true);
   const appointmentCategories = ["Beauty", "Dining", "Professional", "Home"];
 
-  const appointmentDates = appointments.reduce((acc: Date[], appointment) => {
-    const date = new Date(appointment.date + ", 2024");
-    acc.push(date);
-    return acc;
+  useEffect(() => {
+    const fetchAppointments = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        // Fetch appointments with business and service details
+        const { data, error } = await supabase
+          .from('appointments')
+          .select(`
+            *,
+            business_profiles:business_id (
+              name,
+              image_url
+            ),
+            business_services:service_id (
+              name
+            )
+          `)
+          .or(`customer_id.eq.${user.id},business_profiles.owner_id.eq.${user.id}`)
+          .order('date', { ascending: true });
+
+        if (error) throw error;
+
+        // Map the data to match our Appointment interface
+        const mappedAppointments: Appointment[] = data.map(apt => ({
+          id: apt.id,
+          business_id: apt.business_id,
+          service_id: apt.service_id,
+          customer_id: apt.customer_id,
+          date: format(new Date(apt.date), "MMMM d"),
+          time: apt.time,
+          status: apt.status,
+          serviceName: apt.business_services?.name || 'Unknown Service',
+          businessName: apt.business_profiles?.name || 'Unknown Business',
+          businessLogo: apt.business_profiles?.image_url || 'placeholder.svg',
+          providerName: apt.business_profiles?.name || 'Unknown Provider',
+        }));
+
+        setAppointments(mappedAppointments);
+      } catch (error) {
+        console.error('Error fetching appointments:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAppointments();
   }, []);
+
+  const appointmentDates = appointments.map(appointment => 
+    new Date(appointment.date + ", 2024")
+  );
 
   const handleDateSelect = (date: Date | undefined) => {
     if (!date) return;
@@ -59,6 +79,14 @@ const Appointments = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-secondary flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-secondary pb-20">
       <div className="container max-w-4xl mx-auto px-4 py-8 space-y-8">
@@ -70,13 +98,17 @@ const Appointments = () => {
             onDateSelect={handleDateSelect}
           />
           <UpcomingAppointments
-            appointments={appointments}
+            appointments={appointments.filter(apt => apt.status === 'pending' || apt.status === 'confirmed')}
             appointmentRefs={appointmentRefs}
           />
         </div>
 
         {appointmentCategories.map((category) => (
-          <AppointmentCategory key={category} category={category} />
+          <AppointmentCategory 
+            key={category} 
+            category={category}
+            appointments={appointments.filter(apt => apt.status === category.toLowerCase())}
+          />
         ))}
       </div>
     </div>
