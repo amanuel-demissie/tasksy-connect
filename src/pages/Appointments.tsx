@@ -27,7 +27,8 @@ const Appointments = () => {
             *,
             business_profiles:business_id (
               name,
-              image_url
+              image_url,
+              owner_id
             ),
             business_services:service_id (
               name
