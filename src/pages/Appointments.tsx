@@ -36,7 +36,10 @@ const Appointments = () => {
           .or(`customer_id.eq.${user.id},business_profiles.owner_id.eq.${user.id}`)
           .order('date', { ascending: true });
 
-        if (error) throw error;
+        if (error) {
+          console.error('Supabase query error:', error);
+          throw error;
+        }
 
         // Map the data to match our Appointment interface
         const mappedAppointments: Appointment[] = data.map(apt => ({
