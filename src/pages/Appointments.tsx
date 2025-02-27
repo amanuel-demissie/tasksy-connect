@@ -20,7 +20,7 @@ const Appointments = () => {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        // Fetch appointments with business and service details
+        // Fetch appointments with business and service details using separate OR filters
         const { data, error } = await supabase
           .from('appointments')
           .select(`
@@ -34,7 +34,7 @@ const Appointments = () => {
               name
             )
           `)
-          .or(`customer_id.eq.${user.id},business_profiles.owner_id.eq.${user.id}`)
+          .or(`customer_id.eq.${user.id}, business_profiles.owner_id.eq.${user.id}`)
           .order('date', { ascending: true });
 
         if (error) {
