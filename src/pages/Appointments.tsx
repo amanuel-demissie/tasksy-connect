@@ -20,8 +20,8 @@ const Appointments = () => {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        // Fetch appointments with business and service details using separate OR filters
-        const { data, error } = await supabase
+        // First query for appointments where user is the customer
+        const { data: customerAppointments, error: customerError } = await supabase
           .from('appointments')
           .select(`
             *,
@@ -34,16 +34,41 @@ const Appointments = () => {
               name
             )
           `)
-          .or(`customer_id.eq.${user.id}, business_profiles.owner_id.eq.${user.id}`)
+          .eq('customer_id', user.id)
           .order('date', { ascending: true });
 
-        if (error) {
-          console.error('Supabase query error:', error);
-          throw error;
+        if (customerError) {
+          console.error('Supabase customer query error:', customerError);
+          throw customerError;
         }
 
+        // Second query for appointments where user is the business owner
+        const { data: ownerAppointments, error: ownerError } = await supabase
+          .from('appointments')
+          .select(`
+            *,
+            business_profiles:business_id (
+              name,
+              image_url,
+              owner_id
+            ),
+            business_services:service_id (
+              name
+            )
+          `)
+          .eq('business_profiles.owner_id', user.id)
+          .order('date', { ascending: true });
+
+        if (ownerError) {
+          console.error('Supabase owner query error:', ownerError);
+          throw ownerError;
+        }
+
+        // Combine the results
+        const allAppointments = [...(customerAppointments || []), ...(ownerAppointments || [])];
+        
         // Map the data to match our Appointment interface
-        const mappedAppointments: Appointment[] = data.map(apt => ({
+        const mappedAppointments: Appointment[] = allAppointments.map(apt => ({
           id: apt.id,
           business_id: apt.business_id,
           service_id: apt.service_id,
