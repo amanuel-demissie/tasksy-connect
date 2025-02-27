@@ -131,14 +131,6 @@ const Appointments = () => {
             appointmentRefs={appointmentRefs}
           />
         </div>
-
-        {appointmentCategories.map((category) => (
-          <AppointmentCategory 
-            key={category} 
-            category={category}
-            appointments={appointments.filter(apt => apt.status === category.toLowerCase())}
-          />
-        ))}
       </div>
     </div>
   );
