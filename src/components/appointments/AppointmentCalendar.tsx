@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
@@ -28,6 +29,7 @@ export const AppointmentCalendar = ({ appointmentDates, onDateSelect }: Appointm
       }}
       modifiersStyles={{
         booked: {
+          backgroundColor: "rgba(137, 137, 222, 0.15)", // Very transparent accent color
           fontWeight: "bold"
         }
       }}
