@@ -3,6 +3,7 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AppointmentCard } from "./AppointmentCard";
 import { Appointment } from "@/types/appointment";
+import { EmptyStateMessage } from "./EmptyStateMessage";
 
 interface UpcomingAppointmentsProps {
   appointments: Appointment[];
@@ -36,26 +37,27 @@ export const UpcomingAppointments = ({
 
   return (
     <Card className="bg-[#1A1F2C]/80 backdrop-blur-sm border-[#403E43]">
-      <CardHeader className="pb-4">
+      <CardHeader className="pb-2">
         <CardTitle className="text-white text-xl">Upcoming Appointments</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-2">
         {appointments.length === 0 ? (
-          <div className="py-8 text-center">
-            <p className="text-muted-foreground">No upcoming appointments</p>
-          </div>
+          <EmptyStateMessage type="all" />
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-6 max-h-[500px] overflow-y-auto pr-2">
             {sortedDates.map((date) => (
               <div 
                 key={date} 
                 ref={(el) => (appointmentRefs.current[date] = el)}
                 className="space-y-2"
               >
-                <div className="sticky top-0 bg-[#1A1F2C] z-10 py-2">
-                  <h3 className="text-[#C8C8C9] font-medium">{date}</h3>
+                <div className="sticky top-0 bg-[#1A1F2C] z-10 py-2 backdrop-blur-sm">
+                  <h3 className="text-[#C8C8C9] font-medium flex items-center">
+                    <span className="inline-block w-2 h-2 bg-accent rounded-full mr-2"></span>
+                    {date}
+                  </h3>
                 </div>
-                <div className="space-y-3">
+                <div className="space-y-3 pl-4 border-l border-[#403E43]">
                   {groupedAppointments[date].map((appointment) => (
                     <AppointmentCard 
                       key={appointment.id} 

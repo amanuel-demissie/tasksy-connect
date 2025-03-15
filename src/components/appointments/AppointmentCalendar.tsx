@@ -1,20 +1,102 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { 
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Appointment } from "@/types/appointment";
 
 interface AppointmentCalendarProps {
-  appointmentDates: Date[];
+  appointments: Appointment[];
   onDateSelect: (date: Date | undefined) => void;
 }
 
-export const AppointmentCalendar = ({ appointmentDates, onDateSelect }: AppointmentCalendarProps) => {
-  const hasAppointments = (date: Date) => {
-    return appointmentDates.some(appointmentDate => 
-      appointmentDate.getDate() === date.getDate() &&
-      appointmentDate.getMonth() === date.getMonth() &&
-      appointmentDate.getFullYear() === date.getFullYear()
+export const AppointmentCalendar = ({ appointments, onDateSelect }: AppointmentCalendarProps) => {
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  
+  const appointmentsByDate = appointments.reduce((acc, appointment) => {
+    const dateKey = appointment.date;
+    if (!acc[dateKey]) {
+      acc[dateKey] = [];
+    }
+    acc[dateKey].push(appointment);
+    return acc;
+  }, {} as Record<string, Appointment[]>);
+  
+  const appointmentDates = Object.keys(appointmentsByDate).map(dateStr => 
+    new Date(dateStr + ", 2024")
+  );
+
+  const handleDateSelect = (date: Date | undefined) => {
+    setSelectedDate(date);
+    onDateSelect(date);
+  };
+
+  // Custom day rendering with appointment information
+  const renderDay = (day: Date) => {
+    const dateKey = format(day, "MMMM d");
+    const dayAppointments = appointmentsByDate[dateKey] || [];
+    const hasAppointments = dayAppointments.length > 0;
+    
+    if (!hasAppointments) return null;
+    
+    const statuses = dayAppointments.map(apt => apt.status.toLowerCase());
+    const hasPending = statuses.includes('pending');
+    const hasConfirmed = statuses.includes('confirmed');
+    const hasCancelled = statuses.includes('cancelled');
+    const hasCompleted = statuses.includes('completed');
+    
+    // Determine priority color
+    let statusColor = "";
+    if (hasPending) statusColor = "bg-amber-500";
+    else if (hasConfirmed) statusColor = "bg-green-500";
+    else if (hasCompleted) statusColor = "bg-blue-500";
+    else if (hasCancelled) statusColor = "bg-red-500";
+    
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="relative w-full h-full flex items-center justify-center">
+              <div 
+                className={cn(
+                  "absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full",
+                  statusColor
+                )}
+              />
+            </div>
+          </TooltipTrigger>
+          <TooltipContent className="bg-[#2A2F3C] border-[#403E43] text-white p-2">
+            <div className="text-xs">
+              <p className="font-medium mb-1">{dayAppointments.length} appointment{dayAppointments.length > 1 ? 's' : ''}</p>
+              <ul className="space-y-1">
+                {dayAppointments.slice(0, 3).map((apt, i) => (
+                  <li key={i} className="flex items-center gap-1">
+                    <span 
+                      className={cn(
+                        "w-2 h-2 rounded-full",
+                        apt.status.toLowerCase() === 'pending' && "bg-amber-500",
+                        apt.status.toLowerCase() === 'confirmed' && "bg-green-500",
+                        apt.status.toLowerCase() === 'completed' && "bg-blue-500",
+                        apt.status.toLowerCase() === 'cancelled' && "bg-red-500"
+                      )}
+                    />
+                    <span>{apt.serviceName} ({apt.time})</span>
+                  </li>
+                ))}
+                {dayAppointments.length > 3 && (
+                  <li className="text-[#C8C8C9] text-center">+{dayAppointments.length - 3} more</li>
+                )}
+              </ul>
+            </div>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     );
   };
 
@@ -22,8 +104,8 @@ export const AppointmentCalendar = ({ appointmentDates, onDateSelect }: Appointm
     <Calendar
       className="w-full rounded-2xl border-0 bg-[#1A1F2C] text-white p-6"
       mode="single"
-      selected={undefined}
-      onSelect={onDateSelect}
+      selected={selectedDate}
+      onSelect={handleDateSelect}
       modifiers={{
         booked: appointmentDates,
       }}
@@ -31,6 +113,19 @@ export const AppointmentCalendar = ({ appointmentDates, onDateSelect }: Appointm
         booked: {
           backgroundColor: "rgba(137, 137, 222, 0.15)", // Very transparent accent color
           fontWeight: "bold"
+        }
+      }}
+      components={{
+        DayContent: ({ date }) => {
+          const formattedDate = format(date, "MMMM d");
+          const dayAppointments = appointmentsByDate[formattedDate];
+          
+          return (
+            <div className="relative w-full h-full flex items-center justify-center">
+              <div>{date.getDate()}</div>
+              {dayAppointments && renderDay(date)}
+            </div>
+          );
         }
       }}
       classNames={{

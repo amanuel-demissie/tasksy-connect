@@ -11,4 +11,5 @@ export interface Appointment {
   providerName: string;
   businessName: string;
   businessLogo: string;
+  category: string;
 }
