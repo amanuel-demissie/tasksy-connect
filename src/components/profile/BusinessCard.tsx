@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card } from "@/components/ui/card";
 import { DeleteBusinessDialog } from './DeleteBusinessDialog';
@@ -5,6 +6,7 @@ import { BusinessRating } from './BusinessRating';
 import { BusinessInfo } from './BusinessInfo';
 import { getImageUrl } from '@/utils/imageUtils';
 import { useNavigate } from 'react-router-dom';
+import { UserRoleBadge } from './UserRoleBadge';
 
 interface BusinessProfile {
   id: string;
@@ -64,11 +66,14 @@ export const BusinessCard = ({ profile, onDelete }: BusinessCardProps) => {
       <div className="relative h-full p-6 flex flex-col justify-between text-white">
         {/* Top Section - Delete Button and Ratings */}
         <div className="flex justify-between items-center">
-          <DeleteBusinessDialog 
-            businessId={profile.id}
-            businessName={profile.name}
-            onDelete={onDelete}
-          />
+          <div className="flex space-x-2 items-center">
+            <UserRoleBadge role="business" size="sm" />
+            <DeleteBusinessDialog 
+              businessId={profile.id}
+              businessName={profile.name}
+              onDelete={onDelete}
+            />
+          </div>
           <BusinessRating rating={profile.ratings} />
         </div>
 

@@ -16,6 +16,13 @@ const badgeVariants = cva(
         destructive:
           "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
         outline: "text-foreground",
+        // New variants for user roles
+        customer: 
+          "border-transparent bg-neutral-300 text-primary hover:bg-neutral-400",
+        business: 
+          "border-transparent bg-sage text-white hover:bg-sage/90",
+        freelancer: 
+          "border-transparent bg-coral text-white hover:bg-coral/90",
       },
     },
     defaultVariants: {

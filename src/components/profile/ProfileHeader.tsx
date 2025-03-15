@@ -1,4 +1,3 @@
-
 /**
  * ProfileHeader Component
  * 
@@ -11,10 +10,11 @@
  */
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Session } from "@supabase/supabase-js";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import ImageUpload from "@/components/shared/ImageUpload";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { UserRoleBadge } from "./UserRoleBadge";
 
 interface ProfileHeaderProps {
   session: Session | null;
@@ -25,6 +25,41 @@ export const ProfileHeader = ({ session }: ProfileHeaderProps) => {
   const [showCamera, setShowCamera] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [uploading, setUploading] = useState(false);
+  const [userRoles, setUserRoles] = useState<string[]>([]);
+
+  useEffect(() => {
+    const fetchUserRoles = async () => {
+      if (!session?.user?.id) return;
+      
+      try {
+        const { data: businessData } = await supabase
+          .from('business_profiles')
+          .select('id')
+          .eq('owner_id', session.user.id);
+          
+        const { data: freelancerData } = await supabase
+          .from('freelancer_profiles')
+          .select('id')
+          .eq('owner_id', session.user.id);
+        
+        const roles = ['customer'];
+        
+        if (businessData && businessData.length > 0) {
+          roles.push('business');
+        }
+        
+        if (freelancerData && freelancerData.length > 0) {
+          roles.push('freelancer');
+        }
+        
+        setUserRoles(roles);
+      } catch (error) {
+        console.error('Error fetching user roles:', error);
+      }
+    };
+    
+    fetchUserRoles();
+  }, [session]);
 
   const onCapturePhoto = () => {
     if (videoRef.current) {
@@ -52,7 +87,6 @@ export const ProfileHeader = ({ session }: ProfileHeaderProps) => {
       const fileExt = imageFile.name.split('.').pop();
       const filePath = `${session.user.id}/profile.${fileExt}`;
 
-      // Upload image to Storage
       const { error: uploadError } = await supabase.storage
         .from('avatars')
         .upload(filePath, imageFile, {
@@ -61,12 +95,10 @@ export const ProfileHeader = ({ session }: ProfileHeaderProps) => {
 
       if (uploadError) throw uploadError;
 
-      // Get the public URL
       const { data: { publicUrl } } = supabase.storage
         .from('avatars')
         .getPublicUrl(filePath);
 
-      // Update profile with new image URL
       const { error: updateError } = await supabase
         .from('profiles')
         .update({ profile_image: filePath })
@@ -93,6 +125,17 @@ export const ProfileHeader = ({ session }: ProfileHeaderProps) => {
             {session?.user?.email?.[0]?.toUpperCase() || 'U'}
           </AvatarFallback>
         </Avatar>
+        
+        <div className="flex flex-wrap gap-2 justify-center mt-2">
+          {userRoles.map(role => (
+            <UserRoleBadge 
+              key={role} 
+              role={role as any} 
+              size="md" 
+            />
+          ))}
+        </div>
+        
         <div className="mt-4 w-full flex flex-col items-center">
           <ImageUpload
             imageFile={imageFile}
