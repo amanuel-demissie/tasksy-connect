@@ -1,26 +1,31 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { ChevronDown, ChevronUp, User } from "lucide-react";
+import { ChevronDown, ChevronUp, User, Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Appointment } from "@/types/appointment";
-import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface AppointmentCardProps {
   appointment: Appointment;
+  onStatusChange?: () => void;
 }
 
-export const AppointmentCard = ({ appointment }: AppointmentCardProps) => {
+export const AppointmentCard = ({ appointment, onStatusChange }: AppointmentCardProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [customerInfo, setCustomerInfo] = useState<{ email: string | null; username: string | null } | null>(null);
   const [isBusinessOwner, setIsBusinessOwner] = useState(false);
+  const [isCustomer, setIsCustomer] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     const checkUserRole = async () => {
@@ -38,6 +43,11 @@ export const AppointmentCard = ({ appointment }: AppointmentCardProps) => {
         setIsBusinessOwner(true);
         // Fetch customer info
         fetchCustomerInfo(appointment.customer_id);
+      }
+
+      // Check if current user is customer
+      if (appointment.customer_id === user.id) {
+        setIsCustomer(true);
       }
     };
     
@@ -58,6 +68,56 @@ export const AppointmentCard = ({ appointment }: AppointmentCardProps) => {
     
     checkUserRole();
   }, [appointment.business_id, appointment.customer_id]);
+
+  const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'confirmed':
+        return "bg-green-500/20 text-green-500";
+      case 'pending':
+        return "bg-amber-500/20 text-amber-500";
+      case 'cancelled':
+        return "bg-red-500/20 text-red-500";
+      case 'completed':
+        return "bg-blue-500/20 text-blue-500";
+      default:
+        return "bg-[#403E43]/20 text-[#C8C8C9]";
+    }
+  };
+
+  const updateAppointmentStatus = async (newStatus: string) => {
+    try {
+      setIsUpdating(true);
+      
+      const { error } = await supabase
+        .from('appointments')
+        .update({ status: newStatus })
+        .eq('id', appointment.id);
+        
+      if (error) throw error;
+      
+      toast({
+        title: "Success",
+        description: `Appointment ${newStatus.toLowerCase()}`,
+      });
+      
+      if (onStatusChange) {
+        onStatusChange();
+      }
+    } catch (error) {
+      console.error('Error updating appointment status:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Couldn't update appointment status",
+      });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleConfirm = () => updateAppointmentStatus('confirmed');
+  const handleCancel = () => updateAppointmentStatus('cancelled');
+  const handleComplete = () => updateAppointmentStatus('completed');
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className="w-full min-w-[300px] md:min-w-[400px]">
@@ -92,9 +152,7 @@ export const AppointmentCard = ({ appointment }: AppointmentCardProps) => {
                 variant="secondary" 
                 className={cn(
                   "rounded-full",
-                  appointment.status === "Upcoming"
-                    ? "bg-accent/20 text-accent"
-                    : "bg-[#403E43]/20 text-[#C8C8C9]"
+                  getStatusColor(appointment.status)
                 )}
               >
                 {appointment.status}
@@ -132,6 +190,46 @@ export const AppointmentCard = ({ appointment }: AppointmentCardProps) => {
                   {appointment.time}
                 </div>
               </div>
+
+              {/* Action buttons based on role and current status */}
+              {(isBusinessOwner || isCustomer) && (
+                <div className="flex flex-wrap gap-2 pt-2">
+                  {isBusinessOwner && appointment.status.toLowerCase() === 'pending' && (
+                    <Button 
+                      size="sm" 
+                      className="bg-green-600 hover:bg-green-700"
+                      onClick={handleConfirm}
+                      disabled={isUpdating}
+                    >
+                      <Check className="mr-1 h-4 w-4" /> Confirm
+                    </Button>
+                  )}
+                  
+                  {isBusinessOwner && appointment.status.toLowerCase() === 'confirmed' && (
+                    <Button 
+                      size="sm" 
+                      className="bg-blue-600 hover:bg-blue-700"
+                      onClick={handleComplete}
+                      disabled={isUpdating}
+                    >
+                      <Check className="mr-1 h-4 w-4" /> Mark Completed
+                    </Button>
+                  )}
+                  
+                  {(isBusinessOwner || isCustomer) && 
+                   (appointment.status.toLowerCase() === 'pending' || 
+                    appointment.status.toLowerCase() === 'confirmed') && (
+                    <Button 
+                      size="sm" 
+                      variant="destructive"
+                      onClick={handleCancel}
+                      disabled={isUpdating}
+                    >
+                      <X className="mr-1 h-4 w-4" /> Cancel
+                    </Button>
+                  )}
+                </div>
+              )}
             </div>
           </CardContent>
         </CollapsibleContent>
