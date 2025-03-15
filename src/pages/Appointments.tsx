@@ -1,9 +1,9 @@
-
 import React, { useRef, useEffect, useState, useCallback } from "react";
 import { format } from "date-fns";
 import { AppointmentCalendar } from "@/components/appointments/AppointmentCalendar";
 import { UpcomingAppointments } from "@/components/appointments/UpcomingAppointments";
 import { AppointmentCategory } from "@/components/appointments/AppointmentCategory";
+import { AppointmentCard } from "@/components/appointments/AppointmentCard";
 import { Appointment } from "@/types/appointment";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, RefreshCw } from "lucide-react";
@@ -24,7 +24,6 @@ const Appointments = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // First query for appointments where user is the customer
       const { data: customerAppointments, error: customerError } = await supabase
         .from('appointments')
         .select(`
@@ -47,7 +46,6 @@ const Appointments = () => {
         throw customerError;
       }
 
-      // Second query for appointments where user is the business owner
       const { data: ownerAppointments, error: ownerError } = await supabase
         .from('appointments')
         .select(`
@@ -70,10 +68,8 @@ const Appointments = () => {
         throw ownerError;
       }
 
-      // Combine the results
       const allAppointments = [...(customerAppointments || []), ...(ownerAppointments || [])];
       
-      // Map the data to match our Appointment interface
       const mappedAppointments: Appointment[] = allAppointments.map(apt => ({
         id: apt.id,
         business_id: apt.business_id,
@@ -126,7 +122,6 @@ const Appointments = () => {
     }
   };
 
-  // Filter appointments by status
   const pendingAppointments = appointments.filter(apt => apt.status.toLowerCase() === 'pending');
   const confirmedAppointments = appointments.filter(apt => apt.status.toLowerCase() === 'confirmed');
   const completedAppointments = appointments.filter(apt => apt.status.toLowerCase() === 'completed');
