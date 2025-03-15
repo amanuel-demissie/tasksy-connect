@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useState, useCallback } from "react";
 import { format, isBefore, isAfter, parseISO, startOfDay } from "date-fns";
 import { AppointmentCalendar } from "@/components/appointments/AppointmentCalendar";
@@ -28,7 +27,8 @@ const Appointments = () => {
 
   const fetchAppointments = useCallback(async () => {
     try {
-      setRefreshing(true);
+      if (!refreshing && !loading) return;
+      
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
@@ -113,15 +113,17 @@ const Appointments = () => {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [toast, refreshing]);
+  }, [toast, refreshing, loading]);
 
   useEffect(() => {
-    fetchAppointments();
-  }, [fetchAppointments]);
+    // Only fetch appointments on initial load or when refreshing is manually triggered
+    if (loading || refreshing) {
+      fetchAppointments();
+    }
+  }, [fetchAppointments, loading, refreshing]);
 
   const handleRefresh = () => {
     setRefreshing(true);
-    fetchAppointments();
   };
 
   const handleDateSelect = (date: Date | undefined) => {
