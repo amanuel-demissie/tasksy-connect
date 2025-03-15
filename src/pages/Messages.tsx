@@ -1,87 +1,170 @@
 
-/**
- * Messages Page Component
- * 
- * Displays user's conversations and messages.
- * Shows recent conversations with businesses and service providers.
- * 
- * @component
- * @example
- * ```tsx
- * <Messages />
- * ```
- */
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ConversationList } from "@/components/messages/ConversationList";
+import { ConversationView } from "@/components/messages/ConversationView";
+import { useNavigate } from "react-router-dom";
 
 /**
  * Interface for conversation data
  * @interface Conversation
  */
 interface Conversation {
-  /** Unique identifier for the conversation */
-  id: number;
-  /** Name of the business or service provider */
-  name: string;
-  /** Most recent message in the conversation */
-  lastMessage: string;
-  /** Time elapsed since the last message */
-  time: string;
-  /** Avatar text (fallback for when image is not available) */
-  avatar: string;
+  id: string;
+  business: {
+    id: string;
+    name: string;
+    image_url: string | null;
+  };
+  lastMessage: string | null;
+  lastMessageTime: string | null;
+  unreadCount: number;
 }
 
 const Messages = () => {
-  const conversations: Conversation[] = [
-    {
-      id: 1,
-      name: "Hair Salon",
-      lastMessage: "Your appointment is confirmed for tomorrow at 2 PM",
-      time: "2m ago",
-      avatar: "HS",
-    },
-    {
-      id: 2,
-      name: "Restaurant ABC",
-      lastMessage: "Your table is ready!",
-      time: "1h ago",
-      avatar: "RA",
-    },
-  ];
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
+  const { toast } = useToast();
+  const navigate = useNavigate();
+
+  const fetchConversations = async () => {
+    setLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        navigate('/auth');
+        return;
+      }
+      
+      const { data, error } = await supabase
+        .from('conversations')
+        .select(`
+          id,
+          business_id,
+          business_profiles:business_id (
+            id,
+            name,
+            image_url
+          )
+        `)
+        .eq('customer_id', session.user.id);
+
+      if (error) throw error;
+
+      // Fetch last message for each conversation
+      const conversationsWithMessages = await Promise.all(
+        (data || []).map(async (conv) => {
+          const { data: messagesData, error: messagesError } = await supabase
+            .from('messages')
+            .select('content, created_at, read')
+            .eq('conversation_id', conv.id)
+            .order('created_at', { ascending: false })
+            .limit(1);
+
+          if (messagesError) throw messagesError;
+
+          // Count unread messages
+          const { count, error: countError } = await supabase
+            .from('messages')
+            .select('id', { count: 'exact' })
+            .eq('conversation_id', conv.id)
+            .eq('read', false)
+            .neq('sender_id', session.user.id);
+
+          if (countError) throw countError;
+
+          const lastMessage = messagesData && messagesData.length > 0 ? messagesData[0] : null;
+          
+          return {
+            id: conv.id,
+            business: {
+              id: conv.business_profiles.id,
+              name: conv.business_profiles.name,
+              image_url: conv.business_profiles.image_url,
+            },
+            lastMessage: lastMessage?.content ?? null,
+            lastMessageTime: lastMessage?.created_at ? new Date(lastMessage.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : null,
+            unreadCount: count || 0
+          };
+        })
+      );
+
+      setConversations(conversationsWithMessages);
+    } catch (error) {
+      console.error('Error fetching conversations:', error);
+      toast({
+        title: "Error",
+        description: "Could not load your conversations. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchConversations();
+    
+    // Set up realtime subscription for new messages
+    const channel = supabase
+      .channel('messages-changes')
+      .on('postgres_changes', 
+        { event: 'INSERT', schema: 'public', table: 'messages' }, 
+        () => {
+          fetchConversations();
+        }
+      )
+      .subscribe();
+    
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  const handleConversationSelect = (conversationId: string) => {
+    setSelectedConversation(conversationId);
+  };
+
+  const handleBackToList = () => {
+    setSelectedConversation(null);
+    fetchConversations();
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-secondary flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-secondary pb-20">
       <div className="container max-w-4xl mx-auto px-4 py-8 space-y-4">
-        <h1 className="text-2xl font-semibold text-primary">Messages</h1>
-        
-        <ScrollArea className="h-[calc(100vh-200px)]">
-          {conversations.map((conversation) => (
-            <Card
-              key={conversation.id}
-              className="mb-2 bg-[#1A1F2C] backdrop-blur-sm hover:bg-white/90 transition-colors cursor-pointer"
-            >
-              <CardContent className="p-4 flex items-center space-x-4">
-                <Avatar>
-                  <AvatarImage src={`https://avatar.vercel.sh/${conversation.id}.png`} />
-                  <AvatarFallback>{conversation.avatar}</AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-medium text-neutral-800">
-                    {conversation.name}
-                  </h3>
-                  <p className="text-sm text-neutral-600 truncate">
-                    {conversation.lastMessage}
-                  </p>
-                </div>
-                <span className="text-xs text-neutral-500">
-                  {conversation.time}
-                </span>
-              </CardContent>
-            </Card>
-          ))}
-        </ScrollArea>
+        {selectedConversation ? (
+          <ConversationView 
+            conversationId={selectedConversation}
+            onBack={handleBackToList}
+            businessDetails={conversations.find(c => c.id === selectedConversation)?.business}
+          />
+        ) : (
+          <>
+            <h1 className="text-2xl font-semibold text-primary">Messages</h1>
+            <ConversationList 
+              conversations={conversations}
+              onSelect={handleConversationSelect}
+              onRefresh={fetchConversations}
+            />
+          </>
+        )}
       </div>
     </div>
   );
