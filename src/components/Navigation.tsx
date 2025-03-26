@@ -14,6 +14,9 @@ const Navigation = () => {
   const isAuthPage = location.pathname === '/auth';
   
   useEffect(() => {
+    // Skip the data fetching if we're on the auth page
+    if (isAuthPage) return;
+    
     const fetchPrimaryRole = async () => {
       if (!session?.user?.id) {
         setActiveRole('customer'); // Default role
@@ -52,7 +55,7 @@ const Navigation = () => {
     };
     
     fetchPrimaryRole();
-  }, [session]);
+  }, [session, isAuthPage]);
 
   const tabs = [
     { icon: Home, label: "Home", path: "/" },
@@ -62,12 +65,8 @@ const Navigation = () => {
     { icon: User, label: "Profile", path: "/profile" },
   ];
 
-  // Hide navigation on auth page
-  if (isAuthPage) {
-    return null;
-  }
-
-  return (
+  // Rather than early return, render null conditionally
+  return isAuthPage ? null : (
     <div className="fixed bottom-0 left-0 right-0 z-50 bg-neutral-100">
       <nav className="w-full max-w-[428px] mx-auto border-t border-neutral-200 px-4 py-2 bg-neutral-100">
         {/* Role indicator */}
