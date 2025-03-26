@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState, useCallback } from "react";
-import { format, isBefore, isAfter, parseISO, startOfDay } from "date-fns";
+import { format, isBefore, isAfter, parseISO, startOfDay, compareAsc } from "date-fns";
 import { AppointmentCalendar } from "@/components/appointments/AppointmentCalendar";
 import { UpcomingAppointments } from "@/components/appointments/UpcomingAppointments";
 import { AppointmentCard } from "@/components/appointments/AppointmentCard";
@@ -24,6 +24,51 @@ const Appointments = () => {
     to: undefined
   });
   const { toast } = useToast();
+
+  const deletePastAppointments = useCallback(async (appointmentsData: any[]) => {
+    const today = startOfDay(new Date());
+    const pastAppointments = appointmentsData.filter(apt => {
+      const appointmentDate = parseISO(apt.date);
+      return compareAsc(appointmentDate, today) < 0;
+    });
+    
+    if (pastAppointments.length === 0) return;
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      
+      const deletedIds: string[] = [];
+      
+      for (const apt of pastAppointments) {
+        const canDelete = apt.customer_id === user.id || 
+                          apt.business_profiles?.owner_id === user.id;
+        
+        if (canDelete) {
+          const { error } = await supabase
+            .from('appointments')
+            .delete()
+            .eq('id', apt.id);
+            
+          if (!error) {
+            deletedIds.push(apt.id);
+          } else {
+            console.error('Error deleting appointment:', error);
+          }
+        }
+      }
+      
+      if (deletedIds.length > 0) {
+        toast({
+          title: "Cleanup Complete",
+          description: `${deletedIds.length} past appointment(s) have been removed`,
+          variant: "default",
+        });
+      }
+    } catch (error) {
+      console.error('Error in cleanup process:', error);
+    }
+  }, [toast]);
 
   const fetchAppointments = useCallback(async () => {
     try {
@@ -78,7 +123,13 @@ const Appointments = () => {
 
       const allAppointments = [...(customerAppointments || []), ...(ownerAppointments || [])];
       
-      const mappedAppointments: Appointment[] = allAppointments.map(apt => ({
+      await deletePastAppointments(allAppointments);
+      
+      const remainingAppointments = allAppointments.filter(apt => 
+        !apt.date || compareAsc(parseISO(apt.date), startOfDay(new Date())) >= 0
+      );
+      
+      const mappedAppointments: Appointment[] = remainingAppointments.map(apt => ({
         id: apt.id,
         business_id: apt.business_id,
         service_id: apt.service_id,
@@ -90,12 +141,12 @@ const Appointments = () => {
         businessName: apt.business_profiles?.name || 'Unknown Business',
         businessLogo: apt.business_profiles?.image_url || '/placeholder.svg',
         providerName: apt.business_profiles?.name || 'Unknown Provider',
-        category: apt.business_profiles?.category || 'Other'
+        category: apt.business_profiles?.category || 'Other',
+        rawDate: apt.date
       }));
 
       setAppointments(mappedAppointments);
       
-      // Show success notification on refresh
       if (refreshing) {
         toast({
           title: "Updated",
@@ -113,10 +164,9 @@ const Appointments = () => {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [toast, refreshing, loading]);
+  }, [toast, refreshing, loading, deletePastAppointments]);
 
   useEffect(() => {
-    // Only fetch appointments on initial load or when refreshing is manually triggered
     if (loading || refreshing) {
       fetchAppointments();
     }
@@ -143,19 +193,15 @@ const Appointments = () => {
     setDateRange({ from: undefined, to: undefined });
   };
 
-  // Apply filters to appointments
   const filteredAppointments = appointments.filter(appointment => {
-    // Status filter
     if (statusFilter !== "all" && appointment.status.toLowerCase() !== statusFilter.toLowerCase()) {
       return false;
     }
     
-    // Category filter
     if (categoryFilter !== "all" && appointment.category !== categoryFilter) {
       return false;
     }
     
-    // Date range filter
     if (dateRange.from || dateRange.to) {
       const appointmentDate = new Date(appointment.date + ", 2024");
       
@@ -171,18 +217,15 @@ const Appointments = () => {
     return true;
   });
 
-  // Split appointments by status
   const pendingAppointments = filteredAppointments.filter(apt => apt.status.toLowerCase() === 'pending');
   const confirmedAppointments = filteredAppointments.filter(apt => apt.status.toLowerCase() === 'confirmed');
   const completedAppointments = filteredAppointments.filter(apt => apt.status.toLowerCase() === 'completed');
   const cancelledAppointments = filteredAppointments.filter(apt => apt.status.toLowerCase() === 'cancelled');
   
-  // Upcoming appointments (pending + confirmed)
   const upcomingAppointments = filteredAppointments.filter(
     apt => apt.status.toLowerCase() === 'pending' || apt.status.toLowerCase() === 'confirmed'
   );
 
-  // Check if filters are applied
   const filtersApplied = statusFilter !== "all" || categoryFilter !== "all" || dateRange.from || dateRange.to;
 
   if (loading) {

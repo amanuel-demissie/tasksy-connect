@@ -4,7 +4,7 @@ export interface Appointment {
   business_id: string;
   service_id: string;
   customer_id: string;
-  date: string;
+  date: string; // Format: "MMMM d"
   time: string;
   status: string;
   serviceName: string;
@@ -12,4 +12,5 @@ export interface Appointment {
   businessName: string;
   businessLogo: string;
   category: string;
+  rawDate?: string; // The original date string from the database
 }
