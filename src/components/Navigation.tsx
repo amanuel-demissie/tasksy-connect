@@ -11,12 +11,8 @@ const Navigation = () => {
   const location = useLocation();
   const { session } = useAuth();
   const [activeRole, setActiveRole] = useState<string | null>(null);
+  const isAuthPage = location.pathname === '/auth';
   
-  // Hide navigation on auth page
-  if (location.pathname === '/auth') {
-    return null;
-  }
-
   useEffect(() => {
     const fetchPrimaryRole = async () => {
       if (!session?.user?.id) {
@@ -65,6 +61,11 @@ const Navigation = () => {
     { icon: MessageSquare, label: "Messages", path: "/messages" },
     { icon: User, label: "Profile", path: "/profile" },
   ];
+
+  // Hide navigation on auth page
+  if (isAuthPage) {
+    return null;
+  }
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 bg-neutral-100">
