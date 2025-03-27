@@ -13,4 +13,5 @@ export interface Appointment {
   businessLogo: string;
   category: string;
   rawDate?: string; // The original date string from the database
+  viewerRole?: 'customer' | 'owner'; // Indicates if the current user is viewing as customer or business owner
 }

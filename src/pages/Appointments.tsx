@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect, useState, useCallback } from "react";
 import { format, isBefore, isAfter, parseISO, startOfDay, compareAsc } from "date-fns";
 import { AppointmentCalendar } from "@/components/appointments/AppointmentCalendar";
@@ -7,10 +8,11 @@ import { AppointmentFilters } from "@/components/appointments/AppointmentFilters
 import { EmptyStateMessage } from "@/components/appointments/EmptyStateMessage";
 import { Appointment } from "@/types/appointment";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, RefreshCw } from "lucide-react";
+import { Loader2, RefreshCw, Store, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { UserRoleBadge } from "@/components/profile/UserRoleBadge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Appointments = () => {
   const appointmentRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
@@ -19,6 +21,7 @@ const Appointments = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [statusFilter, setStatusFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [viewMode, setViewMode] = useState<'customer' | 'owner'>('customer');
   const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
     from: undefined,
     to: undefined
@@ -77,6 +80,7 @@ const Appointments = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
+      // Always fetch customer appointments
       const { data: customerAppointments, error: customerError } = await supabase
         .from('appointments')
         .select(`
@@ -99,6 +103,7 @@ const Appointments = () => {
         throw customerError;
       }
 
+      // Always fetch owner appointments
       const { data: ownerAppointments, error: ownerError } = await supabase
         .from('appointments')
         .select(`
@@ -121,15 +126,8 @@ const Appointments = () => {
         throw ownerError;
       }
 
-      const allAppointments = [...(customerAppointments || []), ...(ownerAppointments || [])];
-      
-      await deletePastAppointments(allAppointments);
-      
-      const remainingAppointments = allAppointments.filter(apt => 
-        !apt.date || compareAsc(parseISO(apt.date), startOfDay(new Date())) >= 0
-      );
-      
-      const mappedAppointments: Appointment[] = remainingAppointments.map(apt => ({
+      // Process both sets of appointments but mark them with their role
+      const mappedCustomerAppointments: Appointment[] = (customerAppointments || []).map(apt => ({
         id: apt.id,
         business_id: apt.business_id,
         service_id: apt.service_id,
@@ -142,10 +140,42 @@ const Appointments = () => {
         businessLogo: apt.business_profiles?.image_url || '/placeholder.svg',
         providerName: apt.business_profiles?.name || 'Unknown Provider',
         category: apt.business_profiles?.category || 'Other',
-        rawDate: apt.date
+        rawDate: apt.date,
+        viewerRole: 'customer'
+      }));
+      
+      const mappedOwnerAppointments: Appointment[] = (ownerAppointments || []).map(apt => ({
+        id: apt.id,
+        business_id: apt.business_id,
+        service_id: apt.service_id,
+        customer_id: apt.customer_id,
+        date: format(new Date(apt.date), "MMMM d"),
+        time: apt.time,
+        status: apt.status,
+        serviceName: apt.business_services?.name || 'Unknown Service',
+        businessName: apt.business_profiles?.name || 'Unknown Business',
+        businessLogo: apt.business_profiles?.image_url || '/placeholder.svg',
+        providerName: apt.business_profiles?.name || 'Unknown Provider',
+        category: apt.business_profiles?.category || 'Other',
+        rawDate: apt.date,
+        viewerRole: 'owner'
       }));
 
-      setAppointments(mappedAppointments);
+      // Combine customer and owner appointments for deletion check
+      const allAppointmentsForDeletion = [...(customerAppointments || []), ...(ownerAppointments || [])];
+      await deletePastAppointments(allAppointmentsForDeletion);
+      
+      // Filter remaining appointments by date
+      const remainingCustomerAppointments = mappedCustomerAppointments.filter(apt => 
+        !apt.rawDate || compareAsc(parseISO(apt.rawDate), startOfDay(new Date())) >= 0
+      );
+      
+      const remainingOwnerAppointments = mappedOwnerAppointments.filter(apt => 
+        !apt.rawDate || compareAsc(parseISO(apt.rawDate), startOfDay(new Date())) >= 0
+      );
+      
+      // Use the correct set based on view mode
+      setAppointments(viewMode === 'customer' ? remainingCustomerAppointments : remainingOwnerAppointments);
       
       if (refreshing) {
         toast({
@@ -164,13 +194,18 @@ const Appointments = () => {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [toast, refreshing, loading, deletePastAppointments]);
+  }, [toast, refreshing, loading, deletePastAppointments, viewMode]);
 
   useEffect(() => {
     if (loading || refreshing) {
       fetchAppointments();
     }
   }, [fetchAppointments, loading, refreshing]);
+  
+  // Refetch when view mode changes
+  useEffect(() => {
+    setRefreshing(true);
+  }, [viewMode]);
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -247,7 +282,7 @@ const Appointments = () => {
             </p>
           </div>
           <div className="flex gap-2">
-            <UserRoleBadge role="customer" />
+            <UserRoleBadge role={viewMode} />
             <Button 
               variant="outline" 
               size="sm" 
@@ -260,6 +295,19 @@ const Appointments = () => {
             </Button>
           </div>
         </div>
+        
+        <Tabs defaultValue="customer" value={viewMode} onValueChange={(value) => setViewMode(value as 'customer' | 'owner')}>
+          <TabsList className="mb-4">
+            <TabsTrigger value="customer" className="flex items-center gap-1">
+              <User className="h-4 w-4" />
+              Customer View
+            </TabsTrigger>
+            <TabsTrigger value="owner" className="flex items-center gap-1">
+              <Store className="h-4 w-4" />
+              Business Owner View
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
         
         <AppointmentFilters 
           statusFilter={statusFilter}
@@ -282,11 +330,12 @@ const Appointments = () => {
             <UpcomingAppointments
               appointments={upcomingAppointments}
               appointmentRefs={appointmentRefs}
-              onStatusChange={fetchAppointments}
+              onStatusChange={() => setRefreshing(true)}
             />
           </div>
         )}
         
+        {/* Remaining sections for pending, confirmed, completed, and cancelled appointments */}
         {pendingAppointments.length > 0 && (
           <div className="mt-8">
             <div className="flex items-center gap-2 mb-4">
