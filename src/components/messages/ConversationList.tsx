@@ -46,7 +46,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
             <p className="text-neutral-600">You don't have any conversations yet.</p>
           </CardContent>
         </Card> : <ScrollArea className="h-[calc(100vh-200px)]">
-          {conversations.map(conversation => <Card key={conversation.id} className="mb-2 bg-white/95 backdrop-blur-sm hover:bg-white/90 transition-colors cursor-pointer border-border" onClick={() => onSelect(conversation.id)}>
+          {conversations.map(conversation => <Card key={conversation.id} onClick={() => onSelect(conversation.id)} className="mb-2 backdrop-blur-sm transition-colors cursor-pointer border-border bg-violet-800">
               <CardContent className="p-4 flex items-center space-x-4 bg-violet-800">
                 <Avatar>
                   <AvatarImage src={conversation.business.image_url || undefined} alt={conversation.business.name} />
