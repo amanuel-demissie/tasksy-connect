@@ -95,31 +95,46 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
     
     // Set up realtime subscription for new messages
     const channel = supabase
-      .channel(`conversation-${conversationId}`)
-      .on('postgres_changes', 
-        { event: 'INSERT', schema: 'public', table: 'messages', filter: `conversation_id=eq.${conversationId}` }, 
-        (payload) => {
-          const newMsg = payload.new as any;
-          setMessages(prev => [
+      .channel(`conversation:${conversationId}`)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'messages',
+        filter: `conversation_id=eq.${conversationId}`
+      }, (payload) => {
+        console.log('New message received:', payload);
+        const newMsg = payload.new as any;
+        
+        // Only add the message if it's not already in the array
+        setMessages(prev => {
+          // Check if message already exists
+          const exists = prev.some(msg => msg.id === newMsg.id);
+          if (exists) return prev;
+          
+          return [
             ...prev, 
             {
               ...newMsg,
               isCurrentUser: newMsg.sender_id === currentUserId
             }
-          ]);
-          
-          // Mark message as read if not from current user
-          if (newMsg.sender_id !== currentUserId) {
-            supabase
-              .from('messages')
-              .update({ read: true })
-              .eq('id', newMsg.id);
-          }
+          ];
+        });
+        
+        // Mark message as read if not from current user
+        if (newMsg.sender_id !== currentUserId && !newMsg.read) {
+          supabase
+            .from('messages')
+            .update({ read: true })
+            .eq('id', newMsg.id)
+            .then(() => console.log('Message marked as read'));
         }
-      )
+      })
       .subscribe();
     
+    console.log('Subscribed to channel:', `conversation:${conversationId}`);
+    
     return () => {
+      console.log('Unsubscribing from channel');
       supabase.removeChannel(channel);
     };
   }, [conversationId, currentUserId]);
