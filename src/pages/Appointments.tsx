@@ -101,26 +101,44 @@ const Appointments = () => {
         throw customerError;
       }
 
-      const { data: ownerAppointments, error: ownerError } = await supabase
-        .from('appointments')
-        .select(`
-          *,
-          business_profiles:business_id (
-            name,
-            image_url,
-            owner_id,
-            category
-          ),
-          business_services:service_id (
-            name
-          )
-        `)
-        .eq('business_profiles.owner_id', user.id)
-        .order('date', { ascending: true });
-
-      if (ownerError) {
-        console.error('Supabase owner query error:', ownerError);
-        throw ownerError;
+      const { data: userBusinesses, error: businessError } = await supabase
+        .from('business_profiles')
+        .select('id')
+        .eq('owner_id', user.id);
+        
+      if (businessError) {
+        console.error('Supabase business profiles query error:', businessError);
+        throw businessError;
+      }
+      
+      let ownerAppointments: any[] = [];
+      
+      if (userBusinesses && userBusinesses.length > 0) {
+        const businessIds = userBusinesses.map(business => business.id);
+        
+        const { data: businessAppointments, error: ownerError } = await supabase
+          .from('appointments')
+          .select(`
+            *,
+            business_profiles:business_id (
+              name,
+              image_url,
+              owner_id,
+              category
+            ),
+            business_services:service_id (
+              name
+            )
+          `)
+          .in('business_id', businessIds)
+          .order('date', { ascending: true });
+          
+        if (ownerError) {
+          console.error('Supabase owner query error:', ownerError);
+          throw ownerError;
+        }
+        
+        ownerAppointments = businessAppointments || [];
       }
 
       const mappedCustomerAppointments: Appointment[] = (customerAppointments || []).map(apt => ({
@@ -140,7 +158,7 @@ const Appointments = () => {
         viewerRole: 'customer'
       }));
       
-      const mappedOwnerAppointments: Appointment[] = (ownerAppointments || []).map(apt => ({
+      const mappedOwnerAppointments: Appointment[] = ownerAppointments.map(apt => ({
         id: apt.id,
         business_id: apt.business_id,
         service_id: apt.service_id,
@@ -157,7 +175,7 @@ const Appointments = () => {
         viewerRole: 'business'
       }));
 
-      const allAppointmentsForDeletion = [...(customerAppointments || []), ...(ownerAppointments || [])];
+      const allAppointmentsForDeletion = [...(customerAppointments || []), ...ownerAppointments];
       await deletePastAppointments(allAppointmentsForDeletion);
       
       const remainingCustomerAppointments = mappedCustomerAppointments.filter(apt => 
