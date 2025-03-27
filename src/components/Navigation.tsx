@@ -5,12 +5,12 @@ import { Home, Search, Calendar, User, MessageSquare } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
-import { UserRoleBadge } from "./profile/UserRoleBadge";
+import { UserRoleBadge, UserRole } from "./profile/UserRoleBadge";
 
 const Navigation = () => {
   const location = useLocation();
   const { session } = useAuth();
-  const [activeRole, setActiveRole] = useState<string | null>(null);
+  const [activeRole, setActiveRole] = useState<UserRole>("customer");
   const isAuthPage = location.pathname === '/auth';
   
   useEffect(() => {
@@ -72,7 +72,7 @@ const Navigation = () => {
         {/* Role indicator */}
         {activeRole && (
           <div className="flex justify-center mb-1">
-            <UserRoleBadge role={activeRole as any} size="sm" />
+            <UserRoleBadge role={activeRole} size="sm" />
           </div>
         )}
         

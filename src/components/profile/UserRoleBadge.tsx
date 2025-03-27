@@ -38,7 +38,10 @@ export function UserRoleBadge({
     },
   };
 
-  const { icon: Icon, label, variant } = roleConfig[role];
+  // Safety check - fallback to customer if role is invalid
+  const safeRole = (role in roleConfig) ? role : "customer";
+  
+  const { icon: Icon, label, variant } = roleConfig[safeRole];
   
   // Define size classes
   const sizeClasses = {
