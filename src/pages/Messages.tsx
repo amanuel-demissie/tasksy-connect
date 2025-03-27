@@ -5,11 +5,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ConversationList } from "@/components/messages/ConversationList";
 import { ConversationView } from "@/components/messages/ConversationView";
 import { useNavigate } from "react-router-dom";
+import { NewMessageDialog } from "@/components/messages/NewMessageDialog";
 
 /**
  * Interface for conversation data
@@ -31,6 +32,7 @@ const Messages = () => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
+  const [newMessageDialogOpen, setNewMessageDialogOpen] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -138,6 +140,45 @@ const Messages = () => {
     fetchConversations();
   };
 
+  const handleNewConversation = async (userId: string, userType: 'business' | 'freelancer') => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        navigate('/auth');
+        return;
+      }
+      
+      // Create a new conversation
+      const { data: newConversation, error } = await supabase
+        .from('conversations')
+        .insert({
+          customer_id: session.user.id,
+          business_id: userId
+        })
+        .select('id')
+        .single();
+      
+      if (error) throw error;
+      
+      // Select the new conversation
+      setSelectedConversation(newConversation.id);
+      setNewMessageDialogOpen(false);
+      
+      toast({
+        title: "Conversation started",
+        description: "You can now send messages to this user.",
+      });
+    } catch (error) {
+      console.error('Error creating conversation:', error);
+      toast({
+        title: "Error",
+        description: "Could not create conversation. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-secondary flex items-center justify-center">
@@ -157,7 +198,17 @@ const Messages = () => {
           />
         ) : (
           <>
-            <h1 className="text-2xl font-semibold text-primary">Messages</h1>
+            <div className="flex items-center justify-between">
+              <h1 className="text-2xl font-semibold text-primary">Messages</h1>
+              <Button
+                size="sm"
+                onClick={() => setNewMessageDialogOpen(true)}
+                className="flex items-center gap-1"
+              >
+                <Plus className="h-4 w-4" />
+                New Message
+              </Button>
+            </div>
             <ConversationList 
               conversations={conversations}
               onSelect={handleConversationSelect}
@@ -166,6 +217,12 @@ const Messages = () => {
           </>
         )}
       </div>
+      
+      <NewMessageDialog 
+        open={newMessageDialogOpen} 
+        onOpenChange={setNewMessageDialogOpen}
+        onSelectUser={handleNewConversation}
+      />
     </div>
   );
 };
