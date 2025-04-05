@@ -11,7 +11,8 @@
  * <Explore />
  * ```
  */
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -21,7 +22,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import ServiceSection from "@/components/home/ServiceSection";
 
 type ServiceCategory = Database['public']['Enums']['service_category'];
-const categories: ServiceCategory[] = ["beauty", "dining", "professional", "home"];
+const categories: ServiceCategory[] = ["beauty", "dining", "professional", "home", "others"];
 
 const Explore = () => {
   /**
@@ -30,6 +31,18 @@ const Explore = () => {
   const filters = ["All", "Popular", "Trending", "New", "Near Me"];
   const [activeFilter, setActiveFilter] = useState("All");
   const [activeTab, setActiveTab] = useState<"all" | ServiceCategory>("all");
+  
+  // Get URL search parameters
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const categoryParam = queryParams.get("category");
+  
+  // Set initial active tab based on URL parameter
+  useEffect(() => {
+    if (categoryParam && categories.includes(categoryParam as ServiceCategory)) {
+      setActiveTab(categoryParam as ServiceCategory);
+    }
+  }, [categoryParam]);
 
   const handleFilterClick = (filter: string) => {
     setActiveFilter(filter);

@@ -13,23 +13,22 @@
  */
 import { useState } from "react";
 import { Plus } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import SearchBar from "@/components/home/SearchBar";
 import ServiceCategories from "@/components/home/ServiceCategories";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import CreateProfileDialog from "@/components/forms/CreateProfileDialog";
-import ServiceSection from "@/components/home/ServiceSection";
 import { Database } from "@/integrations/supabase/types";
 
 type ServiceCategory = Database['public']['Enums']['service_category'];
 
 const Index = () => {
+  const navigate = useNavigate();
   // State to control the profile creation dialog visibility
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   // State to track which type of profile is being created (business/freelancer)
   const [profileType, setProfileType] = useState<"business" | "freelancer" | null>(null);
-  // State to track the selected category
-  const [selectedCategory, setSelectedCategory] = useState<ServiceCategory | null>(null);
 
   /**
    * Initiates the profile creation process
@@ -49,16 +48,8 @@ const Index = () => {
    * @param categoryId - The ID of the category clicked
    */
   const handleCategoryClick = (categoryId: string) => {
-    setSelectedCategory(categoryId as ServiceCategory);
-    // Scroll to the service section
-    setTimeout(() => {
-      const element = document.getElementById("service-section");
-      if (element) {
-        element.scrollIntoView({
-          behavior: "smooth"
-        });
-      }
-    }, 100);
+    // Navigate to explore page with the selected category
+    navigate(`/explore?category=${categoryId}`);
   };
 
   return (
@@ -94,13 +85,6 @@ const Index = () => {
 
         <SearchBar />
         <ServiceCategories onCategoryClick={handleCategoryClick} />
-        
-        {/* Display businesses for selected category */}
-        {selectedCategory && (
-          <div id="service-section" className="pt-6">
-            <ServiceSection category={selectedCategory} />
-          </div>
-        )}
 
         {/* Profile creation dialog */}
         <CreateProfileDialog 
