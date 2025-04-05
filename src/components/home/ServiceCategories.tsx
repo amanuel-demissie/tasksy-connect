@@ -46,11 +46,11 @@ interface ServiceCategoriesProps {
 
 const ServiceCategories = ({ onCategoryClick }: ServiceCategoriesProps) => (
   <ScrollArea className="h-[calc(100vh-200px)] pr-4">
-    <div className="flex flex-col space-y-4 pb-4">
+    <div className="flex flex-col space-y-4 pb-4 items-center">
       {serviceCategories.map((category) => (
         <Card 
           key={category.id}
-          className="flex-shrink-0 w-full group hover:border-accent transition-colors duration-200 bg-[#1A1F2C] backdrop-blur-sm cursor-pointer relative"
+          className="flex-shrink-0 w-80 group hover:border-accent transition-colors duration-200 bg-[#1A1F2C] backdrop-blur-sm cursor-pointer relative"
           onClick={() => onCategoryClick(category.id)}
         >
           <CardContent className="p-0">
