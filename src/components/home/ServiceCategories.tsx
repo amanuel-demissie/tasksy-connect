@@ -50,17 +50,17 @@ const ServiceCategories = ({ onCategoryClick }: ServiceCategoriesProps) => (
       {serviceCategories.map((category) => (
         <Card 
           key={category.id}
-          className="w-full group hover:border-accent transition-colors duration-200 bg-[#1A1F2C] backdrop-blur-sm cursor-pointer relative"
+          className="flex-shrink-0 w-full group hover:border-accent transition-colors duration-200 bg-[#1A1F2C] backdrop-blur-sm cursor-pointer relative"
           onClick={() => onCategoryClick(category.id)}
         >
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-4">
-              <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center transition-transform group-hover:scale-110 group-hover:bg-accent/20">
+          <CardContent className="p-0">
+            <div className="flex flex-col items-center justify-center py-8 px-3">
+              <div className="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center mb-4 transition-transform group-hover:scale-110 group-hover:bg-accent/20">
                 {React.cloneElement(category.icon, {
-                  className: "w-8 h-8 text-accent",
+                  className: "w-10 h-10 text-accent",
                 })}
               </div>
-              <div className="flex-1">
+              <div className="space-y-1 text-center">
                 <h3 className="font-medium text-neutral-800">{category.name}</h3>
                 <p className="text-sm text-neutral-600">{category.description}</p>
               </div>
