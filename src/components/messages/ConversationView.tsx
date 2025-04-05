@@ -3,8 +3,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, Send } from "lucide-react";
+import { ArrowLeft, Send, Image, Smile, Mic } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
@@ -144,6 +143,27 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleString('en-US', {
+      month: 'short', 
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+      hour12: true
+    }).toUpperCase();
+  };
+  
+  // Group messages by date
+  const groupedMessages = messages.reduce((groups: Record<string, Message[]>, message) => {
+    const date = new Date(message.created_at).toLocaleDateString();
+    if (!groups[date]) {
+      groups[date] = [];
+    }
+    groups[date].push(message);
+    return groups;
+  }, {});
+
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -178,68 +198,108 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
   return (
     <div className="flex flex-col h-[calc(100vh-200px)]">
       {/* Header */}
-      <div className="flex items-center mb-4">
+      <div className="flex items-center pb-4 border-b border-zinc-800">
         <Button 
           variant="ghost" 
           size="icon" 
           onClick={onBack}
-          className="mr-2"
+          className="mr-2 text-neutral-400 hover:text-white"
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <div className="flex items-center">
-          <Avatar className="h-10 w-10 mr-3">
-            <AvatarImage 
-              src={businessDetails?.image_url || undefined} 
-              alt={businessDetails?.name || "Business"} 
-            />
-            <AvatarFallback>
-              {businessDetails?.name?.substring(0, 2).toUpperCase() || "BP"}
-            </AvatarFallback>
-          </Avatar>
-          <h2 className="text-xl font-semibold text-primary">
+        
+        <Avatar className="h-10 w-10 mr-3 border border-zinc-700">
+          <AvatarImage 
+            src={businessDetails?.image_url || undefined} 
+            alt={businessDetails?.name || "User"} 
+          />
+          <AvatarFallback className="bg-zinc-700 text-white">
+            {businessDetails?.name?.substring(0, 2).toUpperCase() || "U"}
+          </AvatarFallback>
+        </Avatar>
+        
+        <div className="flex-1">
+          <h2 className="font-semibold text-white">
             {businessDetails?.name || "Conversation"}
           </h2>
+          <p className="text-xs text-neutral-400">Active now</p>
         </div>
       </div>
       
       {/* Messages */}
-      <Card className="flex-1 mb-4 border-border overflow-hidden">
-        <ScrollArea className="h-full p-4">
-          <div className="space-y-4 pb-2">
-            {messages.length === 0 ? (
-              <p className="text-center text-neutral-500 py-8">
-                No messages yet. Send a message to start the conversation.
-              </p>
-            ) : (
-              messages.map(message => (
+      <ScrollArea className="flex-1 py-4">
+        <div className="space-y-6 px-1">
+          {Object.entries(groupedMessages).map(([date, msgs]) => (
+            <div key={date} className="space-y-2">
+              <div className="text-center">
+                <span className="text-xs text-neutral-500 bg-zinc-800 px-3 py-1 rounded-full">
+                  {new Date(date).toLocaleDateString('en-US', { 
+                    month: 'short', 
+                    day: 'numeric',
+                    year: 'numeric'
+                  })}
+                </span>
+              </div>
+              
+              {msgs.map(message => (
                 <MessageBubble
                   key={message.id}
                   message={message.content}
                   isCurrentUser={message.isCurrentUser}
-                  timestamp={new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  timestamp={new Date(message.created_at).toLocaleTimeString([], { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                  })}
                 />
-              ))
-            )}
-            <div ref={messagesEndRef} />
-          </div>
-        </ScrollArea>
-      </Card>
+              ))}
+            </div>
+          ))}
+          <div ref={messagesEndRef} />
+        </div>
+      </ScrollArea>
       
       {/* Message Input */}
-      <form onSubmit={handleSendMessage} className="flex items-center gap-2">
-        <Input
-          value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-          placeholder="Type your message..."
-          className="flex-1"
-          disabled={sending}
-        />
-        <Button type="submit" disabled={sending || !newMessage.trim()}>
-          <Send className="h-4 w-4 mr-2" />
-          Send
-        </Button>
-      </form>
+      <div className="pt-2 mt-2 border-t border-zinc-800">
+        <form onSubmit={handleSendMessage} className="flex items-center gap-2">
+          <Button 
+            type="button" 
+            variant="ghost" 
+            size="icon" 
+            className="text-neutral-400 hover:text-white rounded-full"
+          >
+            <Image className="h-6 w-6" />
+          </Button>
+          
+          <div className="relative flex-1">
+            <Input
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              placeholder="Message..."
+              className="bg-zinc-800 border-none rounded-full pl-4 pr-12 py-6 text-white"
+            />
+            <Button 
+              type="submit"
+              disabled={sending || !newMessage.trim()}
+              className="absolute right-1 top-1/2 -translate-y-1/2 bg-transparent hover:bg-transparent p-2"
+            >
+              {newMessage.trim() ? (
+                <Send className="h-5 w-5 text-blue-500" />
+              ) : (
+                <Mic className="h-5 w-5 text-neutral-400" />
+              )}
+            </Button>
+          </div>
+          
+          <Button 
+            type="button" 
+            variant="ghost" 
+            size="icon" 
+            className="text-neutral-400 hover:text-white rounded-full"
+          >
+            <Smile className="h-6 w-6" />
+          </Button>
+        </form>
+      </div>
     </div>
   );
 };
