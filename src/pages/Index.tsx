@@ -18,25 +18,18 @@ import ServiceCategories from "@/components/home/ServiceCategories";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import CreateProfileDialog from "@/components/forms/CreateProfileDialog";
+import ServiceSection from "@/components/home/ServiceSection";
+import { Database } from "@/integrations/supabase/types";
+
+type ServiceCategory = Database['public']['Enums']['service_category'];
 
 const Index = () => {
   // State to control the profile creation dialog visibility
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   // State to track which type of profile is being created (business/freelancer)
   const [profileType, setProfileType] = useState<"business" | "freelancer" | null>(null);
-
-  /**
-   * Scrolls the page to a specific category section
-   * @param categoryId - The ID of the category section to scroll to
-   */
-  const scrollToSection = (categoryId: string) => {
-    const element = document.getElementById(categoryId);
-    if (element) {
-      element.scrollIntoView({
-        behavior: "smooth"
-      });
-    }
-  };
+  // State to track the selected category
+  const [selectedCategory, setSelectedCategory] = useState<ServiceCategory | null>(null);
 
   /**
    * Initiates the profile creation process
@@ -49,6 +42,23 @@ const Index = () => {
   const handleCreateProfile = (type: "business" | "freelancer") => {
     setProfileType(type);
     setIsDialogOpen(true);
+  };
+
+  /**
+   * Handles a category click event
+   * @param categoryId - The ID of the category clicked
+   */
+  const handleCategoryClick = (categoryId: string) => {
+    setSelectedCategory(categoryId as ServiceCategory);
+    // Scroll to the service section
+    setTimeout(() => {
+      const element = document.getElementById("service-section");
+      if (element) {
+        element.scrollIntoView({
+          behavior: "smooth"
+        });
+      }
+    }, 100);
   };
 
   return (
@@ -83,7 +93,14 @@ const Index = () => {
         </div>
 
         <SearchBar />
-        <ServiceCategories onCategoryClick={scrollToSection} />
+        <ServiceCategories onCategoryClick={handleCategoryClick} />
+        
+        {/* Display businesses for selected category */}
+        {selectedCategory && (
+          <div id="service-section" className="pt-6">
+            <ServiceSection category={selectedCategory} />
+          </div>
+        )}
 
         {/* Profile creation dialog */}
         <CreateProfileDialog 
