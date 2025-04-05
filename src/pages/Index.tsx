@@ -54,8 +54,8 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-secondary pb-20">
-      <div className="container max-w-4xl mx-auto px-4 py-8 space-y-8 bg-slate-950 ">
-        <div className="flex justify-between items-center">
+      <div className="container max-w-4xl mx-auto px-4 py-8 bg-slate-950 flex flex-col h-full">
+        <div className="flex justify-between items-center mb-6">
           <div className="space-y-4">
             <h1 className="text-2xl font-semibold text-primary">
               Create, Find & Book Services
@@ -84,7 +84,10 @@ const Index = () => {
         </div>
 
         <SearchBar />
-        <ServiceCategories onCategoryClick={handleCategoryClick} />
+        
+        <div className="mt-6 flex-grow">
+          <ServiceCategories onCategoryClick={handleCategoryClick} />
+        </div>
 
         {/* Profile creation dialog */}
         <CreateProfileDialog 
