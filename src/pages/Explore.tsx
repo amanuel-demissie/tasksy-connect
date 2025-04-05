@@ -11,16 +11,29 @@
  * <Explore />
  * ```
  */
-import React from "react";
+import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import type { Database } from "@/integrations/supabase/types";
+import RecommendedServices from "@/components/home/RecommendedServices";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import ServiceSection from "@/components/home/ServiceSection";
+
+type ServiceCategory = Database['public']['Enums']['service_category'];
+const categories: ServiceCategory[] = ["beauty", "dining", "professional", "home"];
 
 const Explore = () => {
   /**
    * Available filter options for service discovery
    */
   const filters = ["All", "Popular", "Trending", "New", "Near Me"];
+  const [activeFilter, setActiveFilter] = useState("All");
+  const [activeTab, setActiveTab] = useState<"all" | ServiceCategory>("all");
+
+  const handleFilterClick = (filter: string) => {
+    setActiveFilter(filter);
+  };
 
   return (
     <div className="min-h-screen bg-secondary pb-20">
@@ -37,13 +50,39 @@ const Explore = () => {
           {filters.map((filter) => (
             <Button
               key={filter}
-              variant="outline"
-              className="bg-[#1A1F2C] backdrop-blur-sm whitespace-nowrap"
+              variant={activeFilter === filter ? "default" : "outline"}
+              className={activeFilter === filter 
+                ? "bg-accent text-white" 
+                : "bg-[#1A1F2C] backdrop-blur-sm whitespace-nowrap"}
+              onClick={() => handleFilterClick(filter)}
             >
               {filter}
             </Button>
           ))}
         </div>
+
+        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "all" | ServiceCategory)} className="w-full">
+          <TabsList className="w-full bg-[#1A1F2C]/80 mb-6 overflow-x-auto flex-nowrap">
+            <TabsTrigger value="all" className="flex-1">All Services</TabsTrigger>
+            {categories.map((category) => (
+              <TabsTrigger key={category} value={category} className="flex-1 capitalize">
+                {category}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+          
+          <TabsContent value="all" className="space-y-8 mt-4">
+            {categories.map((category) => (
+              <ServiceSection key={category} category={category} />
+            ))}
+          </TabsContent>
+          
+          {categories.map((category) => (
+            <TabsContent key={category} value={category} className="mt-4">
+              <ServiceSection category={category} />
+            </TabsContent>
+          ))}
+        </Tabs>
       </div>
     </div>
   );

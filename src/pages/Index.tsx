@@ -3,7 +3,7 @@
  * Home Page Component
  * 
  * Main landing page of the application that displays search functionality,
- * service categories, featured services, and recommended services.
+ * service categories, and upcoming appointments.
  * Includes functionality to create new business or freelancer profiles.
  * 
  * @component
@@ -16,9 +16,7 @@ import { useState } from "react";
 import { Plus } from "lucide-react";
 import SearchBar from "@/components/home/SearchBar";
 import ServiceCategories from "@/components/home/ServiceCategories";
-import FeaturedServices from "@/components/home/FeaturedServices";
 import UpcomingAppointments from "@/components/home/UpcomingAppointments";
-import RecommendedServices from "@/components/home/RecommendedServices";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import CreateProfileDialog from "@/components/forms/CreateProfileDialog";
@@ -88,11 +86,7 @@ const Index = () => {
 
         <SearchBar />
         <ServiceCategories onCategoryClick={scrollToSection} />
-        <div className="mb-16">
-          <FeaturedServices />
-        </div>
-        
-        <RecommendedServices />
+        <UpcomingAppointments />
 
         {/* Profile creation dialog */}
         <CreateProfileDialog 
