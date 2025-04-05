@@ -275,20 +275,41 @@ const Appointments = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-secondary flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className={`h-8 w-8 animate-spin ${viewMode === 'customer' ? 'text-blue-600' : 'text-emerald-600'}`} />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-secondary pb-20">
+    <div className="min-h-screen pb-20 bg-background">
+      <div className={`w-full border-b ${viewMode === 'customer' ? 'border-blue-200 bg-blue-50' : 'border-emerald-200 bg-emerald-50'}`}>
+        <div className="container max-w-5xl mx-auto px-4 py-3">
+          <div className={`flex items-center gap-2 font-medium ${viewMode === 'customer' ? 'text-blue-700' : 'text-emerald-700'}`}>
+            {viewMode === 'customer' ? (
+              <>
+                <User className="h-4 w-4" />
+                <span className="text-sm">Customer Mode</span>
+              </>
+            ) : (
+              <>
+                <Store className="h-4 w-4" />
+                <span className="text-sm">Business Mode</span>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
       <div className="container max-w-5xl mx-auto px-4 py-8 space-y-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h1 className="text-2xl font-semibold text-primary">My Appointments</h1>
+            <h1 className={`text-2xl font-semibold ${viewMode === 'customer' ? 'text-blue-700' : 'text-emerald-700'}`}>
+              {viewMode === 'customer' ? 'My Bookings' : 'Business Appointments'}
+            </h1>
             <p className="text-sm text-muted-foreground mt-1">
-              Manage your service bookings in one place
+              {viewMode === 'customer' 
+                ? 'Manage your service bookings in one place' 
+                : 'View and manage appointments for your business'}
             </p>
           </div>
           <div className="flex gap-2">
@@ -306,50 +327,67 @@ const Appointments = () => {
           </div>
         </div>
         
-        <Tabs defaultValue="customer" value={viewMode} onValueChange={(value) => setViewMode(value as 'customer' | 'business')}>
+        <Tabs 
+          defaultValue="customer" 
+          value={viewMode} 
+          onValueChange={(value) => setViewMode(value as 'customer' | 'business')}
+        >
           <TabsList className="mb-4">
-            <TabsTrigger value="customer" className="flex items-center gap-1">
-              <User className="h-4 w-4" />
+            <TabsTrigger 
+              value="customer" 
+              className={`flex items-center gap-1 ${viewMode === 'customer' ? 'data-[state=active]:border-b-2 data-[state=active]:border-blue-500' : ''}`}
+            >
+              <User className={`h-4 w-4 ${viewMode === 'customer' ? 'text-blue-600' : ''}`} />
               Customer View
             </TabsTrigger>
-            <TabsTrigger value="business" className="flex items-center gap-1">
-              <Store className="h-4 w-4" />
+            <TabsTrigger 
+              value="business" 
+              className={`flex items-center gap-1 ${viewMode === 'business' ? 'data-[state=active]:border-b-2 data-[state=active]:border-emerald-500' : ''}`}
+            >
+              <Store className={`h-4 w-4 ${viewMode === 'business' ? 'text-emerald-600' : ''}`} />
               Business Owner View
             </TabsTrigger>
           </TabsList>
         </Tabs>
         
-        <AppointmentFilters 
-          statusFilter={statusFilter}
-          setStatusFilter={setStatusFilter}
-          categoryFilter={categoryFilter}
-          setCategoryFilter={setCategoryFilter}
-          dateRange={dateRange}
-          setDateRange={setDateRange}
-          onResetFilters={handleResetFilters}
-        />
+        <div className="p-5 border rounded-lg bg-card">
+          <AppointmentFilters 
+            statusFilter={statusFilter}
+            setStatusFilter={setStatusFilter}
+            categoryFilter={categoryFilter}
+            setCategoryFilter={setCategoryFilter}
+            dateRange={dateRange}
+            setDateRange={setDateRange}
+            onResetFilters={handleResetFilters}
+          />
+        </div>
         
         {filteredAppointments.length === 0 && filtersApplied ? (
           <EmptyStateMessage type="filtered" />
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <AppointmentCalendar
-              appointments={appointments}
-              onDateSelect={handleDateSelect}
-            />
-            <UpcomingAppointments
-              appointments={upcomingAppointments}
-              appointmentRefs={appointmentRefs}
-              onStatusChange={() => setRefreshing(true)}
-            />
+            <div className={`border rounded-lg p-5 bg-card ${viewMode === 'customer' ? 'border-blue-200' : 'border-emerald-200'}`}>
+              <AppointmentCalendar
+                appointments={appointments}
+                onDateSelect={handleDateSelect}
+              />
+            </div>
+            <div className={`border rounded-lg p-5 bg-card ${viewMode === 'customer' ? 'border-blue-200' : 'border-emerald-200'}`}>
+              <UpcomingAppointments
+                appointments={upcomingAppointments}
+                appointmentRefs={appointmentRefs}
+                onStatusChange={() => setRefreshing(true)}
+              />
+            </div>
           </div>
         )}
         
         {pendingAppointments.length > 0 && (
-          <div className="mt-8">
+          <div className="mt-8 p-6 border rounded-lg bg-card">
             <div className="flex items-center gap-2 mb-4">
-              <h2 className="text-xl font-semibold text-primary">Pending Appointments</h2>
-              <span className="bg-amber-500/20 text-amber-500 text-xs px-2 py-0.5 rounded-full">
+              <div className={`w-1 h-6 rounded-full bg-amber-500 ${viewMode === 'customer' ? 'border-l-4 border-blue-200' : 'border-l-4 border-emerald-200'}`}></div>
+              <h2 className="text-xl font-semibold">Pending Appointments</h2>
+              <span className="bg-amber-100 text-amber-800 text-xs px-2 py-0.5 rounded-full font-medium">
                 {pendingAppointments.length}
               </span>
             </div>
@@ -366,10 +404,11 @@ const Appointments = () => {
         )}
         
         {confirmedAppointments.length > 0 && (
-          <div className="mt-8">
+          <div className="mt-8 p-6 border rounded-lg bg-card">
             <div className="flex items-center gap-2 mb-4">
-              <h2 className="text-xl font-semibold text-primary">Confirmed Appointments</h2>
-              <span className="bg-green-500/20 text-green-500 text-xs px-2 py-0.5 rounded-full">
+              <div className={`w-1 h-6 rounded-full bg-green-500 ${viewMode === 'customer' ? 'border-l-4 border-blue-200' : 'border-l-4 border-emerald-200'}`}></div>
+              <h2 className="text-xl font-semibold">Confirmed Appointments</h2>
+              <span className="bg-green-100 text-green-800 text-xs px-2 py-0.5 rounded-full font-medium">
                 {confirmedAppointments.length}
               </span>
             </div>
@@ -386,10 +425,11 @@ const Appointments = () => {
         )}
         
         {completedAppointments.length > 0 && (
-          <div className="mt-8">
+          <div className="mt-8 p-6 border rounded-lg bg-card">
             <div className="flex items-center gap-2 mb-4">
-              <h2 className="text-xl font-semibold text-primary">Completed Appointments</h2>
-              <span className="bg-blue-500/20 text-blue-500 text-xs px-2 py-0.5 rounded-full">
+              <div className={`w-1 h-6 rounded-full bg-blue-500 ${viewMode === 'customer' ? 'border-l-4 border-blue-200' : 'border-l-4 border-emerald-200'}`}></div>
+              <h2 className="text-xl font-semibold">Completed Appointments</h2>
+              <span className="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full font-medium">
                 {completedAppointments.length}
               </span>
             </div>
@@ -406,10 +446,11 @@ const Appointments = () => {
         )}
         
         {cancelledAppointments.length > 0 && (
-          <div className="mt-8">
+          <div className="mt-8 p-6 border rounded-lg bg-card">
             <div className="flex items-center gap-2 mb-4">
-              <h2 className="text-xl font-semibold text-primary">Cancelled Appointments</h2>
-              <span className="bg-red-500/20 text-red-500 text-xs px-2 py-0.5 rounded-full">
+              <div className={`w-1 h-6 rounded-full bg-red-500 ${viewMode === 'customer' ? 'border-l-4 border-blue-200' : 'border-l-4 border-emerald-200'}`}></div>
+              <h2 className="text-xl font-semibold">Cancelled Appointments</h2>
+              <span className="bg-red-100 text-red-800 text-xs px-2 py-0.5 rounded-full font-medium">
                 {cancelledAppointments.length}
               </span>
             </div>
@@ -426,7 +467,9 @@ const Appointments = () => {
         )}
 
         {appointments.length === 0 && !filtersApplied && (
-          <EmptyStateMessage type="all" />
+          <div className="p-6 border rounded-lg bg-card">
+            <EmptyStateMessage type="all" />
+          </div>
         )}
       </div>
     </div>
