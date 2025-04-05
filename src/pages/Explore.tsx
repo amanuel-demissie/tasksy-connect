@@ -22,7 +22,10 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import ServiceSection from "@/components/home/ServiceSection";
 
 type ServiceCategory = Database['public']['Enums']['service_category'];
-const categories: ServiceCategory[] = ["beauty", "dining", "professional", "home", "others"];
+const categories: ServiceCategory[] = ["beauty", "dining", "professional", "home"];
+// Include "others" as a UI category, but it's not a database enum value
+type DisplayCategory = ServiceCategory | "others";
+const displayCategories: DisplayCategory[] = [...categories, "others"];
 
 const Explore = () => {
   /**
@@ -30,7 +33,7 @@ const Explore = () => {
    */
   const filters = ["All", "Popular", "Trending", "New", "Near Me"];
   const [activeFilter, setActiveFilter] = useState("All");
-  const [activeTab, setActiveTab] = useState<"all" | ServiceCategory>("all");
+  const [activeTab, setActiveTab] = useState<"all" | DisplayCategory>("all");
   
   // Get URL search parameters
   const location = useLocation();
@@ -39,8 +42,8 @@ const Explore = () => {
   
   // Set initial active tab based on URL parameter
   useEffect(() => {
-    if (categoryParam && categories.includes(categoryParam as ServiceCategory)) {
-      setActiveTab(categoryParam as ServiceCategory);
+    if (categoryParam && displayCategories.includes(categoryParam as DisplayCategory)) {
+      setActiveTab(categoryParam as DisplayCategory);
     }
   }, [categoryParam]);
 
@@ -74,10 +77,10 @@ const Explore = () => {
           ))}
         </div>
 
-        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "all" | ServiceCategory)} className="w-full">
+        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "all" | DisplayCategory)} className="w-full">
           <TabsList className="w-full bg-[#1A1F2C]/80 mb-6 overflow-x-auto flex-nowrap">
             <TabsTrigger value="all" className="flex-1">All Services</TabsTrigger>
-            {categories.map((category) => (
+            {displayCategories.map((category) => (
               <TabsTrigger key={category} value={category} className="flex-1 capitalize">
                 {category}
               </TabsTrigger>
@@ -95,6 +98,19 @@ const Explore = () => {
               <ServiceSection category={category} />
             </TabsContent>
           ))}
+
+          {/* Special case for "others" category which isn't in the database enum */}
+          <TabsContent value="others" className="mt-4">
+            <div className="p-6 bg-white/80 rounded-lg text-center">
+              <h3 className="text-lg font-medium">Other Services</h3>
+              <p className="text-neutral-600">
+                Browse miscellaneous services that don't fit into the main categories.
+              </p>
+              <p className="text-neutral-500 mt-2">
+                This category is for display purposes only.
+              </p>
+            </div>
+          </TabsContent>
         </Tabs>
       </div>
     </div>

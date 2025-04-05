@@ -2,6 +2,9 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Scissors, Utensils, Briefcase, Home, Package } from "lucide-react";
+import { Database } from "@/integrations/supabase/types";
+
+type ServiceCategory = Database['public']['Enums']['service_category'] | "others";
 
 const serviceCategories = [
   {
