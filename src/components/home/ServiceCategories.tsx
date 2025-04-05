@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Scissors, Utensils, Briefcase, Home } from "lucide-react";
+import { Scissors, Utensils, Briefcase, Home, Package } from "lucide-react";
 
 const serviceCategories = [
   {
@@ -27,6 +27,12 @@ const serviceCategories = [
     name: "Home Services",
     icon: <Home className="w-8 h-8" />,
     description: "Cleaning, Repairs & More"
+  },
+  {
+    id: "others",
+    name: "Others",
+    icon: <Package className="w-8 h-8" />,
+    description: "Miscellaneous Services"
   },
 ];
 
