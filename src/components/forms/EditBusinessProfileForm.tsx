@@ -31,6 +31,7 @@ import { NotFoundState } from "./NotFoundState";
  * - Handles availability settings
  * - Provides form validation
  * - Handles profile updates
+ * - Manages employees
  * 
  * @returns {JSX.Element} Rendered edit form
  */
@@ -153,6 +154,7 @@ export default function EditBusinessProfileForm() {
           onBlockedDatesChange={handleBlockedDatesChange}
           initialAvailability={availability}
           initialBlockedDates={blockedDates}
+          businessId={id}
         />
 
         <Button 

@@ -10,15 +10,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import AvailabilitySection from "./AvailabilitySection";
 
 interface BusinessDetailsSectionProps {
   register: any;
   errors: any;
   selectedCategory: ServiceCategory;
   setSelectedCategory: (category: ServiceCategory) => void;
-  onAvailabilityChange?: (availability: any[]) => void;
-  onBlockedDatesChange?: (blockedDates: any[]) => void;
 }
 
 export default function BusinessDetailsSection({
@@ -26,8 +23,6 @@ export default function BusinessDetailsSection({
   errors,
   selectedCategory,
   setSelectedCategory,
-  onAvailabilityChange,
-  onBlockedDatesChange,
 }: BusinessDetailsSectionProps) {
   return (
     <div className="space-y-6">
@@ -71,13 +66,6 @@ export default function BusinessDetailsSection({
           className={errors.address ? "border-red-500" : ""}
         />
       </div>
-
-      {onAvailabilityChange && onBlockedDatesChange && (
-        <AvailabilitySection
-          onAvailabilityChange={onAvailabilityChange}
-          onBlockedDatesChange={onBlockedDatesChange}
-        />
-      )}
     </div>
   );
 }
