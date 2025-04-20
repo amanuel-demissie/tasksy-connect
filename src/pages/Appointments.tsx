@@ -1,6 +1,5 @@
 import React, { useRef, useEffect, useState, useCallback } from "react";
 import { format, isBefore, isAfter, parseISO, startOfDay, compareAsc } from "date-fns";
-import { AppointmentCalendar } from "@/components/appointments/AppointmentCalendar";
 import { UpcomingAppointments } from "@/components/appointments/UpcomingAppointments";
 import { AppointmentCard } from "@/components/appointments/AppointmentCard";
 import { AppointmentFilters } from "@/components/appointments/AppointmentFilters";
@@ -365,13 +364,7 @@ const Appointments = () => {
         {filteredAppointments.length === 0 && filtersApplied ? (
           <EmptyStateMessage type="filtered" />
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className={`border rounded-lg p-5 bg-card ${viewMode === 'customer' ? 'border-blue-200' : 'border-emerald-200'}`}>
-              <AppointmentCalendar
-                appointments={appointments}
-                onDateSelect={handleDateSelect}
-              />
-            </div>
+          <div className="grid grid-cols-1 gap-8">
             <div className={`border rounded-lg p-5 bg-card ${viewMode === 'customer' ? 'border-blue-200' : 'border-emerald-200'}`}>
               <UpcomingAppointments
                 appointments={upcomingAppointments}
