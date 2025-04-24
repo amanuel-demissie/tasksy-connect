@@ -365,7 +365,7 @@ const Appointments = () => {
           <EmptyStateMessage type="filtered" />
         ) : (
           <div className="grid grid-cols-1 gap-8">
-            <div className={`border rounded-lg p-5 bg-card ${viewMode === 'customer' ? 'border-blue-200' : 'border-emerald-200'}`}>
+            <div className={`border-2 rounded-lg p-0 bg-card ${viewMode === 'customer' ? 'border-blue-200' : 'border-emerald-200'}`}>
               <UpcomingAppointments
                 appointments={upcomingAppointments}
                 appointmentRefs={appointmentRefs}

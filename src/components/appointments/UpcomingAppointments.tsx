@@ -57,7 +57,7 @@ export const UpcomingAppointments = ({
                     {date}
                   </h3>
                 </div>
-                <div className="space-y-3 pl-4 border-l border-[#403E43]">
+                <div className="space-y-3 pl-0 border-l border-[#403E43]">
                   {groupedAppointments[date].map((appointment, index) => (
                     <AppointmentCard 
                       key={`${appointment.id}-${index}`} 
