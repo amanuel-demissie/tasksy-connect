@@ -91,6 +91,13 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
 
   useEffect(() => {
     fetchMessages();
+  }, [conversationId]);
+
+  // Set up real-time subscription after we have the current user ID
+  useEffect(() => {
+    if (!currentUserId) return;
+
+    console.log('Setting up real-time subscription for conversation:', conversationId);
     
     // Set up realtime subscription for new messages
     const channel = supabase
@@ -101,12 +108,12 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
         table: 'messages',
         filter: `conversation_id=eq.${conversationId}`
       }, (payload) => {
-        console.log('New message received:', payload);
+        console.log('New message received via realtime:', payload);
         const newMsg = payload.new as any;
         
-        // Only add the message if it's not already in the array
+        // Add the new message to state
         setMessages(prev => {
-          // Check if message already exists
+          // Check if message already exists to prevent duplicates
           const exists = prev.some(msg => msg.id === newMsg.id);
           if (exists) return prev;
           
@@ -128,6 +135,24 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
             .then(() => console.log('Message marked as read'));
         }
       })
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'messages',
+        filter: `conversation_id=eq.${conversationId}`
+      }, (payload) => {
+        console.log('Message updated via realtime:', payload);
+        const updatedMsg = payload.new as any;
+        
+        // Update the message in state
+        setMessages(prev => 
+          prev.map(msg => 
+            msg.id === updatedMsg.id 
+              ? { ...msg, ...updatedMsg, isCurrentUser: updatedMsg.sender_id === currentUserId }
+              : msg
+          )
+        );
+      })
       .subscribe();
     
     console.log('Subscribed to channel:', `conversation:${conversationId}`);
@@ -143,17 +168,6 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleString('en-US', {
-      month: 'short', 
-      day: 'numeric',
-      hour: 'numeric',
-      minute: 'numeric',
-      hour12: true
-    }).toUpperCase();
-  };
-  
   // Group messages by date
   const groupedMessages = messages.reduce((groups: Record<string, Message[]>, message) => {
     const date = new Date(message.created_at).toLocaleDateString();

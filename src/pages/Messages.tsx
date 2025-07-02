@@ -113,14 +113,23 @@ const Messages = () => {
   useEffect(() => {
     fetchConversations();
 
-    // Set up realtime subscription for new messages
+    // Set up realtime subscription for new messages to update conversation list
     const channel = supabase
       .channel('messages-changes')
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
         table: 'messages'
-      }, () => {
+      }, (payload) => {
+        console.log('New message detected, refreshing conversations');
+        fetchConversations();
+      })
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'messages'
+      }, (payload) => {
+        console.log('Message updated, refreshing conversations');
         fetchConversations();
       })
       .subscribe();
