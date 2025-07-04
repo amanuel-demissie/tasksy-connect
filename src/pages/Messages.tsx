@@ -1,5 +1,4 @@
-
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,8 +12,16 @@ import { NewMessageDialog } from "@/components/messages/NewMessageDialog";
 import { Input } from "@/components/ui/input";
 
 /**
- * Interface for conversation data
+ * Interface representing a conversation in the messaging system
  * @interface Conversation
+ * @property {string} id - Unique identifier for the conversation
+ * @property {Object} business - Business profile information
+ * @property {string} business.id - Business profile ID
+ * @property {string} business.name - Business name
+ * @property {string | null} business.image_url - Business profile image URL
+ * @property {string | null} lastMessage - Content of the last message in the conversation
+ * @property {string | null} lastMessageTime - Timestamp of the last message
+ * @property {number} unreadCount - Number of unread messages in the conversation
  */
 interface Conversation {
   id: string;
@@ -28,16 +35,57 @@ interface Conversation {
   unreadCount: number;
 }
 
+/**
+ * Main Messages page component that handles the messaging system
+ * 
+ * This component manages:
+ * - Displaying a list of user's conversations
+ * - Real-time updates for new messages
+ * - Conversation selection and navigation
+ * - Search functionality for conversations
+ * - Creating new conversations
+ * 
+ * Real-time functionality:
+ * - Subscribes to global message changes to update conversation list
+ * - Only refreshes conversation list when not viewing a specific conversation
+ * - Uses unique channel names to prevent conflicts with individual conversation subscriptions
+ * 
+ * @component
+ * @returns {JSX.Element} The Messages page component
+ */
 const Messages = () => {
+  /** List of user's conversations with metadata */
   const [conversations, setConversations] = useState<Conversation[]>([]);
+  /** Loading state for initial data fetch */
   const [loading, setLoading] = useState(true);
+  /** Currently selected conversation ID, null if viewing conversation list */
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
+  /** Controls visibility of new message dialog */
   const [newMessageDialogOpen, setNewMessageDialogOpen] = useState(false);
+  /** Search query for filtering conversations */
+  const [searchQuery, setSearchQuery] = useState("");
+  
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState("");
+  
+  /** Reference to the real-time subscription channel for conversation list updates */
+  const channelRef = useRef<any>(null);
 
-  const fetchConversations = async () => {
+  /**
+   * Fetches all conversations for the current user
+   * 
+   * This function:
+   * 1. Gets the current user session
+   * 2. Fetches all conversations where the user is the customer
+   * 3. For each conversation, fetches the last message and unread count
+   * 4. Updates the conversations state with complete data
+   * 
+   * @async
+   * @function fetchConversations
+   * @returns {Promise<void>}
+   * @throws {Error} When session is invalid or database queries fail
+   */
+  const fetchConversations = useCallback(async () => {
     setLoading(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -46,6 +94,7 @@ const Messages = () => {
         return;
       }
 
+      // Fetch all conversations for the current user
       const { data, error } = await supabase
         .from('conversations')
         .select(`
@@ -61,8 +110,9 @@ const Messages = () => {
 
       if (error) throw error;
 
-      // Fetch last message for each conversation
+      // For each conversation, fetch the last message and unread count
       const conversationsWithMessages = await Promise.all((data || []).map(async conv => {
+        // Get the most recent message
         const { data: messagesData, error: messagesError } = await supabase
           .from('messages')
           .select('content, created_at, read')
@@ -72,7 +122,7 @@ const Messages = () => {
         
         if (messagesError) throw messagesError;
 
-        // Count unread messages
+        // Count unread messages (messages not sent by current user)
         const { count, error: countError } = await supabase
           .from('messages')
           .select('id', { count: 'exact' })
@@ -108,21 +158,50 @@ const Messages = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [navigate, toast]);
 
-  useEffect(() => {
-    fetchConversations();
+  /**
+   * Sets up real-time subscription for conversation list updates
+   * 
+   * This function creates a unique channel that listens for:
+   * - INSERT events on the messages table (new messages)
+   * - UPDATE events on the messages table (message updates)
+   * 
+   * The subscription only triggers conversation list refresh when:
+   * - The user is not currently viewing a specific conversation
+   * - This prevents unnecessary updates when in conversation view
+   * 
+   * Channel naming strategy:
+   * - Uses timestamp to ensure uniqueness
+   * - Prevents conflicts with individual conversation channels
+   * 
+   * @function setupRealtimeSubscription
+   * @returns {void}
+   */
+  const setupRealtimeSubscription = useCallback(() => {
+    // Clean up existing channel to prevent duplicates
+    if (channelRef.current) {
+      supabase.removeChannel(channelRef.current);
+    }
 
-    // Set up realtime subscription for new messages to update conversation list
+    console.log('Setting up real-time subscription for conversation list');
+    
+    // Create unique channel name for conversation list
+    const channelName = `conversation-list-${Date.now()}`;
+    
     const channel = supabase
-      .channel('messages-changes')
+      .channel(channelName)
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
         table: 'messages'
       }, (payload) => {
         console.log('New message detected, refreshing conversations');
-        fetchConversations();
+        // Only refresh if we're not in a conversation view
+        // This prevents unnecessary updates when user is already viewing the conversation
+        if (!selectedConversation) {
+          fetchConversations();
+        }
       })
       .on('postgres_changes', {
         event: 'UPDATE',
@@ -130,24 +209,74 @@ const Messages = () => {
         table: 'messages'
       }, (payload) => {
         console.log('Message updated, refreshing conversations');
-        fetchConversations();
+        // Only refresh if we're not in a conversation view
+        if (!selectedConversation) {
+          fetchConversations();
+        }
       })
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Conversation list subscription status:', status);
+      });
 
+    channelRef.current = channel;
+    console.log('Subscribed to conversation list channel:', channelName);
+  }, [selectedConversation, fetchConversations]);
+
+  // Initialize conversations and real-time subscription
+  useEffect(() => {
+    fetchConversations();
+    setupRealtimeSubscription();
+
+    // Cleanup function to remove channel when component unmounts
     return () => {
-      supabase.removeChannel(channel);
+      if (channelRef.current) {
+        console.log('Cleaning up conversation list channel');
+        supabase.removeChannel(channelRef.current);
+        channelRef.current = null;
+      }
     };
-  }, []);
+  }, [fetchConversations, setupRealtimeSubscription]);
 
+  /**
+   * Handles selection of a conversation
+   * 
+   * @function handleConversationSelect
+   * @param {string} conversationId - The ID of the selected conversation
+   */
   const handleConversationSelect = (conversationId: string) => {
     setSelectedConversation(conversationId);
   };
 
+  /**
+   * Handles navigation back to conversation list
+   * 
+   * This function:
+   * 1. Clears the selected conversation
+   * 2. Refreshes the conversation list to get latest data
+   * 
+   * @function handleBackToList
+   */
   const handleBackToList = () => {
     setSelectedConversation(null);
     fetchConversations();
   };
 
+  /**
+   * Creates a new conversation with a business or freelancer
+   * 
+   * This function:
+   * 1. Validates user session
+   * 2. Creates a new conversation record in the database
+   * 3. Automatically selects the new conversation
+   * 4. Shows success toast notification
+   * 
+   * @async
+   * @function handleNewConversation
+   * @param {string} userId - The ID of the business/freelancer to start conversation with
+   * @param {'business' | 'freelancer'} userType - The type of user being messaged
+   * @returns {Promise<void>}
+   * @throws {Error} When session is invalid or conversation creation fails
+   */
   const handleNewConversation = async (userId: string, userType: 'business' | 'freelancer') => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -156,7 +285,7 @@ const Messages = () => {
         return;
       }
 
-      // Create a new conversation
+      // Create a new conversation record
       const { data: newConversation, error } = await supabase
         .from('conversations')
         .insert({
@@ -168,7 +297,7 @@ const Messages = () => {
 
       if (error) throw error;
 
-      // Select the new conversation
+      // Select the new conversation and close dialog
       setSelectedConversation(newConversation.id);
       setNewMessageDialogOpen(false);
       toast({
@@ -192,6 +321,7 @@ const Messages = () => {
       )
     : conversations;
 
+  // Show loading spinner while fetching initial data
   if (loading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
@@ -204,12 +334,14 @@ const Messages = () => {
     <div className="min-h-screen bg-black pb-20">
       <div className="container max-w-4xl mx-auto px-4 py-8 space-y-4">
         {selectedConversation ? (
+          // Show individual conversation view
           <ConversationView 
             conversationId={selectedConversation} 
             onBack={handleBackToList} 
             businessDetails={conversations.find(c => c.id === selectedConversation)?.business}
           />
         ) : (
+          // Show conversation list
           <>
             <div className="flex items-center justify-between">
               <div className="flex items-center">

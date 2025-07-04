@@ -1,14 +1,22 @@
-
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Send, Image, Smile, Mic } from "lucide-react";
+import { ArrowLeft, Send, Image, Smile, Mic, RefreshCw } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { MessageBubble } from "@/components/messages/MessageBubble";
 
+/**
+ * Interface representing a message in the conversation
+ * @interface Message
+ * @property {string} id - Unique identifier for the message
+ * @property {string} content - The message text content
+ * @property {string} created_at - ISO timestamp when message was created
+ * @property {string} sender_id - User ID of the message sender
+ * @property {boolean} isCurrentUser - Whether the current user sent this message
+ */
 interface Message {
   id: string;
   content: string;
@@ -17,33 +25,97 @@ interface Message {
   isCurrentUser: boolean;
 }
 
+/**
+ * Interface representing business details for the conversation header
+ * @interface BusinessDetails
+ * @property {string} id - Business profile ID
+ * @property {string} name - Business name
+ * @property {string | null} image_url - Business profile image URL
+ */
 interface BusinessDetails {
   id: string;
   name: string;
   image_url: string | null;
 }
 
+/**
+ * Props for the ConversationView component
+ * @interface ConversationViewProps
+ * @property {string} conversationId - The ID of the conversation to display
+ * @property {() => void} onBack - Callback function to navigate back to conversation list
+ * @property {BusinessDetails | undefined} businessDetails - Business information for the conversation header
+ */
 interface ConversationViewProps {
   conversationId: string;
   onBack: () => void;
   businessDetails?: BusinessDetails;
 }
 
+/**
+ * ConversationView component for displaying and managing individual conversations
+ * 
+ * This component provides:
+ * - Real-time message display and updates
+ * - Message sending functionality
+ * - Auto-scroll to latest messages
+ * - Message read status tracking
+ * - Manual refresh capability
+ * - Real-time subscription management
+ * 
+ * Real-time functionality:
+ * - Subscribes to conversation-specific message changes
+ * - Automatically marks incoming messages as read
+ * - Prevents duplicate messages through ID checking
+ * - Uses unique channel names to prevent conflicts
+ * 
+ * Performance optimizations:
+ * - Channel cleanup on unmount and dependency changes
+ * - Duplicate message prevention
+ * - Efficient state updates
+ * - Conditional re-renders
+ * 
+ * @component
+ * @param {ConversationViewProps} props - Component props
+ * @returns {JSX.Element} The conversation view component
+ */
 export const ConversationView: React.FC<ConversationViewProps> = ({
   conversationId,
   onBack,
   businessDetails
 }) => {
+  /** Array of messages in the conversation */
   const [messages, setMessages] = useState<Message[]>([]);
+  /** Current message input value */
   const [newMessage, setNewMessage] = useState("");
+  /** Loading state for initial message fetch */
   const [loading, setLoading] = useState(true);
+  /** Loading state for message sending */
   const [sending, setSending] = useState(false);
+  /** Current user's ID for message ownership and read status */
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  
+  /** Reference to the scroll container for auto-scroll functionality */
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  /** Reference to the real-time subscription channel */
+  const channelRef = useRef<any>(null);
+  
   const { toast } = useToast();
 
-  // Fetch messages for the conversation
-  const fetchMessages = async () => {
+  /**
+   * Fetches all messages for the current conversation
+   * 
+   * This function:
+   * 1. Gets the current user session
+   * 2. Fetches all messages for the conversation, ordered by creation time
+   * 3. Marks unread messages as read (if not sent by current user)
+   * 4. Updates the messages state with proper ownership flags
+   * 
+   * @async
+   * @function fetchMessages
+   * @returns {Promise<void>}
+   * @throws {Error} When session is invalid or database queries fail
+   */
+  const fetchMessages = useCallback(async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       
@@ -51,6 +123,7 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
       
       setCurrentUserId(session.user.id);
       
+      // Fetch all messages for this conversation
       const { data, error } = await supabase
         .from('messages')
         .select('*')
@@ -71,6 +144,7 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
           .in('id', unreadMessages);
       }
 
+      // Set messages with ownership flags
       setMessages(
         data.map(msg => ({
           ...msg,
@@ -87,21 +161,44 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [conversationId, toast]);
 
-  useEffect(() => {
-    fetchMessages();
-  }, [conversationId]);
+  /**
+   * Sets up real-time subscription for conversation-specific message updates
+   * 
+   * This function creates a unique channel that listens for:
+   * - INSERT events on messages table (new messages) filtered by conversation_id
+   * - UPDATE events on messages table (message updates) filtered by conversation_id
+   * 
+   * Channel management:
+   * - Cleans up existing channel before creating new one
+   * - Uses unique channel name with timestamp to prevent conflicts
+   * - Stores channel reference for cleanup
+   * 
+   * Message handling:
+   * - Prevents duplicate messages through ID checking
+   * - Automatically marks incoming messages as read
+   * - Updates message state efficiently
+   * 
+   * @function setupRealtimeSubscription
+   * @returns {void}
+   */
+  const setupRealtimeSubscription = useCallback(() => {
+    if (!currentUserId || !conversationId) return;
 
-  // Set up real-time subscription after we have the current user ID
-  useEffect(() => {
-    if (!currentUserId) return;
+    // Clean up existing channel to prevent duplicates
+    if (channelRef.current) {
+      supabase.removeChannel(channelRef.current);
+    }
 
     console.log('Setting up real-time subscription for conversation:', conversationId);
     
+    // Create unique channel name to prevent conflicts
+    const channelName = `conversation-${conversationId}-${Date.now()}`;
+    
     // Set up realtime subscription for new messages
     const channel = supabase
-      .channel(`conversation:${conversationId}`)
+      .channel(channelName)
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
@@ -111,12 +208,16 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
         console.log('New message received via realtime:', payload);
         const newMsg = payload.new as any;
         
-        // Add the new message to state
+        // Add the new message to state with duplicate prevention
         setMessages(prev => {
           // Check if message already exists to prevent duplicates
           const exists = prev.some(msg => msg.id === newMsg.id);
-          if (exists) return prev;
+          if (exists) {
+            console.log('Message already exists, skipping duplicate');
+            return prev;
+          }
           
+          console.log('Adding new message to state:', newMsg);
           return [
             ...prev, 
             {
@@ -128,11 +229,17 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
         
         // Mark message as read if not from current user
         if (newMsg.sender_id !== currentUserId && !newMsg.read) {
-          supabase
-            .from('messages')
-            .update({ read: true })
-            .eq('id', newMsg.id)
-            .then(() => console.log('Message marked as read'));
+          (async () => {
+            try {
+              await supabase
+                .from('messages')
+                .update({ read: true })
+                .eq('id', newMsg.id);
+              console.log('Message marked as read');
+            } catch (err: any) {
+              console.error('Error marking message as read:', err);
+            }
+          })();
         }
       })
       .on('postgres_changes', {
@@ -153,22 +260,55 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
           )
         );
       })
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Subscription status for', channelName, ':', status);
+        if (status === 'SUBSCRIBED') {
+          console.log('Successfully subscribed to real-time updates');
+        } else if (status === 'CHANNEL_ERROR') {
+          console.error('Channel subscription error');
+        }
+      });
     
-    console.log('Subscribed to channel:', `conversation:${conversationId}`);
-    
-    return () => {
-      console.log('Unsubscribing from channel');
-      supabase.removeChannel(channel);
-    };
+    channelRef.current = channel;
+    console.log('Subscribed to channel:', channelName);
   }, [conversationId, currentUserId]);
 
-  // Scroll to bottom when messages change
+  // Fetch messages when conversation changes
+  useEffect(() => {
+    fetchMessages();
+  }, [fetchMessages]);
+
+  // Set up real-time subscription when currentUserId is available
+  useEffect(() => {
+    if (currentUserId) {
+      setupRealtimeSubscription();
+    }
+  }, [currentUserId, setupRealtimeSubscription]);
+
+  // Cleanup channel on unmount
+  useEffect(() => {
+    return () => {
+      if (channelRef.current) {
+        console.log('Cleaning up channel on unmount');
+        supabase.removeChannel(channelRef.current);
+        channelRef.current = null;
+      }
+    };
+  }, []);
+
+  // Auto-scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Group messages by date
+  /**
+   * Groups messages by date for display purposes
+   * 
+   * This creates a record where each key is a date string and the value
+   * is an array of messages from that date.
+   * 
+   * @type {Record<string, Message[]>}
+   */
   const groupedMessages = messages.reduce((groups: Record<string, Message[]>, message) => {
     const date = new Date(message.created_at).toLocaleDateString();
     if (!groups[date]) {
@@ -178,6 +318,23 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
     return groups;
   }, {});
 
+  /**
+   * Handles sending a new message
+   * 
+   * This function:
+   * 1. Validates message content and user session
+   * 2. Inserts the message into the database
+   * 3. Clears the input field on success
+   * 4. Shows error toast if sending fails
+   * 
+   * The message will automatically appear in the UI through the real-time subscription
+   * 
+   * @async
+   * @function handleSendMessage
+   * @param {React.FormEvent} e - Form submission event
+   * @returns {Promise<void>}
+   * @throws {Error} When message sending fails
+   */
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -185,17 +342,22 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
     
     setSending(true);
     try {
-      const { error } = await supabase
+      console.log('Sending message:', newMessage);
+      
+      const { data, error } = await supabase
         .from('messages')
         .insert({
           conversation_id: conversationId,
           sender_id: currentUserId,
           content: newMessage,
           read: false
-        });
+        })
+        .select()
+        .single();
 
       if (error) throw error;
       
+      console.log('Message sent successfully:', data);
       setNewMessage("");
     } catch (error) {
       console.error('Error sending message:', error);
@@ -211,7 +373,7 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
 
   return (
     <div className="flex flex-col h-[calc(100vh-200px)]">
-      {/* Header */}
+      {/* Header with business info and navigation */}
       <div className="flex items-center pb-4 border-b border-zinc-800">
         <Button 
           variant="ghost" 
@@ -238,13 +400,25 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
           </h2>
           <p className="text-xs text-neutral-400">Active now</p>
         </div>
+        
+        {/* Manual refresh button for debugging */}
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={fetchMessages}
+          className="text-neutral-400 hover:text-white"
+          title="Refresh messages"
+        >
+          <RefreshCw className="h-5 w-5" />
+        </Button>
       </div>
       
-      {/* Messages */}
+      {/* Messages display area */}
       <ScrollArea className="flex-1 py-4">
         <div className="space-y-6 px-1">
           {Object.entries(groupedMessages).map(([date, msgs]) => (
             <div key={date} className="space-y-2">
+              {/* Date separator */}
               <div className="text-center">
                 <span className="text-xs text-neutral-500 bg-zinc-800 px-3 py-1 rounded-full">
                   {new Date(date).toLocaleDateString('en-US', { 
@@ -255,6 +429,7 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
                 </span>
               </div>
               
+              {/* Messages for this date */}
               {msgs.map(message => (
                 <MessageBubble
                   key={message.id}
@@ -268,11 +443,12 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
               ))}
             </div>
           ))}
+          {/* Auto-scroll target */}
           <div ref={messagesEndRef} />
         </div>
       </ScrollArea>
       
-      {/* Message Input */}
+      {/* Message input form */}
       <div className="pt-2 mt-2 border-t border-zinc-800">
         <form onSubmit={handleSendMessage} className="flex items-center gap-2">
           <Button 
