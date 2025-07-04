@@ -359,6 +359,7 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
       
       console.log('Message sent successfully:', data);
       setNewMessage("");
+      fetchMessages();
     } catch (error) {
       console.error('Error sending message:', error);
       toast({
