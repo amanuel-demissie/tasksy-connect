@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Plus, Edit, Trash2, Pencil, UserPlus } from "lucide-react";
+import { Plus, Edit, Trash2, Pencil, UserPlus, Search, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command";
 
 interface Employee {
   id: string;
@@ -26,6 +27,13 @@ interface Employee {
   bio: string | null;
   image_url: string | null;
   is_active: boolean;
+}
+
+interface User {
+  id: string;
+  username: string | null;
+  email: string | null;
+  avatar_url: string | null;
 }
 
 interface EmployeesListProps {
@@ -38,9 +46,16 @@ export default function EmployeesList({ businessId, onEmployeeAdded }: Employees
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [showUserSearch, setShowUserSearch] = useState(false);
   const [editEmployee, setEditEmployee] = useState<Employee | null>(null);
   
-  // Form state
+  // User search state
+  const [users, setUsers] = useState<User[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+  
+  // Form state for editing employees
   const [name, setName] = useState("");
   const [title, setTitle] = useState("");
   const [bio, setBio] = useState("");
@@ -83,10 +98,83 @@ export default function EmployeesList({ businessId, onEmployeeAdded }: Employees
     setEditEmployee(null);
   };
 
-  // Open add dialog
+  // Search users
+  const searchUsers = async (query: string) => {
+    if (!query.trim()) {
+      setUsers([]);
+      return;
+    }
+
+    setLoadingUsers(true);
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id, username, email, avatar_url")
+        .or(`username.ilike.%${query}%,email.ilike.%${query}%`)
+        .limit(10);
+
+      if (error) throw error;
+      setUsers(data || []);
+    } catch (error) {
+      console.error("Error searching users:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to search users",
+      });
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
+
+  // Open user search dialog
   const handleAddEmployee = () => {
-    resetForm();
-    setShowAddDialog(true);
+    setShowUserSearch(true);
+    setSearchQuery("");
+    setUsers([]);
+    setSelectedUser(null);
+  };
+
+  // Add selected user as employee
+  const handleAddSelectedUser = async () => {
+    if (!selectedUser) return;
+
+    setIsSubmitting(true);
+    try {
+      const { error, data } = await supabase
+        .from("employees")
+        .insert({
+          business_id: businessId,
+          user_id: selectedUser.id,
+          name: selectedUser.username || selectedUser.email || "Unknown User",
+          is_active: true,
+        })
+        .select();
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Employee added successfully",
+      });
+
+      // Add the new employee to the list
+      if (data && data.length > 0) {
+        setEmployees([...employees, data[0] as Employee]);
+      }
+
+      setShowUserSearch(false);
+      onEmployeeAdded();
+    } catch (error) {
+      console.error("Error adding employee:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to add employee",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Open edit dialog
@@ -294,13 +382,97 @@ export default function EmployeesList({ businessId, onEmployeeAdded }: Employees
         </ScrollArea>
       )}
 
-      {/* Add/Edit Employee Dialog */}
+      {/* User Search Dialog */}
+      <Dialog open={showUserSearch} onOpenChange={setShowUserSearch}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Search and Add Employee</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            <Command>
+              <div className="flex items-center border rounded-md px-3">
+                <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+                <CommandInput
+                  placeholder="Search by username or email..."
+                  value={searchQuery}
+                  onValueChange={(value) => {
+                    setSearchQuery(value);
+                    searchUsers(value);
+                  }}
+                />
+              </div>
+              <CommandList className="mt-2">
+                <CommandEmpty>
+                  {searchQuery ? "No users found." : "Start typing to search users..."}
+                </CommandEmpty>
+                <CommandGroup>
+                  {users.map((user) => (
+                    <CommandItem
+                      key={user.id}
+                      onSelect={() => setSelectedUser(user)}
+                      className={`cursor-pointer ${selectedUser?.id === user.id ? 'bg-accent' : ''}`}
+                    >
+                      <div className="flex items-center w-full">
+                        <Avatar className="h-8 w-8 mr-3">
+                          <AvatarImage src={user.avatar_url || undefined} />
+                          <AvatarFallback>
+                            <User className="h-4 w-4" />
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <p className="font-medium">{user.username || "No username"}</p>
+                          <p className="text-sm text-muted-foreground">{user.email}</p>
+                        </div>
+                      </div>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </CommandList>
+            </Command>
+
+            {selectedUser && (
+              <div className="border rounded-lg p-4 bg-muted/50">
+                <h4 className="font-medium mb-2">Selected User:</h4>
+                <div className="flex items-center">
+                  <Avatar className="h-10 w-10 mr-3">
+                    <AvatarImage src={selectedUser.avatar_url || undefined} />
+                    <AvatarFallback>
+                      <User className="h-4 w-4" />
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-medium">{selectedUser.username || "No username"}</p>
+                    <p className="text-sm text-muted-foreground">{selectedUser.email}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="flex justify-end gap-2">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => setShowUserSearch(false)}
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleAddSelectedUser}
+                disabled={!selectedUser || isSubmitting}
+                className="bg-accent text-white hover:bg-accent/90"
+              >
+                {isSubmitting ? 'Adding...' : 'Add Employee'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Employee Dialog */}
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>
-              {editEmployee ? "Edit Employee" : "Add New Employee"}
-            </DialogTitle>
+            <DialogTitle>Edit Employee</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4 pt-4">
             <div className="space-y-2">
@@ -370,7 +542,7 @@ export default function EmployeesList({ businessId, onEmployeeAdded }: Employees
                 className="bg-accent text-white hover:bg-accent/90"
                 disabled={isSubmitting}
               >
-                {isSubmitting ? 'Saving...' : editEmployee ? 'Update' : 'Add'}
+                {isSubmitting ? 'Saving...' : 'Update'}
               </Button>
             </div>
           </form>
