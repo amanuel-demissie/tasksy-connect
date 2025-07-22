@@ -421,11 +421,11 @@ export default function EmployeesList({ businessId, onEmployeeAdded }: Employees
 
       {/* User Search Dialog */}
       <Dialog open={showUserSearch} onOpenChange={setShowUserSearch}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="w-full max-w-sm sm:max-w-md px-4 py-6">
           <DialogHeader>
             <DialogTitle>Search and Add Employee</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 pt-4">
+          <div className="space-y-4 pt-4 max-h-[80vh] overflow-y-auto">
             <Command>
               <div className="flex items-center border rounded-md px-3">
                 <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
