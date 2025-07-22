@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import {
   Card,
@@ -107,10 +106,14 @@ export default function EmployeesList({ businessId, onEmployeeAdded }: Employees
 
     setLoadingUsers(true);
     try {
+      const trimmedQuery = query.trim();
+      console.log(trimmedQuery);
       const { data, error } = await supabase
         .from("profiles")
         .select("id, username, email, avatar_url")
-        .or(`username.ilike.%${query}%,email.ilike.%${query}%`)
+        .or(
+          `username.ilike.%${trimmedQuery}*,email.ilike.%${trimmedQuery}*`
+        )
         .limit(10);
 
       if (error) throw error;
@@ -126,6 +129,40 @@ export default function EmployeesList({ businessId, onEmployeeAdded }: Employees
       setLoadingUsers(false);
     }
   };
+
+  // Debounced search effect
+  React.useEffect(() => {
+    if (!showUserSearch) return;
+    if (!searchQuery.trim()) {
+      setUsers([]);
+      setLoadingUsers(false);
+      return;
+    }
+    setLoadingUsers(true);
+    const handler = setTimeout(() => {
+      searchUsers(searchQuery);
+    }, 1500);
+    return () => clearTimeout(handler);
+  }, [searchQuery, showUserSearch]);
+
+  // Fetch all users when dialog opens and searchQuery is empty
+  React.useEffect(() => {
+    if (showUserSearch && !searchQuery.trim()) {
+      setLoadingUsers(true);
+      supabase
+        .from("profiles")
+        .select("id, username, email, avatar_url")
+        .limit(10)
+        .then(({ data, error }) => {
+          if (error) {
+            setUsers([]);
+          } else {
+            setUsers(data || []);
+          }
+          setLoadingUsers(false);
+        });
+    }
+  }, [showUserSearch, searchQuery]);
 
   // Open user search dialog
   const handleAddEmployee = () => {
@@ -395,15 +432,20 @@ export default function EmployeesList({ businessId, onEmployeeAdded }: Employees
                 <CommandInput
                   placeholder="Search by username or email..."
                   value={searchQuery}
-                  onValueChange={(value) => {
-                    setSearchQuery(value);
-                    searchUsers(value);
-                  }}
+                  onValueChange={setSearchQuery}
                 />
               </div>
               <CommandList className="mt-2">
                 <CommandEmpty>
-                  {searchQuery ? "No users found." : "Start typing to search users..."}
+                  {loadingUsers ? (
+                    <div className="flex items-center justify-center py-4">
+                      <svg className="animate-spin h-5 w-5 text-accent mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                      </svg>
+                      <span>Searching...</span>
+                    </div>
+                  ) : users.length === 0 ? "No users found." : null}
                 </CommandEmpty>
                 <CommandGroup>
                   {users.map((user) => (
