@@ -222,6 +222,7 @@ export function EnhancedBusinessProfileFormContent({
       {/* Form Sections with Accordion */}
       <Accordion 
         type="single" 
+        collapsible
         value={activeSection} 
         onValueChange={(value) => setActiveSection(value || "")}
         className="space-y-4"
