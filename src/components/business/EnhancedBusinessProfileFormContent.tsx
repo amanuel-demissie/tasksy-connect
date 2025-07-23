@@ -110,15 +110,19 @@ export function EnhancedBusinessProfileFormContent({
       isComplete: false, // Could be enhanced to check if employees exist
       isActive: activeSection === "team"
     }
-  ], [formData, currentImageUrl, imageFile, services, initialAvailability, activeSection]);
+  ], [formData, currentImageUrl, imageFile, services, initialAvailability]);
 
-  // Auto-expand first incomplete section
+  // Auto-expand first incomplete section only on initial load
   useEffect(() => {
-    const firstIncomplete = sections.find(section => !section.isComplete);
-    if (firstIncomplete && activeSection !== firstIncomplete.id) {
-      setActiveSection(firstIncomplete.id);
+    if (!activeSection) {
+      const firstIncomplete = sections.find(section => !section.isComplete);
+      if (firstIncomplete) {
+        setActiveSection(firstIncomplete.id);
+      } else {
+        setActiveSection("profile-details");
+      }
     }
-  }, [sections]);
+  }, []); // Empty dependency array - only run on mount
 
   // Prepare preview data
   const previewData = {
