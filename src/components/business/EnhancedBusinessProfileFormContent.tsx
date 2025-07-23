@@ -223,7 +223,7 @@ export function EnhancedBusinessProfileFormContent({
       <Accordion 
         type="single" 
         value={activeSection} 
-        onValueChange={setActiveSection}
+        onValueChange={(value) => setActiveSection(value || "")}
         className="space-y-4"
       >
         {/* Profile Details Section */}
