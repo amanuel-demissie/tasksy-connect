@@ -61,7 +61,7 @@ interface BusinessProfileResponse {
 export const useBusinessProfileForm = (profileId: string) => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { register, handleSubmit, formState: { errors }, setValue } = useForm<BusinessProfileFormData>();
+  const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<BusinessProfileFormData>();
   
   const [selectedCategory, setSelectedCategory] = useState<ServiceCategory>("beauty");
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -70,6 +70,9 @@ export const useBusinessProfileForm = (profileId: string) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [availability, setAvailability] = useState<any[]>([]);
   const [blockedDates, setBlockedDates] = useState<any[]>([]);
+  
+  // Watch form data for auto-save and validation
+  const formData = watch();
 
   const { submitProfile } = useBusinessProfileSubmit(() => {
     toast({
@@ -263,5 +266,6 @@ export const useBusinessProfileForm = (profileId: string) => {
     services,
     setServices,
     businessServicesHook,
+    formData,
   };
 };

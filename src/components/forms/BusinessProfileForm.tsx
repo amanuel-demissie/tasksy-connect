@@ -1,19 +1,17 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { ServiceCategory, BusinessProfileFormData } from "@/types/profile";
-import ImageUploadSection from "@/components/business/ImageUploadSection";
-import BusinessDetailsSection from "@/components/business/BusinessDetailsSection";
-import ServicesSection from "@/components/business/ServicesSection";
-import AvailabilitySection from "@/components/business/AvailabilitySection";
 import { Button } from "@/components/ui/button";
 import { useBusinessProfileSubmit } from "@/hooks/use-business-profile-submit";
 import { useCameraCapture } from "@/hooks/use-camera-capture";
 import { useBusinessServices } from "@/hooks/use-business-services";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { EnhancedBusinessProfileFormContent } from "@/components/business/EnhancedBusinessProfileFormContent";
 
 export default function BusinessProfileForm({ onSuccess }: { onSuccess: () => void }) {
-  const { register, handleSubmit, formState: { errors } } = useForm<BusinessProfileFormData>();
+  const { register, handleSubmit, formState: { errors }, watch } = useForm<BusinessProfileFormData>();
+  const formData = watch();
   
   const [selectedCategory, setSelectedCategory] = useState<ServiceCategory>("beauty");
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -105,33 +103,28 @@ export default function BusinessProfileForm({ onSuccess }: { onSuccess: () => vo
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <ImageUploadSection
+      <EnhancedBusinessProfileFormContent
+        register={register}
+        errors={errors}
+        selectedCategory={selectedCategory}
+        setSelectedCategory={setSelectedCategory}
         imageFile={imageFile}
         setImageFile={setImageFile}
         showCamera={showCamera}
         setShowCamera={setShowCamera}
         onCapturePhoto={handleCameraCapture}
         videoRef={videoRef}
-      />
-
-      <BusinessDetailsSection
-        register={register}
-        errors={errors}
-        selectedCategory={selectedCategory}
-        setSelectedCategory={setSelectedCategory}
-      />
-
-      <ServicesSection
+        currentImageUrl={undefined}
         services={services}
         newService={newService}
         setNewService={setNewService}
         addService={() => addService(services.length, undefined, false)}
-        onDeleteService={handleServiceDelete}
-      />
-
-      <AvailabilitySection
+        deleteService={handleServiceDelete}
         onAvailabilityChange={setAvailability}
         onBlockedDatesChange={setBlockedDates}
+        formData={formData}
+        autoSaveStatus="idle"
+        hasUnsavedChanges={false}
       />
 
       <Button 
