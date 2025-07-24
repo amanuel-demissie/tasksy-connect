@@ -25,10 +25,12 @@ const BookingPage = () => {
   const [blockedDates, setBlockedDates] = useState<BlockedDate[]>([]);
   const [serviceName, setServiceName] = useState<string>("");
 
+  // Pass serviceId to the hook for correct aggregation
   const { availableTimeSlots, loading: availabilityLoading } = useEmployeeAvailability(
     selectedEmployeeId,
     businessId!,
-    selectedDate
+    selectedDate,
+    serviceId // <-- pass serviceId here
   );
 
   // Fetch service name and blocked dates

@@ -235,6 +235,8 @@ export default function EmployeeAvailability({ employeeId }: EmployeeAvailabilit
           onClick={addTimeSlot} 
           size="sm" 
           variant="outline"
+          className="focus-visible:ring-2 focus-visible:ring-accent"
+          aria-label="Add Time Slot"
         >
           <Plus className="h-4 w-4 mr-1" /> Add Time Slot
         </Button>
@@ -245,7 +247,8 @@ export default function EmployeeAvailability({ employeeId }: EmployeeAvailabilit
             <p className="text-muted-foreground mb-4">No availability set</p>
             <Button 
               onClick={addTimeSlot} 
-              className="bg-accent text-white hover:bg-accent/90"
+              className="bg-accent text-white hover:bg-accent/90 focus-visible:ring-2 focus-visible:ring-accent"
+              aria-label="Add First Time Slot"
             >
               <Plus className="h-4 w-4 mr-2" />
               Add First Time Slot
@@ -254,14 +257,14 @@ export default function EmployeeAvailability({ employeeId }: EmployeeAvailabilit
         ) : (
           <>
             <ScrollArea className="h-[300px] pr-4">
-              <div className="space-y-3">
+              <div className="space-y-3 min-w-[320px] md:min-w-0">
                 {availability.map((slot, index) => (
                   <div key={slot.id || index} className="grid grid-cols-[2fr,1fr,1fr,auto] gap-2 items-center">
                     <Select
                       value={slot.day_of_week.toString()}
                       onValueChange={(value) => updateTimeSlot(index, 'day_of_week', parseInt(value))}
                     >
-                      <SelectTrigger className="h-9">
+                      <SelectTrigger className="h-9 focus-visible:ring-2 focus-visible:ring-accent" aria-label="Select Day">
                         <SelectValue placeholder="Day" />
                       </SelectTrigger>
                       <SelectContent>
@@ -277,21 +280,24 @@ export default function EmployeeAvailability({ employeeId }: EmployeeAvailabilit
                       type="time"
                       value={slot.start_time.substring(0, 5)}
                       onChange={(e) => updateTimeSlot(index, 'start_time', e.target.value + ':00')}
-                      className="h-9"
+                      className="h-9 focus-visible:ring-2 focus-visible:ring-accent"
+                      aria-label="Start Time"
                     />
                     
                     <Input
                       type="time"
                       value={slot.end_time.substring(0, 5)}
                       onChange={(e) => updateTimeSlot(index, 'end_time', e.target.value + ':00')}
-                      className="h-9"
+                      className="h-9 focus-visible:ring-2 focus-visible:ring-accent"
+                      aria-label="End Time"
                     />
                     
                     <Button
                       variant="ghost"
                       size="icon"
                       onClick={() => deleteTimeSlot(index)}
-                      className="h-9 w-9"
+                      className="h-9 w-9 focus-visible:ring-2 focus-visible:ring-destructive"
+                      aria-label="Delete Time Slot"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -303,7 +309,8 @@ export default function EmployeeAvailability({ employeeId }: EmployeeAvailabilit
               <Button 
                 onClick={saveChanges} 
                 disabled={saving}
-                className="bg-accent text-white hover:bg-accent/90"
+                className="bg-accent text-white hover:bg-accent/90 focus-visible:ring-2 focus-visible:ring-accent"
+                aria-label="Save Availability"
               >
                 {saving ? "Saving..." : "Save Availability"}
               </Button>

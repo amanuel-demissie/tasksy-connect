@@ -18,7 +18,8 @@ interface EmployeeAvailabilityHook {
 export const useEmployeeAvailability = (
   employeeId: string | null,
   businessId: string,
-  selectedDate: Date | undefined
+  selectedDate: Date | undefined,
+  serviceId?: string // Add serviceId for filtering eligible employees
 ): EmployeeAvailabilityHook => {
   const [availableTimeSlots, setAvailableTimeSlots] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
@@ -97,45 +98,83 @@ export const useEmployeeAvailability = (
           setAvailableTimeSlots(slots);
         } else {
           // No preference - get combined availability of all employees with this service
-          // This is a simplified version - in production you might want more sophisticated logic
-          const { data: businessAvailability, error: businessError } = await supabase
-            .from('business_availability')
-            .select('*')
-            .eq('business_id', businessId)
-            .eq('day_of_week', dayOfWeek);
-
-          if (businessError) {
-            throw businessError;
-          }
-
-          if (!businessAvailability?.length) {
+          if (!serviceId) {
             setAvailableTimeSlots([]);
+            setLoading(false);
             return;
           }
 
-          // Generate time slots based on business availability
-          const slots: string[] = [];
-          businessAvailability.forEach(availability => {
+          // 1. Get all employees for this business and service
+          const { data: employeeServices, error: employeeServicesError } = await supabase
+            .from('employee_services')
+            .select('employee_id')
+            .eq('service_id', serviceId);
+
+          if (employeeServicesError) throw employeeServicesError;
+
+          const employeeIds = employeeServices?.map(es => es.employee_id) || [];
+          if (employeeIds.length === 0) {
+            setAvailableTimeSlots([]);
+            setLoading(false);
+            return;
+          }
+
+          // 2. For each employee, get their availability for the day
+          const { data: availabilities, error: availabilitiesError } = await supabase
+            .from('employee_availability')
+            .select('*')
+            .in('employee_id', employeeIds)
+            .eq('day_of_week', dayOfWeek);
+
+          if (availabilitiesError) throw availabilitiesError;
+
+          // 3. For each employee, get their booked times for the date
+          const { data: appointments, error: appointmentsError } = await supabase
+            .from('appointments')
+            .select('employee_id, time')
+            .in('employee_id', employeeIds)
+            .eq('date', dateString)
+            .neq('status', 'cancelled');
+
+          if (appointmentsError) throw appointmentsError;
+
+          // 4. Generate all possible slots for all employees, filter out booked
+          const slotsSet = new Set<string>();
+          for (const availability of availabilities || []) {
             const [startHour, startMinute] = availability.start_time.split(':').map(Number);
             const [endHour, endMinute] = availability.end_time.split(':').map(Number);
-            const slotDuration = availability.slot_duration || 30;
+            const slotDuration = 30; // Default 30 minutes
 
             let currentTime = new Date();
             currentTime.setHours(startHour, startMinute, 0);
-            
             const endTime = new Date();
             endTime.setHours(endHour, endMinute, 0);
 
+            // Get booked times for this employee
+            const bookedTimes = new Set(
+              (appointments || [])
+                .filter(a => a.employee_id === availability.employee_id)
+                .map(a => a.time)
+            );
+
             while (currentTime < endTime) {
+              const timeString = format(currentTime, 'HH:mm:ss');
               const displayTime = format(currentTime, 'hh:mm a');
-              if (!slots.includes(displayTime)) {
-                slots.push(displayTime);
+              if (!bookedTimes.has(timeString)) {
+                slotsSet.add(displayTime);
               }
               currentTime.setMinutes(currentTime.getMinutes() + slotDuration);
             }
+          }
+
+          // Sort slots chronologically
+          const sortedSlots = Array.from(slotsSet).sort((a, b) => {
+            const dateA = new Date(`1970-01-01 ${a}`);
+            const dateB = new Date(`1970-01-01 ${b}`);
+            return dateA.getTime() - dateB.getTime();
           });
 
-          setAvailableTimeSlots(slots);
+          setAvailableTimeSlots(sortedSlots);
         }
       } catch (error) {
         console.error('Error fetching employee availability:', error);
@@ -147,7 +186,7 @@ export const useEmployeeAvailability = (
     };
 
     fetchAvailability();
-  }, [employeeId, businessId, selectedDate]);
+  }, [employeeId, businessId, selectedDate, serviceId]);
 
   return {
     availableTimeSlots,

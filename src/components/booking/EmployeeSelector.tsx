@@ -34,7 +34,7 @@ export default function EmployeeSelector({
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
-        // Fetch employees who can provide this service
+        // Fetch employees who can provide this service and are active
         const { data: employeeServices, error } = await supabase
           .from('employee_services')
           .select(`
@@ -98,16 +98,17 @@ export default function EmployeeSelector({
   return (
     <div className="space-y-3">
       <h3 className="text-base font-semibold">Select Employee</h3>
-      <ScrollArea className="w-full">
-        <div className="flex space-x-3 pb-2">
+      <ScrollArea className="w-full max-w-full overflow-x-auto">
+        <div className="flex space-x-3 pb-2 min-w-[320px] md:min-w-0">
           {/* No preference option */}
           <Button
             variant={selectedEmployeeId === null ? "default" : "outline"}
             className={cn(
-              "flex flex-col items-center space-y-2 h-auto py-3 px-4 min-w-[100px]",
+              "flex flex-col items-center space-y-2 h-auto py-3 px-4 min-w-[100px] focus-visible:ring-2 focus-visible:ring-violet-500",
               selectedEmployeeId === null && "bg-violet-700 text-white hover:bg-violet-600"
             )}
             onClick={() => onEmployeeSelect(null)}
+            aria-label="No preference"
           >
             <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
               <User className="h-5 w-5" />
@@ -121,10 +122,11 @@ export default function EmployeeSelector({
               key={employee.id}
               variant={selectedEmployeeId === employee.id ? "default" : "outline"}
               className={cn(
-                "flex flex-col items-center space-y-2 h-auto py-3 px-4 min-w-[100px]",
+                "flex flex-col items-center space-y-2 h-auto py-3 px-4 min-w-[100px] focus-visible:ring-2 focus-visible:ring-violet-500",
                 selectedEmployeeId === employee.id && "bg-violet-700 text-white hover:bg-violet-600"
               )}
               onClick={() => onEmployeeSelect(employee.id)}
+              aria-label={`Select ${employee.name}`}
             >
               <Avatar className="w-10 h-10">
                 <AvatarImage src={employee.image_url} alt={employee.name} />
@@ -133,9 +135,9 @@ export default function EmployeeSelector({
                 </AvatarFallback>
               </Avatar>
               <div className="text-xs text-center">
-                <div className="font-medium">{employee.name}</div>
+                <div className="font-medium truncate max-w-[80px]">{employee.name}</div>
                 {employee.title && (
-                  <div className="text-muted-foreground">{employee.title}</div>
+                  <div className="text-muted-foreground truncate max-w-[80px]">{employee.title}</div>
                 )}
               </div>
             </Button>
