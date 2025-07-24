@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -28,8 +27,10 @@ export const AppointmentCard = ({
 }: AppointmentCardProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [customerInfo, setCustomerInfo] = useState<{ email: string | null; username: string | null } | null>(null);
+  const [employeeInfo, setEmployeeInfo] = useState<{ name: string; title?: string } | null>(null);
   const [isBusinessOwner, setIsBusinessOwner] = useState(false);
   const [isCustomer, setIsCustomer] = useState(false);
+  const [isEmployee, setIsEmployee] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [actionDialogOpen, setActionDialogOpen] = useState(false);
   const [currentAction, setCurrentAction] = useState<"confirm" | "cancel" | "complete">("confirm");
@@ -73,6 +74,16 @@ export const AppointmentCard = ({
       if (appointment.customer_id === user.id) {
         setIsCustomer(true);
       }
+
+      // Check if current user is the assigned employee
+      if (appointment.employee_id && appointment.employee_id === user.id) {
+        setIsEmployee(true);
+      }
+
+      // Fetch employee info if there's an assigned employee
+      if (appointment.employee_id) {
+        fetchEmployeeInfo(appointment.employee_id);
+      }
     };
     
     const fetchCustomerInfo = async (customerId: string) => {
@@ -89,9 +100,24 @@ export const AppointmentCard = ({
       
       setCustomerInfo(data);
     };
+
+    const fetchEmployeeInfo = async (employeeId: string) => {
+      const { data, error } = await supabase
+        .from('employees')
+        .select('name, title')
+        .eq('id', employeeId)
+        .single();
+        
+      if (error) {
+        console.error('Error fetching employee info:', error);
+        return;
+      }
+      
+      setEmployeeInfo(data);
+    };
     
     checkUserRole();
-  }, [appointment.business_id, appointment.customer_id]);
+  }, [appointment.business_id, appointment.customer_id, appointment.employee_id]);
 
   const updateAppointmentStatus = async (newStatus: string) => {
     try {
@@ -180,6 +206,11 @@ export const AppointmentCard = ({
                       <Clock className="w-3 h-3 mr-1" />
                       {appointment.time}
                     </div>
+                    {employeeInfo && (
+                      <div className="text-xs text-[#C8C8C9]">
+                        with {employeeInfo.name}
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-center">
@@ -208,9 +239,22 @@ export const AppointmentCard = ({
                   <div className="text-sm text-[#C8C8C9]">
                     Category: <span className="text-white">{appointment.category}</span>
                   </div>
+
+                  {employeeInfo && (
+                    <div className="p-3 bg-[#2A2F3C] rounded-lg">
+                      <div className="flex items-center gap-2 mb-2">
+                        <User className="h-4 w-4 text-[#C8C8C9]" />
+                        <span className="text-sm font-medium text-[#C8C8C9]">Assigned Employee</span>
+                      </div>
+                      <p className="text-sm text-white">{employeeInfo.name}</p>
+                      {employeeInfo.title && (
+                        <p className="text-xs text-[#C8C8C9]">{employeeInfo.title}</p>
+                      )}
+                    </div>
+                  )}
                 </div>
 
-                {isBusinessOwner && customerInfo && (
+                {(isBusinessOwner || isEmployee) && customerInfo && (
                   <div className="p-3 bg-[#2A2F3C] rounded-lg">
                     <div className="flex items-center gap-2 mb-2">
                       <User className="h-4 w-4 text-[#C8C8C9]" />
@@ -226,9 +270,9 @@ export const AppointmentCard = ({
                 )}
 
                 {/* Action buttons based on role and current status */}
-                {(isBusinessOwner || isCustomer) && (
+                {(isBusinessOwner || isEmployee || isCustomer) && (
                   <div className="flex flex-wrap gap-2 pt-2">
-                    {isBusinessOwner && appointment.status.toLowerCase() === 'pending' && (
+                    {(isBusinessOwner || isEmployee) && appointment.status.toLowerCase() === 'pending' && (
                       <Button 
                         size="sm" 
                         className="bg-green-600 hover:bg-green-700"
@@ -239,7 +283,7 @@ export const AppointmentCard = ({
                       </Button>
                     )}
                     
-                    {isBusinessOwner && appointment.status.toLowerCase() === 'confirmed' && (
+                    {(isBusinessOwner || isEmployee) && appointment.status.toLowerCase() === 'confirmed' && (
                       <Button 
                         size="sm" 
                         className="bg-blue-600 hover:bg-blue-700"
@@ -250,7 +294,7 @@ export const AppointmentCard = ({
                       </Button>
                     )}
                     
-                    {(isBusinessOwner || isCustomer) && 
+                    {(isBusinessOwner || isEmployee || isCustomer) && 
                      (appointment.status.toLowerCase() === 'pending' || 
                       appointment.status.toLowerCase() === 'confirmed') && (
                       <Button 

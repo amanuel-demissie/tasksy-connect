@@ -7,28 +7,12 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
-
-interface TimeSlot {
-  dayOfWeek: number;
-  startTime: string;
-  endTime: string;
-  slotDuration: number;
-}
+import EmployeeSelector from "@/components/booking/EmployeeSelector";
+import { useEmployeeAvailability } from "@/hooks/use-employee-availability";
 
 interface BlockedDate {
   blocked_date: string;
   reason?: string;
-}
-
-interface BusinessAvailabilityResponse {
-  business_id: string;
-  created_at: string;
-  day_of_week: number;
-  end_time: string;
-  id: string;
-  slot_duration: number;
-  start_time: string;
-  updated_at: string;
 }
 
 const BookingPage = () => {
@@ -37,33 +21,33 @@ const BookingPage = () => {
   
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [selectedTime, setSelectedTime] = useState<string>();
-  const [availability, setAvailability] = useState<TimeSlot[]>([]);
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(null);
   const [blockedDates, setBlockedDates] = useState<BlockedDate[]>([]);
-  const [availableTimeSlots, setAvailableTimeSlots] = useState<string[]>([]);
+  const [serviceName, setServiceName] = useState<string>("");
 
-  // Fetch business availability and blocked dates
+  const { availableTimeSlots, loading: availabilityLoading } = useEmployeeAvailability(
+    selectedEmployeeId,
+    businessId!,
+    selectedDate
+  );
+
+  // Fetch service name and blocked dates
   useEffect(() => {
-    const fetchAvailability = async () => {
-      if (!businessId) return;
+    const fetchData = async () => {
+      if (!businessId || !serviceId) return;
 
-      // Fetch business availability
-      const { data: availabilityData, error: availabilityError } = await supabase
-        .from('business_availability')
-        .select('*')
-        .eq('business_id', businessId);
+      // Fetch service name
+      const { data: serviceData, error: serviceError } = await supabase
+        .from('business_services')
+        .select('name')
+        .eq('id', serviceId)
+        .single();
 
-      if (availabilityError) {
-        console.error('Error fetching availability:', availabilityError);
-        return;
+      if (serviceError) {
+        console.error('Error fetching service:', serviceError);
+      } else {
+        setServiceName(serviceData?.name || "");
       }
-
-      // Map the Supabase response to our TimeSlot interface
-      const mappedAvailability: TimeSlot[] = (availabilityData || []).map((slot: BusinessAvailabilityResponse) => ({
-        dayOfWeek: slot.day_of_week,
-        startTime: slot.start_time,
-        endTime: slot.end_time,
-        slotDuration: slot.slot_duration
-      }));
 
       // Fetch blocked dates
       const { data: blockedDatesData, error: blockedDatesError } = await supabase
@@ -73,100 +57,57 @@ const BookingPage = () => {
 
       if (blockedDatesError) {
         console.error('Error fetching blocked dates:', blockedDatesError);
-        return;
+      } else {
+        setBlockedDates(blockedDatesData || []);
       }
-
-      setAvailability(mappedAvailability);
-      setBlockedDates(blockedDatesData || []);
     };
 
-    fetchAvailability();
-  }, [businessId]);
+    fetchData();
+  }, [businessId, serviceId]);
 
-  // Generate available time slots based on selected date and business availability
+  // Reset selected time when date or employee changes
   useEffect(() => {
-    if (!selectedDate || !availability.length) {
-      setAvailableTimeSlots([]);
-      return;
-    }
+    setSelectedTime(undefined);
+  }, [selectedDate, selectedEmployeeId]);
 
-    // Get day of week (0 = Sunday, 6 = Saturday)
-    const dayOfWeek = selectedDate.getDay();
-
-    // Find availability for selected day
-    const dayAvailability = availability.find(slot => slot.dayOfWeek === dayOfWeek);
-    
-    if (!dayAvailability) {
-      setAvailableTimeSlots([]);
-      return;
-    }
-
-    // Check if date is blocked
-    const isDateBlocked = blockedDates.some(blockedDate => 
-      format(new Date(blockedDate.blocked_date), 'yyyy-MM-dd') === 
-      format(selectedDate, 'yyyy-MM-dd')
-    );
-
-    if (isDateBlocked) {
-      setAvailableTimeSlots([]);
-      return;
-    }
-
-    // Generate time slots based on start time, end time, and duration
-    const slots: string[] = [];
-    const [startHour, startMinute] = dayAvailability.startTime.split(':').map(Number);
-    const [endHour, endMinute] = dayAvailability.endTime.split(':').map(Number);
-    const slotDuration = dayAvailability.slotDuration;
-
-    let currentTime = new Date();
-    currentTime.setHours(startHour, startMinute, 0);
-    
-    const endTime = new Date();
-    endTime.setHours(endHour, endMinute, 0);
-
-    while (currentTime < endTime) {
-      slots.push(format(currentTime, 'hh:mm a'));
-      currentTime.setMinutes(currentTime.getMinutes() + slotDuration);
-    }
-
-    setAvailableTimeSlots(slots);
-  }, [selectedDate, availability, blockedDates]);
-
-  // Disable dates that are blocked or have no availability
+  // Disable dates that are blocked or in the past
   const disabledDates = (date: Date) => {
-    const dayOfWeek = date.getDay();
-    const hasAvailability = availability.some(slot => slot.dayOfWeek === dayOfWeek);
     const isBlocked = blockedDates.some(blockedDate => 
       format(new Date(blockedDate.blocked_date), 'yyyy-MM-dd') === 
       format(date, 'yyyy-MM-dd')
     );
     const isPastDate = date < new Date(new Date().setHours(0, 0, 0, 0));
 
-    return !hasAvailability || isBlocked || isPastDate;
+    return isBlocked || isPastDate;
   };
 
   const handleBooking = async () => {
     if (!selectedDate || !selectedTime) return;
 
     try {
+      // Convert display time back to 24-hour format for database
+      const timeFor24Hour = new Date(`1970-01-01 ${selectedTime}`);
+      const time24Hour = format(timeFor24Hour, 'HH:mm:ss');
+
+      const appointmentData = {
+        business_id: businessId,
+        service_id: serviceId,
+        customer_id: (await supabase.auth.getUser()).data.user?.id,
+        date: format(selectedDate, 'yyyy-MM-dd'),
+        time: time24Hour,
+        status: 'pending',
+        ...(selectedEmployeeId && { employee_id: selectedEmployeeId })
+      };
+
       const { data, error } = await supabase
         .from('appointments')
-        .insert([
-          {
-            business_id: businessId,
-            service_id: serviceId,
-            customer_id: (await supabase.auth.getUser()).data.user?.id,
-            date: format(selectedDate, 'yyyy-MM-dd'),
-            time: selectedTime,
-            status: 'pending'
-          }
-        ])
+        .insert([appointmentData])
         .select()
         .single();
 
       if (error) throw error;
 
-      // Navigate to appointments page or show success message
+      // Navigate to appointments page
       navigate('/appointments');
     } catch (error) {
       console.error('Error creating appointment:', error);
@@ -188,6 +129,25 @@ const BookingPage = () => {
           <h1 className="text-lg font-bold">Book an Appointment</h1>
         </div>
 
+        {serviceName && (
+          <div className="mb-6">
+            <h2 className="text-base font-semibold text-muted-foreground">
+              Service: {serviceName}
+            </h2>
+          </div>
+        )}
+
+        {/* Employee Selection */}
+        <div className="mb-6">
+          <EmployeeSelector
+            businessId={businessId!}
+            serviceId={serviceId!}
+            selectedEmployeeId={selectedEmployeeId}
+            onEmployeeSelect={setSelectedEmployeeId}
+          />
+        </div>
+
+        {/* Calendar */}
         <Calendar
           mode="single"
           selected={selectedDate}
@@ -196,25 +156,36 @@ const BookingPage = () => {
           className="rounded-md border shadow mb-4"
         />
 
+        {/* Available Times */}
         <div className="mt-6">
           <h2 className="text-base font-semibold mb-3">Available Times</h2>
           <div className="flex flex-col space-y-2">
-            {availableTimeSlots.map(time => (
-              <Button
-                key={time}
-                variant={selectedTime === time ? "default" : "outline"}
-                className={cn(
-                  "rounded-full",
-                  selectedTime === time && "bg-primary text-primary-foreground"
-                )}
-                onClick={() => setSelectedTime(time)}
-              >
-                {time}
-              </Button>
-            ))}
-            {availableTimeSlots.length === 0 && selectedDate && (
+            {availabilityLoading ? (
+              <p className="text-muted-foreground text-center py-4">
+                Loading available times...
+              </p>
+            ) : availableTimeSlots.length > 0 ? (
+              availableTimeSlots.map(time => (
+                <Button
+                  key={time}
+                  variant={selectedTime === time ? "default" : "outline"}
+                  className={cn(
+                    "rounded-full",
+                    selectedTime === time && "bg-violet-700 text-white hover:bg-violet-600"
+                  )}
+                  onClick={() => setSelectedTime(time)}
+                >
+                  {time}
+                </Button>
+              ))
+            ) : selectedDate ? (
               <p className="text-muted-foreground text-center py-4">
                 No available time slots for the selected date
+                {selectedEmployeeId && " and employee"}
+              </p>
+            ) : (
+              <p className="text-muted-foreground text-center py-4">
+                Please select a date to see available times
               </p>
             )}
           </div>
