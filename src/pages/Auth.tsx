@@ -127,12 +127,12 @@ const AuthPage = () => {
                   },
                 },
               },
-              className: {
-                container: 'text-foreground',
-                label: 'text-foreground',
-                button: 'bg-primary hover:bg-primary/90 text-primary-foreground',
-                input: 'bg-background border-input',
-              },
+            className: {
+              container: 'text-foreground',
+              label: 'text-foreground',
+              button: 'bg-accent hover:bg-accent/90 text-accent-foreground font-medium',
+              input: 'bg-background border-input',
+            },
             }}
             providers={[]}
             redirectTo={window.location.origin + "/auth"}
