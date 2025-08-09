@@ -29,6 +29,7 @@ export default function EmployeeServices({ employeeId, businessId }: EmployeeSer
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [debugInfo, setDebugInfo] = useState<any>(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   // Debug authentication state
   useEffect(() => {
@@ -103,7 +104,7 @@ export default function EmployeeServices({ employeeId, businessId }: EmployeeSer
     };
 
     fetchData();
-  }, [businessId, employeeId, session, toast]);
+  }, [businessId, employeeId, session, toast, refreshTrigger]);
 
   // Handle service selection
   const handleServiceToggle = (serviceId: string) => {
@@ -160,7 +161,7 @@ export default function EmployeeServices({ employeeId, businessId }: EmployeeSer
         .select(`
           id,
           business_id,
-          business_profiles!inner(
+          business_profiles!employees_business_id_fkey(
             id,
             owner_id
           )
@@ -173,7 +174,7 @@ export default function EmployeeServices({ employeeId, businessId }: EmployeeSer
         throw new Error("Failed to verify employee ownership");
       }
 
-      if (!employeeCheck || employeeCheck.business_profiles.owner_id !== session.user.id) {
+      if (!employeeCheck || employeeCheck.business_profiles?.owner_id !== session.user.id) {
         console.error("EmployeeServices - Permission denied:", {
           employeeCheck,
           currentUserId: session.user.id
@@ -231,7 +232,8 @@ export default function EmployeeServices({ employeeId, businessId }: EmployeeSer
 
         const { error: insertError, data: insertData } = await supabase
           .from("employee_services")
-          .insert(newAssignments);
+          .insert(newAssignments)
+          .select();
 
         if (insertError) {
           console.error("EmployeeServices - Insert error:", insertError);
@@ -241,9 +243,18 @@ export default function EmployeeServices({ employeeId, businessId }: EmployeeSer
       }
 
       console.log("EmployeeServices - Save operation completed successfully");
+      
+      // Trigger a full refresh of the data to update the UI
+      console.log("EmployeeServices - Triggering data refresh");
+      
+      // Small delay to ensure database transaction is committed
+      setTimeout(() => {
+        setRefreshTrigger(prev => prev + 1);
+      }, 100);
+      
       toast({
         title: "Success",
-        description: "Services updated successfully",
+        description: "Services updated successfully. Refreshing...",
       });
 
     } catch (error) {
@@ -252,6 +263,12 @@ export default function EmployeeServices({ employeeId, businessId }: EmployeeSer
       let errorMessage = "Failed to update services";
       if (error instanceof Error) {
         errorMessage = error.message;
+      }
+      
+      // Check for specific RLS-related errors
+      if (errorMessage.includes('new row violates row-level security policy') || 
+          errorMessage.includes('permission denied')) {
+        errorMessage = "Permission denied. Please ensure you own this business and try again.";
       }
       
       toast({

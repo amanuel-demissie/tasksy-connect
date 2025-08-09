@@ -70,11 +70,7 @@ export const useBusinessServices = (businessId?: string) => {
   };
 
   // Debug logging
-  if (services.length > 0) {
-    console.log("services from useBusinessServices", services);
-  } else {
-    console.log("no services from useBusinessServices");
-  }
+  
 
   /**
    * Adds a new service to the list and optionally persists to database
