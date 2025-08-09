@@ -186,79 +186,35 @@ export default function EditBusinessProfileForm() {
 
         {/* Form */}
         <div className="relative">
-          <form id="business-profile-form" onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            <EnhancedBusinessProfileFormContent
-              register={register}
-              errors={errors}
-              selectedCategory={selectedCategory}
-              setSelectedCategory={setSelectedCategory}
-              imageFile={imageFile}
-              setImageFile={setImageFile}
-              showCamera={showCamera}
-              setShowCamera={setShowCamera}
-              onCapturePhoto={handleCameraCapture}
-              videoRef={videoRef}
-              currentImageUrl={currentImageUrl}
-              services={formServices}
-              newService={newService}
-              setNewService={setNewService}
-              addService={handleServiceAdd}
-              deleteService={handleServiceDelete}
-              onAvailabilityChange={handleAvailabilityChange}
-              onBlockedDatesChange={handleBlockedDatesChange}
-              initialAvailability={availability}
-              initialBlockedDates={blockedDates}
-              businessId={id}
-              formData={formData}
-              autoSaveStatus={autoSaveStatus}
-              lastSaved={lastSaved}
-              hasUnsavedChanges={hasUnsavedChanges}
-            />
-
-            {/* Sticky Submit Button */}
-            <div className={cn(
-              "bg-background/95 backdrop-blur-sm border-t p-4 -mx-4",
-              !isMobile && "sticky bottom-0"
-            )}>
-              <div className="flex gap-3">
-                <Button 
-                  type="submit"
-                  className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
-                  disabled={isSubmitting}
-                  size="lg"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Updating Profile...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="mr-2 h-4 w-4" />
-                      Update Business Profile
-                    </>
-                  )}
-                </Button>
-              </div>
-            </div>
-          </form>
-
-          {/* Mobile Floating Action Button */}
-          {isMobile && (
-            <Button
-              type="submit"
-              form="business-profile-form"
-              className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg bg-primary text-primary-foreground hover:bg-primary/90 z-50"
-              disabled={isSubmitting}
-              onClick={handleSubmit(onSubmit)}
-            >
-              {isSubmitting ? (
-                <Loader2 className="h-6 w-6 animate-spin" />
-              ) : (
-                <Save className="h-6 w-6" />
-              )}
-            </Button>
-          )}
+          <EnhancedBusinessProfileFormContent
+            register={register}
+            errors={errors}
+            selectedCategory={selectedCategory}
+            setSelectedCategory={setSelectedCategory}
+            imageFile={imageFile}
+            setImageFile={setImageFile}
+            showCamera={showCamera}
+            setShowCamera={setShowCamera}
+            onCapturePhoto={handleCameraCapture}
+            videoRef={videoRef}
+            currentImageUrl={currentImageUrl}
+            services={formServices}
+            newService={newService}
+            setNewService={setNewService}
+            addService={handleServiceAdd}
+            deleteService={handleServiceDelete}
+            onAvailabilityChange={handleAvailabilityChange}
+            onBlockedDatesChange={handleBlockedDatesChange}
+            initialAvailability={availability}
+            initialBlockedDates={blockedDates}
+            businessId={id}
+            formData={formData}
+            autoSaveStatus={autoSaveStatus}
+            lastSaved={lastSaved}
+            hasUnsavedChanges={hasUnsavedChanges}
+            onSubmit={onSubmit}
+            isSubmitting={isSubmitting}
+          />
         </div>
       </div>
 
